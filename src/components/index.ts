@@ -24,10 +24,6 @@ export const LoadingSpinner = defineAsyncComponent(() =>
   import('./LoadingSpinner.vue')
 )
 
-export const NotificationSystem = defineAsyncComponent(() => 
-  import('./NotificationSystem.vue')
-)
-
 export const LazyLoadingDemo = defineAsyncComponent(() => 
   import('./LazyLoadingDemo.vue')
 )
@@ -39,6 +35,5 @@ export default {
   LazyImage,
   LazyIcon,
   LoadingSpinner,
-  NotificationSystem,
   LazyLoadingDemo
 } 
