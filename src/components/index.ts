@@ -28,6 +28,10 @@ export const NotificationSystem = defineAsyncComponent(() =>
   import('./NotificationSystem.vue')
 )
 
+export const LazyLoadingDemo = defineAsyncComponent(() => 
+  import('./LazyLoadingDemo.vue')
+)
+
 // Export par défaut pour faciliter l'import
 export default {
   HeaderComponent,
@@ -35,5 +39,6 @@ export default {
   LazyImage,
   LazyIcon,
   LoadingSpinner,
-  NotificationSystem
+  NotificationSystem,
+  LazyLoadingDemo
 } 

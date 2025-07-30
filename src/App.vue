@@ -15,11 +15,11 @@
     import VuePlugin from '@stagewise-plugins/vue';
 
     // Lazy loading des composants lourds
-    const HeaderComponent = defineAsyncComponent(() => 
-        import('./components/layout/HeaderComponent.vue')
+    const HeaderComponent = defineAsyncComponent(
+        () => import('./components/layout/HeaderComponent.vue')
     );
-    const ContentComponent = defineAsyncComponent(() => 
-        import('./components/layout/ContentComponent.vue')
+    const ContentComponent = defineAsyncComponent(
+        () => import('./components/layout/ContentComponent.vue')
     );
 
     // VARIABLES
