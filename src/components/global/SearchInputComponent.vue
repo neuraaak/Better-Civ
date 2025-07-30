@@ -5,7 +5,7 @@
                 v-model="searchText"
                 type="text"
                 name="text"
-                class="input bg-zinc-800 text-amber-500 border-amber-500 border-2 rounded-lg h-5 pr-10"
+                class="input bg-zinc-800 text-amber-500 border-amber-500 border-2 rounded-lg h-11 pr-10"
                 placeholder="Search"
                 @input="updateSearchText"
                 @focus="showSuggestions = true"
@@ -103,7 +103,7 @@
 <style scoped>
     .input {
         padding: 10px 25px;
-        max-width: 190px;
+        min-width: 300px;
     }
 
     .input:active {

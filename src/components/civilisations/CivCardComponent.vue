@@ -1,7 +1,12 @@
 <template>
     <Card
         class="bg-zinc-950 border-4 border-zinc-900 rounded-xl hover:border-zinc-800 flex flex-col h-full justify-items-stretch pb-1"
-        style="width: 100%; overflow: hidden"
+        style="
+            width: 100%;
+            overflow: hidden;
+            background-color: rgb(9 9 11) !important;
+            border-radius: 0.75rem !important;
+        "
         @click="toggleSelected"
     >
         <template #header>
@@ -45,7 +50,7 @@
         </template>
 
         <template #footer>
-            <div class="flex flex-row flex-wrap gap-x-2 px-3 mt-2">
+            <div class="flex flex-row flex-wrap gap-x-2 px-3 mt-2 pb-3">
                 <CivTagComponent
                     v-for="tag_id in tags_id"
                     :key="tag_id"

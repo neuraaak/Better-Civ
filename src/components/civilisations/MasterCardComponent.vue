@@ -1,23 +1,30 @@
 <template>
     <div class="h-full rounded-xl">
         <div class="content w-full h-full rounded-xl overflow-hidden">
-            <div class="back absolute flex justify-center items-center w-full h-full bg-zinc-800">
+            <div
+                class="back absolute flex justify-center items-center w-full h-full bg-zinc-800"
+                style="background-color: rgb(39 39 42) !important"
+            >
                 <div
                     class="back-content absolute flex justify-center items-center bg-zinc-900 rounded-xl"
                 >
                     <Card
                         class="mastercard bg-zinc-950 rounded-xl hover:border-zinc-800 flex flex-col h-full justify-items-stretch"
-                        style="width: 100%; overflow: hidden"
+                        style="
+                            width: 100%;
+                            overflow: hidden;
+                            background-color: rgb(9 9 11) !important;
+                            border-radius: 0.75rem !important;
+                        "
                         @click=""
                     >
                         <template #header>
-                            <div class="overflow-hidden h-[220px]">
-                                <img
-                                    :src="civBackground"
-                                    alt="user header"
-                                    class="object-cover object-top w-full h-full"
-                                />
-                            </div>
+                            <img
+                                :src="civBackground"
+                                alt="user header"
+                                class="object-cover object-top w-full h-[220px]"
+                                style="border-radius: 0.75rem 0.75rem 0 0"
+                            />
                         </template>
 
                         <template #title>
@@ -63,6 +70,7 @@
                                 <div
                                     id="category"
                                     class="bg-zinc-900 rounded-md mt-4 mx-4 px-2 py-1"
+                                    style="background-color: rgb(24 24 27) !important"
                                 >
                                     <div class="flex flex-row flex-wrap gap-x-1 mt-2 mb-2">
                                         <CivTagComponent
@@ -75,7 +83,11 @@
                                 </div>
 
                                 <!-- Leader -->
-                                <div id="leader" class="bg-zinc-900 rounded-md mt-3 mx-4 px-2 py-1">
+                                <div
+                                    id="leader"
+                                    class="bg-zinc-900 rounded-md mt-3 mx-4 px-2 py-1"
+                                    style="background-color: rgb(24 24 27) !important"
+                                >
                                     <!-- <h3 class="font-mono font-bold text-md">{{ civ_leader }}</h3> -->
                                     <div class="flex flex-row gap-x-1">
                                         <div
@@ -107,6 +119,7 @@
                                     <!-- Unique unit -->
                                     <div
                                         class="flex flex-col bg-zinc-900 rounded-md w-1/2 mt-3 ml-4 px-2 py-1"
+                                        style="background-color: rgb(24 24 27) !important"
                                     >
                                         <h3 class="font-mono font-bold text-sm text-left ml-1 mt-1">
                                             {{ unitsLabel }}
@@ -142,6 +155,7 @@
                                     <!-- Unique building -->
                                     <div
                                         class="flex flex-col bg-zinc-900 rounded-md w-1/2 mt-3 mr-4 px-2 py-1"
+                                        style="background-color: rgb(24 24 27) !important"
                                     >
                                         <h3 class="font-mono font-bold text-sm text-left ml-1 mt-1">
                                             {{ buildingsLabel }}
