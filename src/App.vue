@@ -1,6 +1,10 @@
 <template>
     <HeaderComponent class="fixed" />
     <ContentComponent :civilisations="civ_data" />
+
+    <!-- Composant de démonstration du lazy loading -->
+    <LazyLoadingDemo v-if="showLazyDemo" />
+
     <!-- Stagewise Toolbar - Configuration selon la documentation officielle -->
     <StagewiseToolbar v-if="isDevelopment" :config="stagewiseConfig" />
 </template>
@@ -21,6 +25,7 @@
     const ContentComponent = defineAsyncComponent(
         () => import('./components/layout/ContentComponent.vue')
     );
+    const LazyLoadingDemo = defineAsyncComponent(() => import('./components/LazyLoadingDemo.vue'));
 
     // VARIABLES
     // ##############
@@ -28,6 +33,9 @@
 
     // Vérification du mode développement
     const isDevelopment = import.meta.env.DEV;
+
+    // Afficher la démonstration du lazy loading
+    const showLazyDemo = ref(true);
 
     // Configuration stagewise selon la documentation officielle
     const stagewiseConfig = ref({
