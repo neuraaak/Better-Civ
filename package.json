@@ -66,6 +66,7 @@
         "@stagewise/toolbar": "^0.6.2",
         "@stagewise/toolbar-vue": "^0.6.2",
         "@tailwindcss/postcss": "^4.1.11",
+        "@vueuse/core": "^13.6.0",
         "autoprefixer": "^10.4.21",
         "cssnano": "^7.1.0",
         "pinia": "^3.0.3",

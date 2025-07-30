@@ -10,10 +10,17 @@
     // ##############
     import { ref, watch, computed, onMounted, onBeforeUnmount } from 'vue';
     import { translationStore } from './stores/index';
-    import HeaderComponent from './components/layout/HeaderComponent.vue';
-    import ContentComponent from './components/layout/ContentComponent.vue';
+    import { defineAsyncComponent } from 'vue';
     import { StagewiseToolbar } from '@stagewise/toolbar-vue';
     import VuePlugin from '@stagewise-plugins/vue';
+
+    // Lazy loading des composants lourds
+    const HeaderComponent = defineAsyncComponent(() => 
+        import('./components/layout/HeaderComponent.vue')
+    );
+    const ContentComponent = defineAsyncComponent(() => 
+        import('./components/layout/ContentComponent.vue')
+    );
 
     // VARIABLES
     // ##############
