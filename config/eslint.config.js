@@ -55,6 +55,15 @@ export default [
         },
     },
     {
+        files: ['tests/**/*.{ts,js}'],
+        languageOptions: {
+            globals: {
+                ...globals.node,
+                ...globals.vitest,
+            },
+        },
+    },
+    {
         files: ['**/*.js', '**/*.jsx'],
         languageOptions: {
             ecmaVersion: 2021,
