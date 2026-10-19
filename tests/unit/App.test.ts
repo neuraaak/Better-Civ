@@ -25,12 +25,6 @@ describe('App.vue', () => {
             const content = wrapper.findComponent({ name: 'ContentComponent' });
             expect(content.exists()).toBe(true);
         });
-
-        it('should have stagewise toolbar', () => {
-            const wrapper = mount(App);
-            const toolbar = wrapper.findComponent({ name: 'StagewiseToolbar' });
-            expect(toolbar.exists()).toBe(true);
-        });
     });
 
     describe('Structure', () => {
@@ -38,7 +32,6 @@ describe('App.vue', () => {
             const wrapper = mount(App);
             expect(wrapper.findComponent({ name: 'HeaderComponent' }).exists()).toBe(true);
             expect(wrapper.findComponent({ name: 'ContentComponent' }).exists()).toBe(true);
-            expect(wrapper.findComponent({ name: 'StagewiseToolbar' }).exists()).toBe(true);
         });
 
         it('should pass civilisations data to ContentComponent', () => {

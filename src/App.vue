@@ -4,9 +4,6 @@
 
     <!-- Composant de démonstration du lazy loading -->
     <LazyLoadingDemo v-if="showLazyDemo" />
-
-    <!-- Stagewise Toolbar - Configuration selon la documentation officielle -->
-    <StagewiseToolbar v-if="isDevelopment" :config="stagewiseConfig" />
 </template>
 
 <script setup>
@@ -15,8 +12,6 @@
     import { ref, watch, computed, onMounted, onBeforeUnmount } from 'vue';
     import { translationStore } from './stores/index';
     import { defineAsyncComponent } from 'vue';
-    import { StagewiseToolbar } from '@stagewise/toolbar-vue';
-    import VuePlugin from '@stagewise-plugins/vue';
 
     // Lazy loading des composants lourds
     const HeaderComponent = defineAsyncComponent(
@@ -31,16 +26,8 @@
     // ##############
     const store = translationStore();
 
-    // Vérification du mode développement
-    const isDevelopment = import.meta.env.DEV;
-
     // Afficher la démonstration du lazy loading
     const showLazyDemo = ref(true);
-
-    // Configuration stagewise selon la documentation officielle
-    const stagewiseConfig = ref({
-        plugins: [VuePlugin],
-    });
 
     //
     const civ_data = ref([]);
@@ -101,7 +88,7 @@
     // ##############
     watch(
         () => store.getLanguage,
-        (newLanguage, oldLanguage) => {
+        () => {
             // Calls fetchCivilizations every time the language changes
             fetchCivilizations();
         },
@@ -115,11 +102,6 @@
         document.documentElement.lang = 'fr';
         window.addEventListener('mousemove', movingBackground);
         fetchCivilizations();
-
-        // Debug: Vérifier si stagewise est chargé
-        console.log('Stagewise config:', stagewiseConfig.value);
-        console.log('VuePlugin:', VuePlugin);
-        console.log('StagewiseToolbar component:', StagewiseToolbar);
     });
 
     onBeforeUnmount(() => {

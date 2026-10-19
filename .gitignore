@@ -206,3 +206,6 @@ logs/
 *.backup
 *.old
 *.orig
+
+.senior-review/
+.superpowers/
