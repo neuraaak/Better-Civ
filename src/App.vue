@@ -1,15 +1,19 @@
 <template>
-    <HeaderComponent class="fixed" />
-    <ContentComponent :civilisations="civ_data" />
+    <div class="page">
+        <div class="ambient-glow" aria-hidden="true"></div>
+        <div class="ambient-dots" aria-hidden="true"></div>
 
-    <!-- Composant de démonstration du lazy loading -->
-    <LazyLoadingDemo v-if="showLazyDemo" />
+        <div class="page-inner">
+            <HeaderComponent />
+            <ContentComponent :civilisations="civ_data" />
+        </div>
+    </div>
 </template>
 
 <script setup>
     // IMPORT
     // ##############
-    import { ref, watch, computed, onMounted, onBeforeUnmount } from 'vue';
+    import { ref, watch, computed, onMounted } from 'vue';
     import { translationStore } from './stores/index';
     import { defineAsyncComponent } from 'vue';
 
@@ -20,15 +24,12 @@
     const ContentComponent = defineAsyncComponent(
         () => import('./components/layout/ContentComponent.vue')
     );
-    const LazyLoadingDemo = defineAsyncComponent(() => import('./components/LazyLoadingDemo.vue'));
 
     // VARIABLES
     // ##############
     const store = translationStore();
 
     // Afficher la démonstration du lazy loading
-    const showLazyDemo = ref(true);
-
     //
     const civ_data = ref([]);
     const civ_tiers_and_tags = ref([
@@ -100,28 +101,11 @@
     onMounted(() => {
         document.title = 'Better Civ5';
         document.documentElement.lang = 'fr';
-        window.addEventListener('mousemove', movingBackground);
         fetchCivilizations();
-    });
-
-    onBeforeUnmount(() => {
-        window.removeEventListener('mousemove', movingBackground);
     });
 
     // FUNCTIONS
     // ##############
-    function movingBackground(event) {
-        const { clientX, clientY } = event;
-        const screenWidth = window.innerWidth;
-        const screenHeight = window.innerHeight;
-
-        // Reduces movement to 10% of mouse position and reverses direction
-        const positionX = 50 - (clientX / screenWidth) * 2;
-        const positionY = 50 - (clientY / screenHeight) * 2;
-
-        document.body.style.backgroundPosition = `${positionX}% ${positionY}%`;
-    }
-
     async function fetchCivilizations() {
         try {
             const response = await fetch(fetchUrl.value);
@@ -153,3 +137,53 @@
         });
     }
 </script>
+
+<style scoped>
+    .page {
+        position: relative;
+        min-height: 100vh;
+        overflow-x: clip;
+        color: var(--color-text);
+        background: var(--color-bg);
+        font-family: var(--font-body);
+    }
+    .ambient-glow,
+    .ambient-dots {
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+    }
+    .ambient-glow {
+        background:
+            radial-gradient(
+                900px 520px at 12% -8%,
+                color-mix(in srgb, var(--color-accent) 16%, transparent),
+                transparent 70%
+            ),
+            radial-gradient(
+                700px 500px at 100% 0%,
+                color-mix(in srgb, var(--color-section) 60%, transparent),
+                transparent 70%
+            );
+    }
+    .ambient-dots {
+        background-image: radial-gradient(
+            color-mix(in srgb, var(--color-text) 7%, transparent) 1px,
+            transparent 1px
+        );
+        background-size: 22px 22px;
+        -webkit-mask-image: linear-gradient(to bottom, #000, transparent 640px);
+        mask-image: linear-gradient(to bottom, #000, transparent 640px);
+    }
+    .page-inner {
+        position: relative;
+        max-width: 1480px;
+        margin: 0 auto;
+        padding: 0 40px 80px;
+    }
+    @media (max-width: 800px) {
+        .page-inner {
+            padding-inline: 16px;
+        }
+    }
+</style>

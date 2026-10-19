@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, expect, it, beforeEach } from 'vitest';
 import { mount } from '@vue/test-utils';
 import { createPinia, setActivePinia } from 'pinia';
 import CivTierComponent from '@/components/civilisations/subcomponents/CivTierComponent.vue';
@@ -8,115 +8,48 @@ describe('CivTierComponent', () => {
         setActivePinia(createPinia());
     });
 
-    describe('Template', () => {
-        it('should render tier component', () => {
-            const wrapper = mount(CivTierComponent, {
-                props: { tier_id: 1 },
-            });
+    it('renders the animated prism badge for tier S', () => {
+        const wrapper = mount(CivTierComponent, { props: { tier_id: 0 } });
 
-            expect(wrapper.findComponent({ name: 'Tag' }).exists()).toBe(true);
-        });
-
-        it('should display tier with correct styling', () => {
-            const wrapper = mount(CivTierComponent, {
-                props: { tier_id: 1 },
-            });
-
-            const tierSpan = wrapper.find('span');
-            expect(tierSpan.classes()).toContain('p-tag');
-            expect(tierSpan.classes()).toContain('p-component');
-        });
-
-        it('should have correct container styling', () => {
-            const wrapper = mount(CivTierComponent, {
-                props: { tier_id: 1 },
-            });
-
-            const container = wrapper.find('div');
-            expect(container.classes()).toContain('font-sans');
-            expect(container.classes()).toContain('font-light');
-            expect(container.classes()).toContain('text-xs');
-        });
+        expect(wrapper.find('.tier-badge.tier-s').exists()).toBe(true);
+        expect(wrapper.find('.tier-badge').text()).toBe('S');
     });
 
-    describe('Props', () => {
-        it('should accept tier_id prop', () => {
-            const wrapper = mount(CivTierComponent, {
-                props: { tier_id: 1 },
-            });
+    it.each([
+        [1, 'a', 'A'],
+        [2, 'b', 'B'],
+        [3, 'c', 'C'],
+        [4, 'd', 'D'],
+    ])('renders the %s badge', (tierId, tierClass, letter) => {
+        const wrapper = mount(CivTierComponent, { props: { tier_id: tierId } });
 
-            expect((wrapper.props() as any).tier_id).toBe(1);
-        });
-
-        it('should handle different tier IDs', () => {
-            const wrapper = mount(CivTierComponent, {
-                props: { tier_id: 5 },
-            });
-
-            expect((wrapper.props() as any).tier_id).toBe(5);
-        });
+        expect(wrapper.find(`.tier-badge.tier-${tierClass}`).exists()).toBe(true);
+        expect(wrapper.find('.tier-badge').text()).toBe(letter);
     });
 
-    describe('Store Integration', () => {
-        it('should use store to get tier color', () => {
-            const wrapper = mount(CivTierComponent, {
-                props: { tier_id: 1 },
-            });
+    it('labels the badge with its tier and rank', () => {
+        const wrapper = mount(CivTierComponent, { props: { tier_id: 1 } });
 
-            const tierSpan = wrapper.find('span');
-            expect(tierSpan.attributes('class')).toBeDefined();
-        });
-
-        it('should use store to get tier label', () => {
-            const wrapper = mount(CivTierComponent, {
-                props: { tier_id: 1 },
-            });
-
-            const tierSpan = wrapper.find('span');
-            expect(tierSpan.text()).toBeDefined();
-        });
+        expect(wrapper.find('.tier-badge').attributes('title')).toBe('Tier A · Empire');
     });
 
-    describe('Styling', () => {
-        it('should have correct tier styling classes', () => {
-            const wrapper = mount(CivTierComponent, {
-                props: { tier_id: 1 },
-            });
+    it('sizes the badge and its letter from the design scale', () => {
+        const wrapper = mount(CivTierComponent, { props: { tier_id: 0, size: 58 } });
+        const style = wrapper.find('.tier-badge').attributes('style');
 
-            const tierSpan = wrapper.find('span');
-            expect(tierSpan.classes()).toContain('p-tag');
-            expect(tierSpan.classes()).toContain('p-component');
-        });
-
-        it('should have correct container styling classes', () => {
-            const wrapper = mount(CivTierComponent, {
-                props: { tier_id: 1 },
-            });
-
-            const container = wrapper.find('div');
-            expect(container.classes()).toContain('font-sans');
-            expect(container.classes()).toContain('font-light');
-            expect(container.classes()).toContain('text-xs');
-        });
+        expect(style).toContain('--tier-size: 58px');
+        expect(style).toContain('--tier-font: 24px');
     });
 
-    describe('Edge Cases', () => {
-        it('should handle non-existent tier ID', () => {
-            const wrapper = mount(CivTierComponent, {
-                props: { tier_id: 999 },
-            });
+    it('dims the badge on request', () => {
+        const wrapper = mount(CivTierComponent, { props: { tier_id: 2, dimmed: true } });
 
-            expect((wrapper.props() as any).tier_id).toBe(999);
-            expect(wrapper.find('span').exists()).toBe(true);
-        });
+        expect(wrapper.find('.tier-badge').attributes('style')).toContain('opacity: 0.35');
+    });
 
-        it('should handle zero tier ID', () => {
-            const wrapper = mount(CivTierComponent, {
-                props: { tier_id: 0 },
-            });
+    it('falls back to the D badge for an unknown tier', () => {
+        const wrapper = mount(CivTierComponent, { props: { tier_id: 999 } });
 
-            expect((wrapper.props() as any).tier_id).toBe(0);
-            expect(wrapper.find('span').exists()).toBe(true);
-        });
+        expect(wrapper.find('.tier-badge.tier-d').exists()).toBe(true);
     });
 });

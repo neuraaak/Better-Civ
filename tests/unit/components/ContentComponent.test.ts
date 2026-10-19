@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { mount } from '@vue/test-utils';
 import { createPinia, setActivePinia } from 'pinia';
 import ContentComponent from '@/components/layout/ContentComponent.vue';
+import { translationStore } from '@/stores/index';
 
 describe('ContentComponent', () => {
     const mockCivilizations = [
@@ -14,8 +15,10 @@ describe('ContentComponent', () => {
             tier_id: 2,
             leader: {
                 name: 'Napoleon',
+                subtitle: 'Empereur des Français',
                 icon: '/img/napoleon.png',
-                trait: { effect: 'Gain +2 Culture from each building' },
+                trait: { name: 'Ancien Régime', effect: 'Gain +2 Culture from each building' },
+                historical_info: [{ text: 'Napoléon Bonaparte...' }],
             },
             unique_units: ['Musketeer'],
             unique_buildings: ['Chateau'],
@@ -35,357 +38,209 @@ describe('ContentComponent', () => {
             unique_units: ['Panzer'],
             unique_buildings: ['Hans'],
         },
+        {
+            id: 3,
+            name: 'Égypte',
+            icon: '/img/egypt.png',
+            historical_info: [{ text: 'Le Nil' }],
+            tags_id: [4],
+            tier_id: 2,
+            leader: { name: 'Ramsès II', icon: '/img/ramses.png', trait: { effect: 'Merveilles' } },
+            unique_units: [],
+            unique_buildings: [],
+        },
     ];
+
+    const mountContent = (civilisations = mockCivilizations) =>
+        mount(ContentComponent, { props: { civilisations }, attachTo: document.body });
 
     beforeEach(() => {
         setActivePinia(createPinia());
         vi.clearAllMocks();
+        document.body.innerHTML = '';
     });
 
-    describe('Template', () => {
-        it('should render content component', () => {
-            const wrapper = mount(ContentComponent, {
-                props: { civilisations: mockCivilizations },
-            });
+    describe('Hero and filter bar', () => {
+        it('renders the hero with a roman-numeral count', () => {
+            const wrapper = mountContent();
 
-            expect(wrapper.find('.content').exists()).toBe(true);
+            expect(wrapper.find('.hero h1').text()).toBe('Quelle civilisation jouer ?');
+            expect(wrapper.find('.eyebrow').text()).toContain('Classement · III civilisations');
         });
 
-        it('should render filter components', () => {
-            const wrapper = mount(ContentComponent, {
-                props: { civilisations: mockCivilizations },
-            });
+        it('renders search, category chips, tier chips and the grouping toggle', () => {
+            const wrapper = mountContent();
 
-            const selectInputs = wrapper.findAllComponents({ name: 'SelectInputComponent' });
-            expect(selectInputs).toHaveLength(2);
+            expect(wrapper.find('.search-control input').attributes('placeholder')).toBe(
+                'Rechercher une civilisation'
+            );
+            // "Toutes" + the 7 categories of the store
+            expect(wrapper.findAll('.category-chip')).toHaveLength(8);
+            expect(wrapper.findAll('.tier-chip')).toHaveLength(5);
+            expect(wrapper.findAll('.sort-toggle button')).toHaveLength(2);
+            expect(wrapper.find('.result-count').text()).toBe('3 résultats');
         });
 
-        it('should render search component', () => {
-            const wrapper = mount(ContentComponent, {
-                props: { civilisations: mockCivilizations },
-            });
+        it('no longer renders the legacy select/search widgets', () => {
+            const wrapper = mountContent();
 
-            expect(wrapper.findComponent({ name: 'SearchInputComponent' }).exists()).toBe(true);
+            expect(wrapper.findComponent({ name: 'SelectInputComponent' }).exists()).toBe(false);
+            expect(wrapper.findComponent({ name: 'SearchInputComponent' }).exists()).toBe(false);
         });
 
-        it('should render civilization cards', () => {
-            const wrapper = mount(ContentComponent, {
-                props: { civilisations: mockCivilizations },
-            });
+        it('colours each category dot with its category colour', () => {
+            const wrapper = mountContent();
+            const dots = wrapper.findAll('.category-chip .dot');
 
-            const civCards = wrapper.findAllComponents({ name: 'CivCardComponent' });
-            expect(civCards).toHaveLength(2);
+            expect(dots[0].attributes('style')).toContain('var(--color-neutral-600)');
+            expect(dots[2].attributes('style')).toContain('oklch(0.74 0.11 310)'); // Culture
+        });
+    });
+
+    describe('Filtering', () => {
+        it('filters by category', async () => {
+            const wrapper = mountContent();
+
+            await wrapper.findAll('.category-chip')[5].trigger('click'); // Militaire (tag 4)
+
+            expect((wrapper.vm as any).filteredCivilisations.map((civ: any) => civ.id)).toEqual([
+                2, 3,
+            ]);
         });
 
-        it('should render overlay when selected', () => {
-            const wrapper = mount(ContentComponent, {
-                props: { civilisations: mockCivilizations },
-            });
+        it('filters by tier, dims the other tier chips and toggles back off', async () => {
+            const wrapper = mountContent();
+            const chip = wrapper.findAll('.tier-chip')[1]; // Tier A
 
-            // Initially overlay should be hidden
+            await chip.trigger('click');
+            expect((wrapper.vm as any).filteredCivilisations.map((civ: any) => civ.id)).toEqual([
+                2,
+            ]);
+            expect(
+                wrapper.findAll('.tier-chip')[0].find('.tier-badge').attributes('style')
+            ).toContain('opacity: 0.35');
+
+            await chip.trigger('click');
+            expect((wrapper.vm as any).filteredCivilisations).toHaveLength(3);
+        });
+
+        it('searches on the name, ignoring accents and case', async () => {
+            const wrapper = mountContent();
+
+            await wrapper.find('.search-control input').setValue('egy');
+            expect((wrapper.vm as any).filteredCivilisations.map((civ: any) => civ.id)).toEqual([
+                3,
+            ]);
+
+            await wrapper.find('.search-control input').setValue('production');
+            expect((wrapper.vm as any).filteredCivilisations).toHaveLength(0);
+        });
+
+        it('shows the empty state and resets every filter', async () => {
+            const wrapper = mountContent();
+
+            await wrapper.find('.search-control input').setValue('zzz');
+            expect(wrapper.find('.empty-state').exists()).toBe(true);
+
+            await wrapper.find('.empty-state button').trigger('click');
+            expect((wrapper.vm as any).filteredCivilisations).toHaveLength(3);
+        });
+    });
+
+    describe('Grouping', () => {
+        it('groups by tier with rank, description and roman count', () => {
+            const wrapper = mountContent();
+            const sections = wrapper.findAll('[data-testid="tier-section"]');
+
+            expect(sections).toHaveLength(2);
+            expect(sections[0].find('.tier-rank').text()).toBe('Empire');
+            expect(sections[1].find('.tier-heading p').text()).toBe(
+                'Solides — demandent un peu plus de maîtrise'
+            );
+            expect(sections[1].find('.tier-count').text()).toBe('II');
+            expect(sections[1].find('.meander').exists()).toBe(true);
+        });
+
+        it('sorts alphabetically inside a tier and in A → Z mode', async () => {
+            const wrapper = mountContent();
+            const names = () =>
+                wrapper
+                    .findAllComponents({ name: 'CivCardComponent' })
+                    .map(card => card.props('name'));
+
+            expect(names()).toEqual(['Germany', 'Égypte', 'France']);
+
+            await wrapper.findAll('.sort-toggle button')[1].trigger('click');
+            expect(wrapper.find('.tier-heading').exists()).toBe(false);
+            expect(names()).toEqual(['Égypte', 'France', 'Germany']);
+        });
+    });
+
+    describe('Detail panel', () => {
+        const openCiv = async (wrapper: any, id: number) => {
+            const store = translationStore();
+            store.setSelectedCard(id);
+            store.setSelectedState(true);
+            await wrapper.vm.$nextTick();
+        };
+
+        it('is closed initially', () => {
+            const wrapper = mountContent();
+
             expect(wrapper.find('.content-overlay').classes()).toContain('hidden');
-        });
-    });
-
-    describe('Props', () => {
-        it('should accept civilizations prop', () => {
-            const wrapper = mount(ContentComponent, {
-                props: { civilisations: mockCivilizations },
-            });
-
-            expect((wrapper.props() as any).civilisations).toEqual(mockCivilizations);
+            expect(wrapper.find('.detail-panel').classes()).not.toContain('open');
         });
 
-        it('should handle empty civilizations array', () => {
-            const wrapper = mount(ContentComponent, {
-                props: { civilisations: [] },
-            });
+        it('opens on the selected civilization and highlights its card', async () => {
+            const wrapper = mountContent();
+            await openCiv(wrapper, 1);
 
-            expect((wrapper.props() as any).civilisations).toEqual([]);
-            const civCards = wrapper.findAllComponents({ name: 'CivCardComponent' });
-            expect(civCards).toHaveLength(0);
-        });
-    });
+            expect(wrapper.find('.detail-panel').classes()).toContain('open');
+            const panel = wrapper.findComponent({ name: 'MasterCardComponent' });
+            expect(panel.props('name')).toBe('France');
+            expect(panel.props('civ_trait_name')).toBe('Ancien Régime');
+            expect(panel.props('civ_leader_subtitle')).toBe('Empereur des Français');
+            expect(panel.props('position')).toBe('III / III');
 
-    describe('Computed Properties', () => {
-        it('should filter civilizations by tags', () => {
-            const wrapper = mount(ContentComponent, {
-                props: { civilisations: mockCivilizations },
-            });
-
-            const vm = wrapper.vm as any;
-            expect(vm.filteredCivilisations).toHaveLength(2);
+            const selected = wrapper
+                .findAllComponents({ name: 'CivCardComponent' })
+                .filter(card => card.props('selected'));
+            expect(selected.map(card => card.props('id'))).toEqual([1]);
         });
 
-        it('should filter civilizations by tiers', () => {
-            const wrapper = mount(ContentComponent, {
-                props: { civilisations: mockCivilizations },
-            });
+        it('steps through the visible order with the arrow keys and wraps around', async () => {
+            const wrapper = mountContent();
+            await openCiv(wrapper, 1);
 
-            const vm = wrapper.vm as any;
-            expect(vm.filteredCivilisations).toHaveLength(2);
+            window.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight' }));
+            await wrapper.vm.$nextTick();
+            expect((wrapper.vm as any).selectedCard).toBe(2);
+
+            window.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowLeft' }));
+            await wrapper.vm.$nextTick();
+            expect((wrapper.vm as any).selectedCard).toBe(1);
         });
 
-        it('should filter civilizations by search text', () => {
-            const wrapper = mount(ContentComponent, {
-                props: { civilisations: mockCivilizations },
-            });
+        it('closes on Escape and on backdrop click', async () => {
+            const wrapper = mountContent();
+            await openCiv(wrapper, 1);
 
-            const vm = wrapper.vm as any;
-            expect(vm.filteredCivilisations).toHaveLength(2);
+            window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
+            await wrapper.vm.$nextTick();
+            expect(wrapper.find('.detail-panel').classes()).not.toContain('open');
+
+            await openCiv(wrapper, 1);
+            await wrapper.find('.content-overlay').trigger('click');
+            expect(wrapper.find('.detail-panel').classes()).not.toContain('open');
         });
 
-        it('should compute selected card index', () => {
-            const wrapper = mount(ContentComponent, {
-                props: { civilisations: mockCivilizations },
-            });
+        it('ignores keys when the panel is closed or the list is empty', () => {
+            const wrapper = mountContent([]);
 
-            const vm = wrapper.vm as any;
-            expect(vm.selectedCardIndex).toBe(-1); // No card selected initially
-        });
-    });
-
-    describe('Methods', () => {
-        it('should handle tag selection', () => {
-            const wrapper = mount(ContentComponent, {
-                props: { civilisations: mockCivilizations },
-            });
-
-            const vm = wrapper.vm as any;
-            const mockTags = [{ id: 1, name: 'Culture' }];
-
-            vm.handleCheckedTags(mockTags);
-            expect(vm.selectedTags).toEqual(mockTags);
-        });
-
-        it('should handle tier selection', () => {
-            const wrapper = mount(ContentComponent, {
-                props: { civilisations: mockCivilizations },
-            });
-
-            const vm = wrapper.vm as any;
-            const mockTiers = [{ id: 1, name: 'S Tier' }];
-
-            vm.handleCheckedTiers(mockTiers);
-            expect(vm.selectedTiers).toEqual(mockTiers);
-        });
-
-        it('should handle search text', () => {
-            const wrapper = mount(ContentComponent, {
-                props: { civilisations: mockCivilizations },
-            });
-
-            const vm = wrapper.vm as any;
-            const searchText = 'France';
-
-            vm.handleSearchedText(searchText);
-            expect(vm.searchedText).toBe(searchText);
-        });
-
-        it('should close overlay', () => {
-            const wrapper = mount(ContentComponent, {
-                props: { civilisations: mockCivilizations },
-            });
-
-            const vm = wrapper.vm as any;
-            vm.closeOverlay();
-
-            // Verify that the store method was called (indirectly)
-            expect(vm.selectedState).toBe(false);
-        });
-    });
-
-    describe('User Interactions', () => {
-        it('should handle keyboard navigation', () => {
-            const wrapper = mount(ContentComponent, {
-                props: { civilisations: mockCivilizations },
-            });
-
-            const vm = wrapper.vm as any;
-
-            // Set a selected card
-            vm.selectedCard = 1;
-
-            // Test right arrow navigation
-            const rightEvent = new KeyboardEvent('keydown', { key: 'ArrowRight' });
-            vm.navigateCards(rightEvent);
-
-            // Test left arrow navigation
-            const leftEvent = new KeyboardEvent('keydown', { key: 'ArrowLeft' });
-            vm.navigateCards(leftEvent);
-
-            expect(vm.selectedCard).toBeDefined();
-        });
-
-        it('should handle overlay click', async () => {
-            const wrapper = mount(ContentComponent, {
-                props: { civilisations: mockCivilizations },
-            });
-
-            const overlay = wrapper.find('.content-overlay');
-            await overlay.trigger('click');
-
-            // Verify overlay click was handled
-            expect(overlay.exists()).toBe(true);
-        });
-    });
-
-    describe('Styling', () => {
-        it('should have correct content styling', () => {
-            const wrapper = mount(ContentComponent, {
-                props: { civilisations: mockCivilizations },
-            });
-
-            const content = wrapper.find('.content');
-            expect(content.classes()).toContain('content');
-            expect(content.classes()).toContain('relative');
-            expect(content.classes()).toContain('flex');
-            expect(content.classes()).toContain('flex-col');
-            expect(content.classes()).toContain('align-top');
-            expect(content.classes()).toContain('items-start');
-        });
-
-        it('should have correct overlay styling', () => {
-            const wrapper = mount(ContentComponent, {
-                props: { civilisations: mockCivilizations },
-            });
-
-            const overlay = wrapper.find('.content-overlay');
-            expect(overlay.classes()).toContain('content-overlay');
-            expect(overlay.classes()).toContain('w-full');
-            expect(overlay.classes()).toContain('fixed');
-            expect(overlay.classes()).toContain('flex');
-            expect(overlay.classes()).toContain('flex-row');
-            expect(overlay.classes()).toContain('justify-center');
-            expect(overlay.classes()).toContain('items-center');
-            expect(overlay.classes()).toContain('bg-zinc-950/70');
-            expect(overlay.classes()).toContain('backdrop-blur-md');
-            expect(overlay.classes()).toContain('backdrop-brightness-80');
-            expect(overlay.classes()).toContain('shadow-xl');
-        });
-
-        it('should have correct grid container styling', () => {
-            const wrapper = mount(ContentComponent, {
-                props: { civilisations: mockCivilizations },
-            });
-
-            const gridContainer = wrapper.find('.grid-container');
-            expect(gridContainer.classes()).toContain('grid-container');
-            expect(gridContainer.classes()).toContain('mt-8');
-            expect(gridContainer.classes()).toContain('mb-24');
-        });
-
-        it('should have correct fixed content styling', () => {
-            const wrapper = mount(ContentComponent, {
-                props: { civilisations: mockCivilizations },
-            });
-
-            const fixedContent = wrapper.find('.fixedcontent');
-            expect(fixedContent.classes()).toContain('fixedcontent');
-            expect(fixedContent.classes()).toContain('flex');
-            expect(fixedContent.classes()).toContain('flex-row');
-            expect(fixedContent.classes()).toContain('align-top');
-            expect(fixedContent.classes()).toContain('gap-8');
-            expect(fixedContent.classes()).toContain('mt-16');
-        });
-    });
-
-    describe('Component Integration', () => {
-        it('should integrate with SelectInputComponent for tags', () => {
-            const wrapper = mount(ContentComponent, {
-                props: { civilisations: mockCivilizations },
-            });
-
-            const tagSelect = wrapper.findAllComponents({ name: 'SelectInputComponent' })[0];
-            expect(tagSelect.exists()).toBe(true);
-            expect(tagSelect.props('multiple')).toBeDefined();
-            expect(tagSelect.props('options')).toBeDefined();
-        });
-
-        it('should integrate with SelectInputComponent for tiers', () => {
-            const wrapper = mount(ContentComponent, {
-                props: { civilisations: mockCivilizations },
-            });
-
-            const tierSelect = wrapper.findAllComponents({ name: 'SelectInputComponent' })[1];
-            expect(tierSelect.exists()).toBe(true);
-            expect(tierSelect.props('multiple')).toBeDefined();
-            expect(tierSelect.props('options')).toBeDefined();
-        });
-
-        it('should integrate with SearchInputComponent', () => {
-            const wrapper = mount(ContentComponent, {
-                props: { civilisations: mockCivilizations },
-            });
-
-            const searchInput = wrapper.findComponent({ name: 'SearchInputComponent' });
-            expect(searchInput.exists()).toBe(true);
-            expect(searchInput.props('civilizations')).toBeDefined();
-        });
-
-        it('should integrate with CivCardComponent', () => {
-            const wrapper = mount(ContentComponent, {
-                props: { civilisations: mockCivilizations },
-            });
-
-            const civCards = wrapper.findAllComponents({ name: 'CivCardComponent' });
-            expect(civCards).toHaveLength(2);
-
-            // Check that props are passed correctly
-            expect(civCards[0].props('id')).toBe(1);
-            expect(civCards[0].props('name')).toBe('France');
-        });
-    });
-
-    describe('Edge Cases', () => {
-        it('should handle undefined civilization properties', () => {
-            const incompleteCivilizations = [
-                {
-                    id: 1,
-                    name: 'France',
-                    historical_info: [],
-                    tags_id: [],
-                    tier_id: 1,
-                    leader: {
-                        name: 'Test',
-                        icon: '/test.png',
-                        trait: { effect: 'Test effect' },
-                    },
-                    unique_units: [],
-                    unique_buildings: [],
-                },
-            ];
-
-            const wrapper = mount(ContentComponent, {
-                props: { civilisations: incompleteCivilizations },
-            });
-
-            expect(wrapper.findComponent({ name: 'CivCardComponent' }).exists()).toBe(true);
-        });
-
-        it('should handle empty search results', () => {
-            const wrapper = mount(ContentComponent, {
-                props: { civilisations: mockCivilizations },
-            });
-
-            const vm = wrapper.vm as any;
-            vm.handleSearchedText('NonExistentCivilization');
-
-            expect(vm.filteredCivilisations).toHaveLength(0);
-        });
-
-        it('should handle navigation with no cards', () => {
-            const wrapper = mount(ContentComponent, {
-                props: { civilisations: [] },
-            });
-
-            const vm = wrapper.vm as any;
-            const event = new KeyboardEvent('keydown', { key: 'ArrowRight' });
-
-            // Should not throw error when no cards are available
             expect(() => {
-                vm.navigateCards(event);
+                window.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight' }));
             }).not.toThrow();
+            expect((wrapper.vm as any).selectedCard).toBe(null);
         });
     });
 });

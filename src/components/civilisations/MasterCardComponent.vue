@@ -1,221 +1,156 @@
 <template>
-    <div class="h-full rounded-xl">
-        <div class="content w-full h-full rounded-xl overflow-hidden">
-            <div
-                class="back absolute flex justify-center items-center w-full h-full bg-zinc-800"
-                style="background-color: rgb(39 39 42) !important"
-            >
-                <div
-                    class="back-content absolute flex justify-center items-center bg-zinc-900 rounded-xl"
-                >
-                    <Card
-                        class="mastercard bg-zinc-950 rounded-xl hover:border-zinc-800 flex flex-col h-full justify-items-stretch"
-                        style="
-                            width: 100%;
-                            overflow: hidden;
-                            background-color: rgb(9 9 11) !important;
-                            border-radius: 0.75rem !important;
-                        "
-                        @click=""
+    <article class="civilization-panel">
+        <div class="panel-accent" :style="{ background: badge.line }"></div>
+
+        <div class="panel-scroll">
+            <header class="panel-hero">
+                <img class="hero-visual" alt="" :src="civBackground" />
+                <div class="hero-hatch"></div>
+                <div class="hero-gradient"></div>
+
+                <div class="panel-controls">
+                    <button
+                        type="button"
+                        title="Précédente (←)"
+                        aria-label="Civilisation précédente"
+                        @click="$emit('previous')"
                     >
-                        <template #header>
-                            <img
-                                :src="civBackground"
-                                alt="user header"
-                                class="object-cover object-top w-full h-[220px]"
-                                style="border-radius: 0.75rem 0.75rem 0 0"
-                            />
-                        </template>
-
-                        <template #title>
-                            <div class="flex flex-row items-baseline gap-0 px-4 pb-1 mt-1">
-                                <div class="flex h-full">
-                                    <img
-                                        :src="civ_icon"
-                                        class="object-contain object-bottom h-[36px] w-auto translate-y-1"
-                                        alt="Icon of the civilization"
-                                    />
-                                </div>
-                                <h1
-                                    class="shrink font-mono font-bold tracking-tighter pl-3"
-                                    :class="sizeClass"
-                                >
-                                    {{ name?.split('|')[0] }}
-                                </h1>
-                                <div class="grow shrink-0 -translate-y-1 pl-4">
-                                    <CivTierComponent :key="tier_id" :tier_id="tier_id" class="">
-                                    </CivTierComponent>
-                                </div>
-                            </div>
-                        </template>
-
-                        <template #subtitle>
-                            <!-- Description -->
-                            <div id="desc">
-                                <h3 class="font-mono font-bold text-md px-4">
-                                    {{ descriptionLabel }}
-                                </h3>
-                                <p
-                                    class="font-sans italic font-light text-sm leading-5 px-4 max-h-16"
-                                    style="overflow-y: scroll"
-                                >
-                                    {{ desc }}
-                                </p>
-                            </div>
-                        </template>
-
-                        <template #content>
-                            <div class="overflow-y-auto">
-                                <!-- Categories -->
-                                <div
-                                    id="category"
-                                    class="bg-zinc-900 rounded-md mt-4 mx-4 px-2 py-1"
-                                    style="background-color: rgb(24 24 27) !important"
-                                >
-                                    <div class="flex flex-row flex-wrap gap-x-1 mt-2 mb-2">
-                                        <CivTagComponent
-                                            v-for="tag_id in tags_id"
-                                            :key="tag_id"
-                                            :tag_id="tag_id"
-                                        >
-                                        </CivTagComponent>
-                                    </div>
-                                </div>
-
-                                <!-- Leader -->
-                                <div
-                                    id="leader"
-                                    class="bg-zinc-900 rounded-md mt-3 mx-4 px-2 py-1"
-                                    style="background-color: rgb(24 24 27) !important"
-                                >
-                                    <!-- <h3 class="font-mono font-bold text-md">{{ civ_leader }}</h3> -->
-                                    <div class="flex flex-row gap-x-1">
-                                        <div
-                                            v-if="civ_leader_icon !== undefined"
-                                            class="flex h-full shrink-0 w-16"
-                                        >
-                                            <img
-                                                :src="civ_leader_icon"
-                                                class="object-contain object-bottom max-h-full w-full translate-y-1"
-                                                alt="Icon of the civilization"
-                                            />
-                                        </div>
-                                        <div
-                                            class="flex flex-col flex-grow shrink flex-nowrap gap-x-1 mb-2"
-                                        >
-                                            <h2 class="font-mono font-bold text-2xl pl-1 pt-1">
-                                                {{ civ_leader?.split('|')[0] }}
-                                            </h2>
-                                            <p
-                                                v-html="civLeaderEffectWithIcons"
-                                                class="font-sans font-light text-sm pl-1 -translate-y-0.5"
-                                            ></p>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!-- Unique items -->
-                                <div class="flex flex-row gap-x-3">
-                                    <!-- Unique unit -->
-                                    <div
-                                        class="flex flex-col bg-zinc-900 rounded-md w-1/2 mt-3 ml-4 px-2 py-1"
-                                        style="background-color: rgb(24 24 27) !important"
-                                    >
-                                        <h3 class="font-mono font-bold text-sm text-left ml-1 mt-1">
-                                            {{ unitsLabel }}
-                                        </h3>
-                                        <div v-for="(unit, index) in unitData" :key="unit.name">
-                                            <div class="flex flex-row gap-x-1 h-8">
-                                                <div class="flex h-full shrink-0 w-6">
-                                                    <img
-                                                        v-if="unit.icon !== undefined"
-                                                        :src="unit.icon"
-                                                        class="object-contain object-center h-full w-full"
-                                                        :alt="unit.name.split('|')[0]"
-                                                    />
-                                                </div>
-                                                <div
-                                                    class="flex flex-col flex-grow shrink flex-nowrap gap-x-1 mb-2"
-                                                >
-                                                    <h3
-                                                        v-if="unit.name !== undefined"
-                                                        class="font-sans font-normal text-sm my-1 pl-1 pt-1"
-                                                    >
-                                                        {{ unit.name.split('|')[0] }}
-                                                    </h3>
-                                                </div>
-                                            </div>
-                                            <div
-                                                v-if="index != unitData.length - 1"
-                                                class="bg-zinc-800 h-[1px] mt-1"
-                                            ></div>
-                                        </div>
-                                    </div>
-
-                                    <!-- Unique building -->
-                                    <div
-                                        class="flex flex-col bg-zinc-900 rounded-md w-1/2 mt-3 mr-4 px-2 py-1"
-                                        style="background-color: rgb(24 24 27) !important"
-                                    >
-                                        <h3 class="font-mono font-bold text-sm text-left ml-1 mt-1">
-                                            {{ buildingsLabel }}
-                                        </h3>
-                                        <div v-for="(building, index) in buildingData">
-                                            <div class="flex flex-row gap-x-1 h-8">
-                                                <div class="flex h-full shrink-0 w-6">
-                                                    <img
-                                                        v-if="building.name !== undefined"
-                                                        :src="building.icon"
-                                                        class="object-contain object-center h-full w-full"
-                                                        :alt="building.name.split('|')[0]"
-                                                    />
-                                                </div>
-                                                <div
-                                                    class="flex flex-col flex-grow shrink flex-nowrap gap-x-1 mb-2"
-                                                >
-                                                    <h3
-                                                        v-if="building.name !== undefined"
-                                                        class="font-sans font-normal text-sm my-1 pl-1 pt-1"
-                                                    >
-                                                        {{ building.name.split('|')[0] }}
-                                                    </h3>
-                                                </div>
-                                            </div>
-                                            <div
-                                                v-if="index != buildingData.length - 1"
-                                                class="bg-zinc-800 h-[1px] mt-1"
-                                            ></div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </template>
-
-                        <template #footer>
-                            <div class="flex flex-row flex-wrap gap-x-2 pl-3 mt-1"></div>
-                        </template>
-                    </Card>
+                        <i class="ph ph-caret-left" aria-hidden="true"></i>
+                    </button>
+                    <button
+                        type="button"
+                        title="Suivante (→)"
+                        aria-label="Civilisation suivante"
+                        @click="$emit('next')"
+                    >
+                        <i class="ph ph-caret-right" aria-hidden="true"></i>
+                    </button>
+                    <span v-if="position" class="panel-position">{{ position }}</span>
+                    <button
+                        class="panel-close"
+                        type="button"
+                        title="Fermer (Échap)"
+                        aria-label="Fermer le panneau"
+                        @click="$emit('close')"
+                    >
+                        <i class="ph ph-x" aria-hidden="true"></i>
+                    </button>
                 </div>
+
+                <div class="panel-identity">
+                    <div class="civilization-icon">
+                        <img v-if="civ_icon" :src="civ_icon" alt="" />
+                    </div>
+                    <h1 class="panel-name">{{ displayName }}</h1>
+                    <div class="tier-summary">
+                        <div class="tier-meta">
+                            <span>TIER {{ badge.letter }}</span>
+                            <strong :style="{ color: badge.label }">{{ badge.rank }}</strong>
+                        </div>
+                        <CivTierComponent :tier_id="tier_id" :size="52" />
+                    </div>
+                </div>
+            </header>
+
+            <div class="meander panel-rule" aria-hidden="true"></div>
+
+            <div class="panel-content">
+                <div v-if="tags_id?.length" class="panel-tags">
+                    <CivTagComponent
+                        v-for="tag_id in tags_id"
+                        :key="tag_id"
+                        :tag_id="tag_id"
+                        variant="panel"
+                    />
+                </div>
+
+                <section v-if="civ_leader_effect" class="panel-section">
+                    <span class="section-label section-label-accent">
+                        <i class="ph ph-star-four" aria-hidden="true"></i>Bonus de civilisation
+                    </span>
+                    <div class="bonus-block">
+                        <strong v-if="civ_trait_name">{{ cleanName(civ_trait_name) }}</strong>
+                        <p>{{ civ_leader_effect }}</p>
+                    </div>
+                </section>
+
+                <section v-if="civ_leader" class="panel-section">
+                    <span class="section-label">
+                        <i class="ph ph-crown-simple" aria-hidden="true"></i>Dirigeant
+                    </span>
+                    <div class="leader-block">
+                        <div class="leader-portrait">
+                            <img v-if="civ_leader_icon" :src="civ_leader_icon" alt="" />
+                        </div>
+                        <div class="leader-text">
+                            <h2 class="leader-name">{{ cleanName(civ_leader) }}</h2>
+                            <span v-if="civ_leader_subtitle" class="leader-subtitle">{{
+                                civ_leader_subtitle
+                            }}</span>
+                            <p v-if="civ_leader_text">{{ civ_leader_text }}</p>
+                        </div>
+                    </div>
+                </section>
+
+                <div v-if="units.length || buildings.length" class="unique-columns">
+                    <section class="panel-section">
+                        <span class="section-label">
+                            <i class="ph ph-sword" aria-hidden="true"></i>Unités uniques
+                        </span>
+                        <div v-for="item in units" :key="item.name" class="unique-item">
+                            <span class="unique-icon">
+                                <img v-if="item.icon" :src="item.icon" alt="" />
+                            </span>
+                            {{ item.name }}
+                        </div>
+                    </section>
+                    <section class="panel-section">
+                        <span class="section-label">
+                            <i class="ph ph-castle-turret" aria-hidden="true"></i>Bâtiments uniques
+                        </span>
+                        <div v-for="item in buildings" :key="item.name" class="unique-item">
+                            <span class="unique-icon">
+                                <img v-if="item.icon" :src="item.icon" alt="" />
+                            </span>
+                            {{ item.name }}
+                        </div>
+                    </section>
+                </div>
+
+                <section v-if="desc" class="panel-section">
+                    <span class="section-label">
+                        <i class="ph ph-book-open-text" aria-hidden="true"></i>Histoire
+                    </span>
+                    <p class="civilization-description">{{ desc }}</p>
+                </section>
             </div>
         </div>
-    </div>
+
+        <footer class="panel-navigation">
+            <button class="panel-previous" type="button" @click="$emit('previous')">
+                <i class="ph ph-arrow-left" aria-hidden="true"></i>
+                <span class="nav-text">
+                    <small>Précédente</small>
+                    <strong>{{ cleanName(previous_name) || displayName }}</strong>
+                </span>
+            </button>
+            <button class="panel-next" type="button" @click="$emit('next')">
+                <span class="nav-text">
+                    <small>Suivante</small>
+                    <strong>{{ cleanName(next_name) || displayName }}</strong>
+                </span>
+                <i class="ph ph-arrow-right" aria-hidden="true"></i>
+            </button>
+        </footer>
+    </article>
 </template>
 
 <script setup>
-    /**
-     * Master Card Component - Detailed civilization information display
-     * Shows comprehensive civilization data including units, buildings, and leader information
-     */
-    // IMPORT
-    // ##############
-    import { ref, watch, computed, onMounted, onUnmounted } from 'vue';
-    import { translationStore } from '../../stores/index';
-    import Card from 'primevue/card';
-    import CivTierComponent from './subcomponents/CivTierComponent.vue'; // cspell:ignore subcomponents
-    import CivTagComponent from './subcomponents/CivTagComponent.vue'; // cspell:ignore subcomponents
+    import { computed } from 'vue';
+    import CivTagComponent from './subcomponents/CivTagComponent.vue';
+    import CivTierComponent from './subcomponents/CivTierComponent.vue';
+    import { tierBadge } from './tierDesign';
 
-    // VARIABLES
-    // ##############
     const props = defineProps({
         id: Number,
         name: String,
@@ -223,251 +158,421 @@
         tags_id: Array,
         tier_id: Number,
         civ_icon: String,
+        civ_trait_name: String,
         civ_leader: String,
         civ_leader_icon: String,
+        civ_leader_subtitle: String,
+        civ_leader_text: String,
         civ_leader_effect: String,
         civ_units: Array,
         civ_building: Array,
+        position: String,
+        previous_name: String,
+        next_name: String,
     });
 
-    const store = translationStore();
+    defineEmits(['close', 'previous', 'next']);
 
-    // Component data
-    const unitData = ref([]);
-    const buildingData = ref([]);
-    const descriptionLabel = ref('');
-    const unitsLabel = ref('');
-    const buildingsLabel = ref('');
-    const keywordIcons = ref([]);
-    const sizeClass = ref('');
+    const badge = computed(() => tierBadge(props.tier_id));
+    const displayName = computed(() => cleanName(props.name));
+    const civBackground = computed(() => '/img/card-cover2.jpg');
+    const units = computed(() => (props.civ_units || []).map(normalizeItem));
+    const buildings = computed(() => (props.civ_building || []).map(normalizeItem));
 
-    // Update translated labels based on current language
-    const updateLabels = () => {
-        descriptionLabel.value = store.getTranslation('description');
-        unitsLabel.value = store.getTranslation('unique_units');
-        buildingsLabel.value = store.getTranslation('unique_buildings');
-    };
-
-    // Set font size based on language (smaller for CJK languages)
-    const sizeLabelUnicode = () => {
-        sizeClass.value = ['jp', 'kr', 'zh'].includes(store.lang)
-            ? 'text-[2.5rem] leading-[3.75rem] translate-y-0.5'
-            : 'text-[2.75rem] leading-[3.5rem]';
-    };
-
-    // Initialize keyword icons from store
-    const buildKeywordIcons = () => {
-        keywordIcons.value = store.getIconKeywordsDict;
-    };
-
-    // COMPUTED
-    const civBackground = computed(() => {
-        return `/img/card-cover2.jpg`;
-    });
-
-    const civLeaderEffectWithIcons = computed(() => {
-        let text = props.civ_leader_effect?.replace(/\[.*?\]/g, '').trim();
-
-        keywordIcons.value.forEach(({ text: keyword, icon }) => {
-            const iconPath = icon;
-            let regex = null;
-            if (['ru', 'jp', 'kr', 'zh'].includes(store.lang)) {
-                regex = new RegExp(`${keyword}`, 'ui');
-            } else {
-                regex = new RegExp(`\\b${keyword}\\b`, 'gi');
-            }
-
-            if (text !== undefined) {
-                text = text.replace(
-                    regex,
-                    `<span class="keyword-icon translate-y-[0.2rem]" style="display: inline-flex; align-items: center; height: 20px;"><img src="${iconPath}" alt="${keyword}" style="display: inline; height: 16px; vertical-align: middle;">${keyword}</span>`
-                );
-            }
-        });
-
-        return text;
-    });
-
-    // WATCHER
-    // ##############
-    watch(
-        () => store.getLanguage,
-        () => {
-            buildKeywordIcons();
-        },
-        { immediate: false }
-    );
-
-    watch(
-        () => store.getLanguage,
-        () => {
-            updateLabels();
-            sizeLabelUnicode();
-            // Call fetchUnitsBuildings whenever language changes
-            fetchUnitsBuildings();
-        },
-        { immediate: true }
-    ); // { immediate: true } ensures that fetchUnitsBuildings is called on component mount
-
-    // HOOKS
-    // ##############
-    onMounted(() => {
-        fetchUnitsBuildings();
-        buildKeywordIcons();
-
-        const handleMouseMove = e => {
-            for (const card of document.getElementsByClassName('mastercard')) {
-                const rect = card.getBoundingClientRect(),
-                    x = e.clientX - rect.left,
-                    y = e.clientY - rect.top;
-                card.style.setProperty('--mouse-x', `${x}px`);
-                card.style.setProperty('--mouse-y', `${y}px`);
-            }
-        };
-
-        document.addEventListener('mousemove', handleMouseMove);
-
-        // Cleanup on component destruction
-        onUnmounted(() => {
-            document.removeEventListener('mousemove', handleMouseMove);
-        });
-    });
-
-    // FUNCTIONS
-    // ##############
-    async function fetchUnitsBuildings() {
-        // Load unit data
-        const units = props.civ_units || []; // Ensure array exists
-        const unitFetches = units.map(async unit => {
-            try {
-                if (!unit.url) {
-                    return { ...unit, icon: undefined };
-                }
-                const response = await fetch(unit.url.replace('/en/', `/${store.getLanguage}/`));
-                if (!response.ok) throw new Error('Network response was not ok');
-                const data = await response.json();
-                return { ...unit, icon: data.icon }; // Keep name and add icon
-            } catch (error) {
-                console.error('Error fetching unit data:', error);
-                return { ...unit, icon: undefined }; // Handle error by keeping unit name
-            }
-        });
-
-        // Load building data
-        const buildings = props.civ_building || []; // Ensure array exists
-        const buildingFetches = buildings.map(async building => {
-            try {
-                if (!building.url) {
-                    return { ...building, icon: undefined };
-                }
-                const response = await fetch(
-                    building.url.replace('/en/', `/${store.getLanguage}/`)
-                );
-                if (!response.ok) throw new Error('Network response was not ok');
-                const data = await response.json();
-                return { ...building, icon: data.icon }; // Keep name and add icon
-            } catch (error) {
-                console.error('Error fetching building data:', error);
-                return { ...building, icon: undefined }; // Handle error by keeping building name
-            }
-        });
-
-        // Resolve all promises and store results
-        unitData.value = await Promise.all(unitFetches);
-        buildingData.value = await Promise.all(buildingFetches);
+    /** API names carry singular|plural forms ("Minuteman|Minutemen"). */
+    function cleanName(value) {
+        return value?.split('|')[0] ?? '';
     }
-
-    function getTranslation(key) {
-        const item = translations.find(translation => translation.key === key);
-        const translationObj = item.translations.find(t => t.lang === store.lang);
-        return translationObj ? translationObj.text : key; // Return default key if no translation found
+    function normalizeItem(item) {
+        if (typeof item === 'string') return { name: cleanName(item), icon: '' };
+        return { name: cleanName(item?.name), icon: item?.icon || '' };
     }
 </script>
 
 <style scoped>
-    /* Card content with 3D transform support */
-    .content {
-        transform-style: preserve-3d;
-        transition: transform 300ms;
-    }
-
-    /* Animated background gradient */
-    .back::before {
-        position: absolute;
-        content: ' ';
-        display: block;
-        width: 120%;
-        height: 120%;
-        background-image: linear-gradient(
-            to right,
-            rgb(39 39 42) 0%,
-            rgb(82 82 91) 7%,
-            rgb(113 113 122) 25%,
-            rgb(82 82 91) 38%,
-            rgb(24 24 27) 50%,
-            rgb(82 82 91) 66%,
-            rgb(113 113 122) 75%,
-            rgb(82 82 91) 92%,
-            rgb(39 39 42) 100%
-        );
-        animation: rotation_481 24000ms infinite cubic-bezier(0.172, 0.5, 0.662, 1);
-        box-sizing: content-box !important;
-    }
-
-    /* Background content with padding */
-    .back-content {
-        width: calc(100% - 8px);
-        height: calc(100% - 8px);
-    }
-
-    /* Background rotation animation */
-    @keyframes rotation_481 {
-        0% {
-            transform: rotateZ(0deg);
-        }
-
-        100% {
-            transform: rotateZ(360deg);
-        }
-    }
-
-    /* Master card hover effects */
-    .mastercard:hover::before {
-        opacity: 1;
-    }
-
-    /* Master card pseudo-elements for mouse tracking effects */
-    .mastercard::before,
-    .mastercard::after {
-        pointer-events: none;
-        border-radius: inherit;
-        content: '';
+    .civilization-panel {
+        position: relative;
+        display: flex;
+        flex-direction: column;
         height: 100%;
-        left: 0px;
-        opacity: 0;
+        color: var(--color-text);
+    }
+    .panel-accent {
         position: absolute;
-        top: 0px;
-        transition: opacity 500ms;
+        z-index: 2;
+        top: 0;
+        right: 0;
+        left: 0;
+        height: 2px;
+    }
+    .panel-scroll {
+        flex: 1;
+        min-height: 0;
+        overflow: auto;
+    }
+
+    /* — hero — */
+    .panel-hero {
+        position: relative;
+        height: 240px;
+        background-color: var(--color-neutral-900);
+    }
+    .hero-visual,
+    .hero-hatch,
+    .hero-gradient {
+        position: absolute;
+        pointer-events: none;
+    }
+    .hero-visual {
+        inset: 0;
         width: 100%;
+        height: 100%;
+        object-fit: cover;
+        opacity: 0.56;
+        filter: saturate(0.7) contrast(1.05);
+    }
+    .hero-hatch {
+        inset: 0;
+        background: repeating-linear-gradient(
+            135deg,
+            color-mix(in srgb, var(--color-text) 4%, transparent) 0 8px,
+            transparent 8px 16px
+        );
+    }
+    .hero-gradient {
+        inset: auto 0 0 0;
+        height: 140px;
+        background: linear-gradient(to bottom, transparent, var(--color-surface));
+    }
+    .panel-controls {
+        position: absolute;
+        top: 12px;
+        right: 12px;
+        left: 12px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+    .panel-controls button {
+        display: flex;
+        width: 34px;
+        height: 34px;
+        align-items: center;
+        justify-content: center;
+        padding: 0;
+        border: 0;
+        border-radius: var(--radius-md);
+        color: var(--color-neutral-300);
+        background: color-mix(in srgb, var(--color-bg) 70%, transparent);
+        box-shadow: var(--shadow-sm);
+        font-size: 15px;
+        cursor: pointer;
+    }
+    .panel-controls button:hover {
+        color: var(--color-accent-300);
+        box-shadow: 0 0 0 1px var(--color-accent);
+    }
+    .panel-controls .panel-close {
+        margin-left: auto;
+    }
+    .panel-controls .panel-close:hover {
+        color: var(--color-text);
+        box-shadow: var(--shadow-md);
+    }
+    .panel-position {
+        margin-left: 6px;
+        padding: 4px 8px;
+        border-radius: 6px;
+        color: var(--color-neutral-400);
+        background: color-mix(in srgb, var(--color-bg) 70%, transparent);
+        font: 500 11px var(--font-mono);
+    }
+    .panel-identity {
+        position: absolute;
+        right: 24px;
+        bottom: 4px;
+        left: 24px;
+        display: flex;
+        align-items: flex-end;
+        gap: 14px;
+    }
+    .civilization-icon {
+        display: grid;
+        width: 52px;
+        height: 52px;
+        flex: none;
+        place-items: center;
+        overflow: hidden;
+        border-radius: 50%;
+        background: var(--color-bg);
+        box-shadow: 0 0 0 1px var(--color-neutral-700);
+    }
+    .civilization-icon img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+    .panel-name {
+        flex: 1;
+        min-width: 0;
+        margin: 0;
+        font-size: 34px;
+        font-weight: 500;
+        letter-spacing: -0.025em;
+        line-height: 1.05;
+        overflow-wrap: anywhere;
+    }
+    .tier-summary {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 2px;
+    }
+    .tier-meta {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 2px;
+    }
+    .tier-meta span {
+        color: var(--color-neutral-500);
+        font: 500 10px var(--font-mono);
+        letter-spacing: 0.14em;
+    }
+    .tier-meta strong {
+        font: 500 11px var(--font-mono);
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+    }
+    .panel-rule {
+        margin: 10px 24px 0;
+        opacity: 0.6;
     }
 
-    /* Primary mouse tracking effect */
-    .mastercard::before {
-        background: radial-gradient(
-            800px circle at var(--mouse-x) var(--mouse-y),
-            rgba(255, 255, 255, 0.06),
-            transparent 40%
+    /* — body — */
+    .panel-content {
+        display: flex;
+        flex-direction: column;
+        gap: 24px;
+        padding: 18px 24px 28px;
+    }
+    .panel-tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+    }
+    .panel-section {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        min-width: 0;
+    }
+    .section-label {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        color: var(--color-neutral-500);
+        font: 500 11px var(--font-mono);
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+    }
+    .section-label .ph {
+        font-size: 13px;
+    }
+    .section-label-accent {
+        color: var(--color-accent-400);
+    }
+    .bonus-block {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        padding: 14px 16px;
+        border-radius: var(--radius-md);
+        background: linear-gradient(
+            135deg,
+            var(--color-accent-900),
+            color-mix(in srgb, var(--color-accent-900) 40%, transparent)
         );
-        z-index: 3;
+        box-shadow: inset 0 0 0 1px var(--color-accent-800);
+    }
+    .bonus-block strong {
+        color: var(--color-accent-200);
+        font-size: 15px;
+        font-weight: 500;
+    }
+    .bonus-block p {
+        margin: 0;
+        color: var(--color-neutral-200);
+        font-size: 14px;
+        line-height: 1.55;
+        text-wrap: pretty;
+    }
+    .leader-block {
+        display: flex;
+        align-items: flex-start;
+        gap: 14px;
+        padding: 14px;
+        border-radius: var(--radius-md);
+        box-shadow: var(--shadow-sm);
+    }
+    .leader-portrait {
+        width: 56px;
+        height: 56px;
+        flex: none;
+        overflow: hidden;
+        border-radius: 50%;
+        background-color: var(--color-neutral-900);
+        background-image: repeating-linear-gradient(
+            135deg,
+            color-mix(in srgb, var(--color-text) 6%, transparent) 0 4px,
+            transparent 4px 8px
+        );
+        box-shadow:
+            0 0 0 1.5px var(--color-accent),
+            0 0 18px color-mix(in srgb, var(--color-accent) 30%, transparent);
+    }
+    .leader-portrait img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+    .leader-text {
+        display: flex;
+        flex-direction: column;
+        gap: 3px;
+        min-width: 0;
+    }
+    .leader-name {
+        margin: 0;
+        font-size: 17px;
+        font-weight: 500;
+        line-height: 1.3;
+        letter-spacing: -0.01em;
+    }
+    .leader-subtitle {
+        color: var(--color-accent-300);
+        font-size: 12px;
+    }
+    .leader-text p {
+        display: -webkit-box;
+        margin: 3px 0 0;
+        overflow: hidden;
+        color: var(--color-neutral-300);
+        font-size: 13.5px;
+        line-height: 1.5;
+        text-wrap: pretty;
+        -webkit-box-orient: vertical;
+        -webkit-line-clamp: 4;
+        line-clamp: 4;
+    }
+    .unique-columns {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+        gap: 10px;
+    }
+    .unique-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        min-height: 46px;
+        padding: 0 10px;
+        border-radius: var(--radius-md);
+        box-shadow: var(--shadow-sm);
+        font-size: 14px;
+        line-height: 1.2;
+    }
+    .unique-icon {
+        width: 28px;
+        height: 28px;
+        flex: none;
+        overflow: hidden;
+        border-radius: 6px;
+        background: var(--color-neutral-900);
+        box-shadow: inset 0 0 0 1px var(--color-neutral-800);
+    }
+    .unique-icon img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+    }
+    .civilization-description {
+        margin: 0;
+        color: var(--color-neutral-400);
+        font-size: 14px;
+        line-height: 1.65;
+        text-wrap: pretty;
     }
 
-    /* Secondary mouse tracking effect */
-    .mastercard::after {
-        background: radial-gradient(
-            600px circle at var(--mouse-x) var(--mouse-y),
-            rgba(255, 255, 255, 0.4),
-            transparent 40%
-        );
-        z-index: 1;
+    /* — pinned footer — */
+    .panel-navigation {
+        display: grid;
+        flex: none;
+        grid-template-columns: 1fr 1fr;
+        box-shadow: 0 -1px 0 var(--color-neutral-800);
+    }
+    .panel-navigation button {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        min-width: 0;
+        padding: 14px 24px;
+        border: 0;
+        color: var(--color-text);
+        background: transparent;
+        font: inherit;
+        text-align: left;
+        cursor: pointer;
+    }
+    .panel-navigation button:hover {
+        background: color-mix(in srgb, var(--color-text) 5%, transparent);
+    }
+    .panel-navigation .ph {
+        font-size: 16px;
+        color: var(--color-neutral-500);
+    }
+    .nav-text {
+        display: flex;
+        min-width: 0;
+        flex-direction: column;
+        gap: 1px;
+    }
+    .nav-text small {
+        color: var(--color-neutral-500);
+        font-size: 11px;
+    }
+    .nav-text strong {
+        overflow: hidden;
+        font-size: 14px;
+        font-weight: 500;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+    .panel-navigation .panel-next {
+        justify-content: flex-end;
+        text-align: right;
+        box-shadow: -1px 0 0 var(--color-neutral-800);
+    }
+
+    @media (max-width: 420px) {
+        .panel-identity {
+            right: 16px;
+            left: 16px;
+            gap: 10px;
+        }
+        .panel-name {
+            font-size: 26px;
+        }
+        .tier-meta {
+            display: none;
+        }
+        .panel-content {
+            padding-inline: 16px;
+        }
+        .unique-columns {
+            grid-template-columns: 1fr;
+        }
+        .panel-navigation button {
+            padding-inline: 16px;
+        }
     }
 </style>

@@ -1,15 +1,22 @@
 <template>
-    <header class="header flex flex-row">
-        <div class="flex grow justify-center w-full ml-20">
-            <img src="/img/logo.png" alt="Logo" class="logo" />
+    <header class="header">
+        <div class="brand">
+            <div class="brand-mark">
+                <img src="/img/logo.png" alt="Logo Better-Civ" class="logo" />
+            </div>
+            <div class="brand-text">
+                <p class="brand-title">Tier List</p>
+                <p class="brand-subtitle">Civilisations · Méta actuelle</p>
+            </div>
         </div>
-        <SelectLanguageComponent class="mr-8" />
+        <SelectLanguageComponent class="language-selector" />
     </header>
+    <div class="meander header-rule" aria-hidden="true"></div>
 </template>
 
 <script setup>
     /**
-     * Header Component - Top navigation bar with logo and language selector
+     * Header Component - Brand bar with logo and language selector
      */
     // IMPORT
     // ##############
@@ -18,30 +25,59 @@
 
 <style scoped>
     .header {
-        z-index: 100;
-        width: 100%;
-        height: var(--header-height);
-        background-color: #0a0a0a;
-        color: #fff;
         display: flex;
         align-items: center;
-        justify-content: flex-start;
-        /* Added to align content to the left */
-        /* padding: 0 20px; */
+        gap: 16px;
+        height: 76px;
+        color: var(--color-text);
     }
 
+    .brand {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+    }
+    .brand-mark {
+        display: grid;
+        width: 40px;
+        height: 40px;
+        place-items: center;
+        border-radius: var(--radius-md);
+        background: var(--color-surface);
+        box-shadow:
+            var(--shadow-sm),
+            0 0 24px color-mix(in srgb, var(--color-accent) 25%, transparent);
+    }
     .logo {
-        height: calc(var(--header-height) * 0.8);
-        width: auto;
+        width: 32px;
+        height: 32px;
+        object-fit: contain;
+    }
+    .brand-text {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+    }
+    .brand-title,
+    .brand-subtitle {
+        margin: 0;
+        line-height: 1;
+    }
+    .brand-title {
+        font: 500 16px/1 var(--font-heading);
+        letter-spacing: -0.01em;
+    }
+    .brand-subtitle {
+        color: var(--color-neutral-500);
+        font: 400 12px/1 var(--font-body);
+    }
+    .language-selector {
+        margin-left: auto;
     }
 
-    nav a {
-        color: #fff;
-        text-decoration: none;
-        margin-right: 15px;
-    }
-
-    nav a:hover {
-        text-decoration: underline;
+    @media (max-width: 640px) {
+        .brand-subtitle {
+            display: none;
+        }
     }
 </style>

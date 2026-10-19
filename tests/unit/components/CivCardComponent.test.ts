@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
 import { mount } from '@vue/test-utils';
 import { createPinia, setActivePinia } from 'pinia';
 import CivCardComponent from '@/components/civilisations/CivCardComponent.vue';
@@ -17,294 +17,78 @@ describe('CivCardComponent', () => {
         setActivePinia(createPinia());
     });
 
-    describe('Template', () => {
-        it('should render civilization card', () => {
-            const wrapper = mount(CivCardComponent, {
-                props: mockCivilization,
-            });
+    it('renders the compact portrait composition from the tier-list design', () => {
+        const wrapper = mount(CivCardComponent, { props: mockCivilization });
 
-            expect(wrapper.find('.bg-zinc-950').exists()).toBe(true);
-            expect(wrapper.find('.border-zinc-900').exists()).toBe(true);
-            expect(wrapper.find('.rounded-xl').exists()).toBe(true);
-        });
-
-        it('should display civilization name correctly', () => {
-            const wrapper = mount(CivCardComponent, {
-                props: mockCivilization,
-            });
-
-            const title = wrapper.find('h1');
-            expect(title.text()).toBe('France');
-        });
-
-        it('should display civilization description', () => {
-            const wrapper = mount(CivCardComponent, {
-                props: mockCivilization,
-            });
-
-            const description = wrapper.find('p.font-sans');
-            expect(description.text()).toBe(mockCivilization.desc);
-        });
-
-        it('should render tier component', () => {
-            const wrapper = mount(CivCardComponent, {
-                props: mockCivilization,
-            });
-
-            expect(wrapper.findComponent({ name: 'CivTierComponent' }).exists()).toBe(true);
-        });
-
-        it('should render tag components for each tag', () => {
-            const wrapper = mount(CivCardComponent, {
-                props: mockCivilization,
-            });
-
-            const tagComponents = wrapper.findAllComponents({ name: 'CivTagComponent' });
-            expect(tagComponents).toHaveLength(2);
-        });
-
-        it('should render leader effect section', () => {
-            const wrapper = mount(CivCardComponent, {
-                props: mockCivilization,
-            });
-
-            expect(wrapper.find('#leader').exists()).toBe(true);
-        });
+        const card = wrapper.find('article.portrait-card');
+        expect(card.attributes('role')).toBe('button');
+        expect(card.attributes('tabindex')).toBe('0');
+        expect(wrapper.find('.card-visual').attributes('src')).toBe('/img/card-cover2.jpg');
+        expect(wrapper.find('h2').text()).toBe('France');
+        expect(wrapper.findComponent({ name: 'CivTierComponent' }).exists()).toBe(true);
+        expect(wrapper.findAllComponents({ name: 'CivTagComponent' })).toHaveLength(2);
     });
 
-    describe('Props', () => {
-        it('should accept all required props', () => {
-            const wrapper = mount(CivCardComponent, {
-                props: mockCivilization,
-            });
+    it('keeps detailed civilization data out of the card', () => {
+        const wrapper = mount(CivCardComponent, { props: mockCivilization });
 
-            expect((wrapper.props() as any).id).toBe(1);
-            expect((wrapper.props() as any).name).toBe('France|La France');
-            expect((wrapper.props() as any).desc).toBe(
-                'A cultural civilization with unique units and buildings'
-            );
-            expect((wrapper.props() as any).tags_id).toEqual([1, 2]);
-            expect((wrapper.props() as any).tier_id).toBe(2);
-            expect((wrapper.props() as any).civ_leader_effect).toBe(
-                'Gain +2 Culture from each [CULTURE] building'
-            );
-        });
-
-        it('should handle optional props', () => {
-            const minimalProps = {
-                id: 1,
-                name: 'France',
-            };
-
-            const wrapper = mount(CivCardComponent, {
-                props: minimalProps,
-            });
-
-            expect((wrapper.props() as any).id).toBe(1);
-            expect((wrapper.props() as any).name).toBe('France');
-            expect((wrapper.props() as any).desc).toBeUndefined();
-            expect((wrapper.props() as any).tags_id).toBeUndefined();
-            expect((wrapper.props() as any).tier_id).toBeUndefined();
-            expect((wrapper.props() as any).civ_leader_effect).toBeUndefined();
-        });
+        expect(wrapper.find('.card-summary').exists()).toBe(false);
+        expect(wrapper.find('#leader').exists()).toBe(false);
+        expect(wrapper.text()).not.toContain(mockCivilization.desc);
+        expect(wrapper.text()).not.toContain(mockCivilization.civ_leader_effect);
     });
 
-    describe('Computed Properties', () => {
-        it('should generate correct image path', () => {
-            const wrapper = mount(CivCardComponent, {
-                props: mockCivilization,
-            });
-
-            const vm = wrapper.vm as any;
-            expect(vm.imagePath).toBe('/img/card-cover2.jpg');
+    it('uses the tier palette for the card frame and its top accent', () => {
+        const wrapper = mount(CivCardComponent, {
+            props: { ...mockCivilization, tier_id: 4 },
         });
 
-        it('should process leader effect with icons', () => {
-            const wrapper = mount(CivCardComponent, {
-                props: mockCivilization,
-            });
-
-            const vm = wrapper.vm as any;
-            expect(vm.civLeaderEffectWithIcons).toBeDefined();
-        });
-
-        it('should set correct font size class for different languages', () => {
-            const wrapper = mount(CivCardComponent, {
-                props: mockCivilization,
-            });
-
-            const vm = wrapper.vm as any;
-
-            // Test for non-CJK language (default)
-            expect(vm.sizeClass).toBe('text-2xl');
-        });
+        const style = wrapper.find('.portrait-card').attributes('style');
+        expect(style).toContain('--tier-line: oklch(0.62 0.08 50)');
+        expect(style).toContain(
+            '--tier-frame: color-mix(in srgb, oklch(0.62 0.08 50) 22%, transparent)'
+        );
     });
 
-    describe('Methods', () => {
-        it('should toggle selected state when clicked', async () => {
-            const wrapper = mount(CivCardComponent, {
-                props: mockCivilization,
-            });
+    it('highlights the card whose details are open', () => {
+        const wrapper = mount(CivCardComponent, {
+            props: { ...mockCivilization, selected: true },
+        });
 
-            const card = wrapper.find('.bg-zinc-950');
-            await card.trigger('click');
+        const card = wrapper.find('.portrait-card');
+        expect(card.classes()).toContain('selected');
+        expect(card.attributes('aria-pressed')).toBe('true');
+    });
+
+    it.each(['click', 'keydown.enter', 'keydown.space'])(
+        'opens the details panel on %s',
+        async event => {
+            const wrapper = mount(CivCardComponent, { props: mockCivilization });
+            const card = wrapper.find('.portrait-card');
+
+            await card.trigger(event);
 
             const vm = wrapper.vm as any;
             expect(vm.selectedCard).toBe(1);
             expect(vm.selectedState).toBe(true);
-        });
+        }
+    );
 
-        it('should call store methods when toggled', async () => {
-            const wrapper = mount(CivCardComponent, {
-                props: mockCivilization,
-            });
+    it('keeps the details panel open after a second activation', async () => {
+        const wrapper = mount(CivCardComponent, { props: mockCivilization });
+        const card = wrapper.find('.portrait-card');
 
-            const card = wrapper.find('.bg-zinc-950');
-            await card.trigger('click');
+        await card.trigger('click');
+        await card.trigger('click');
 
-            // Verify that the component state was updated
-            const vm = wrapper.vm as any;
-            expect(vm.selectedCard).toBe(1);
-            expect(vm.selectedState).toBe(true);
-        });
+        expect((wrapper.vm as any).selectedState).toBe(true);
     });
 
-    describe('User Interactions', () => {
-        it('should handle click events', async () => {
-            const wrapper = mount(CivCardComponent, {
-                props: mockCivilization,
-            });
-
-            const card = wrapper.find('.bg-zinc-950');
-            await card.trigger('click');
-
-            // Verify click was handled
-            expect(card.exists()).toBe(true);
+    it('supports a civilization without categories', () => {
+        const wrapper = mount(CivCardComponent, {
+            props: { ...mockCivilization, tags_id: [] },
         });
 
-        it('should toggle selection state on multiple clicks', async () => {
-            const wrapper = mount(CivCardComponent, {
-                props: mockCivilization,
-            });
-
-            const card = wrapper.find('.bg-zinc-950');
-            const vm = wrapper.vm as any;
-
-            // First click
-            await card.trigger('click');
-            expect(vm.selectedState).toBe(true);
-
-            // Second click
-            await card.trigger('click');
-            expect(vm.selectedState).toBe(false);
-        });
-    });
-
-    describe('Styling', () => {
-        it('should have correct CSS classes', () => {
-            const wrapper = mount(CivCardComponent, {
-                props: mockCivilization,
-            });
-
-            const card = wrapper.find('.bg-zinc-950');
-            expect(card.classes()).toContain('bg-zinc-950');
-            expect(card.classes()).toContain('border-zinc-900');
-            expect(card.classes()).toContain('rounded-xl');
-            expect(card.classes()).toContain('hover:border-zinc-800');
-            expect(card.classes()).toContain('flex');
-            expect(card.classes()).toContain('flex-col');
-        });
-
-        it('should have correct title styling', () => {
-            const wrapper = mount(CivCardComponent, {
-                props: mockCivilization,
-            });
-
-            const title = wrapper.find('h1');
-            expect(title.classes()).toContain('shrink');
-            expect(title.classes()).toContain('font-mono');
-            expect(title.classes()).toContain('font-bold');
-            expect(title.classes()).toContain('px-3');
-            expect(title.classes()).toContain('pt-2');
-        });
-
-        it('should have correct description styling', () => {
-            const wrapper = mount(CivCardComponent, {
-                props: mockCivilization,
-            });
-
-            const description = wrapper.find('p.font-sans');
-            expect(description.classes()).toContain('font-sans');
-            expect(description.classes()).toContain('italic');
-            expect(description.classes()).toContain('font-light');
-            expect(description.classes()).toContain('text-sm');
-            expect(description.classes()).toContain('leading-5');
-            expect(description.classes()).toContain('px-3');
-            expect(description.classes()).toContain('h-16');
-        });
-
-        it('should have correct leader effect styling', () => {
-            const wrapper = mount(CivCardComponent, {
-                props: mockCivilization,
-            });
-
-            const leaderSection = wrapper.find('#leader');
-            expect(leaderSection.classes()).toContain('bg-zinc-900');
-            expect(leaderSection.classes()).toContain('rounded-md');
-            expect(leaderSection.classes()).toContain('mt-2');
-            expect(leaderSection.classes()).toContain('mx-2');
-            expect(leaderSection.classes()).toContain('px-2');
-            expect(leaderSection.classes()).toContain('pb-2');
-        });
-    });
-
-    describe('Edge Cases', () => {
-        it('should handle civilization name with pipe separator', () => {
-            const wrapper = mount(CivCardComponent, {
-                props: {
-                    ...mockCivilization,
-                    name: 'France|La France|Francia',
-                },
-            });
-
-            const title = wrapper.find('h1');
-            expect(title.text()).toBe('France');
-        });
-
-        it('should handle empty civilization name', () => {
-            const wrapper = mount(CivCardComponent, {
-                props: {
-                    ...mockCivilization,
-                    name: '',
-                },
-            });
-
-            const title = wrapper.find('h1');
-            expect(title.text()).toBe('');
-        });
-
-        it('should handle missing tags', () => {
-            const wrapper = mount(CivCardComponent, {
-                props: {
-                    ...mockCivilization,
-                    tags_id: [],
-                },
-            });
-
-            const tagComponents = wrapper.findAllComponents({ name: 'CivTagComponent' });
-            expect(tagComponents).toHaveLength(0);
-        });
-
-        it('should handle missing leader effect', () => {
-            const wrapper = mount(CivCardComponent, {
-                props: {
-                    ...mockCivilization,
-                    civ_leader_effect: undefined,
-                },
-            });
-
-            const leaderSection = wrapper.find('#leader');
-            expect(leaderSection.exists()).toBe(true);
-        });
+        expect(wrapper.find('.card-tags').exists()).toBe(false);
     });
 });

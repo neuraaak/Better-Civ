@@ -1,3 +1,4 @@
+import '@phosphor-icons/web/regular';
 import './main.css';
 
 import { createApp } from 'vue';

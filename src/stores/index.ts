@@ -485,8 +485,9 @@ export const translationStore = defineStore('translationStore', {
         setSelectedCard(cardId: number) {
             this.cardId = cardId;
         },
-        setSelectedState() {
-            this.selectedState = !this.selectedState;
+        setSelectedState(state?: boolean) {
+            // Explicit open/close; toggles when called without argument
+            this.selectedState = state ?? !this.selectedState;
             // console.log('click on card :', this.cardId, this.selectedState);
         },
     },

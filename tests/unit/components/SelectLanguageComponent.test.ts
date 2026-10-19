@@ -16,7 +16,8 @@ describe('SelectLanguageComponent', () => {
             const wrapper = mount(SelectLanguageComponent);
 
             expect(wrapper.find('select').exists()).toBe(true);
-            expect(wrapper.find('.bg-zinc-200').exists()).toBe(true);
+            expect(wrapper.find('.language-select').exists()).toBe(true);
+            expect(wrapper.find('.language-current').text()).toBe('FR');
         });
 
         it('should render all language options', () => {
@@ -113,30 +114,21 @@ describe('SelectLanguageComponent', () => {
         });
     });
 
-    describe('Styling', () => {
-        it('should have correct CSS classes', () => {
+    describe('Ghost button', () => {
+        it('shows the current language code with globe and caret icons', async () => {
             const wrapper = mount(SelectLanguageComponent);
 
-            expect(wrapper.find('.bg-zinc-200').exists()).toBe(true);
-            expect(wrapper.find('.border-zinc-200').exists()).toBe(true);
-            expect(wrapper.find('.text-zinc-800').exists()).toBe(true);
-            expect(wrapper.find('.rounded-sm').exists()).toBe(true);
-            expect(wrapper.find('.flex').exists()).toBe(true);
-            expect(wrapper.find('.items-center').exists()).toBe(true);
-            expect(wrapper.find('.w-20').exists()).toBe(true);
+            expect(wrapper.find('.ph-globe-simple').exists()).toBe(true);
+            expect(wrapper.find('.ph-caret-down').exists()).toBe(true);
+
+            await wrapper.find('select').setValue('de');
+            expect(wrapper.find('.language-current').text()).toBe('DE');
         });
 
-        it('should have correct select element styling', () => {
+        it('keeps the native select accessible', () => {
             const wrapper = mount(SelectLanguageComponent);
-            const select = wrapper.find('select');
 
-            expect(select.classes()).toContain('px-2');
-            expect(select.classes()).toContain('py-1');
-            expect(select.classes()).toContain('rounded-sm');
-            expect(select.classes()).toContain('bg-zinc-200');
-            expect(select.classes()).toContain('border-zinc-200');
-            expect(select.classes()).toContain('text-zinc-800');
-            expect(select.classes()).toContain('w-full');
+            expect(wrapper.find('select').attributes('aria-label')).toBe('Langue');
         });
     });
 });
