@@ -24,7 +24,6 @@ describe('CivCardComponent', () => {
         expect(card.attributes('role')).toBe('button');
         expect(card.attributes('tabindex')).toBe('0');
         expect(wrapper.find('.card-visual').attributes('src')).toBe('/img/card-cover2.jpg');
-        expect(wrapper.find('.visual-label').text()).toBe('visuel · France');
         expect(wrapper.find('h2').text()).toBe('France');
         expect(wrapper.findComponent({ name: 'CivTierComponent' }).exists()).toBe(true);
         expect(wrapper.findAllComponents({ name: 'CivTagComponent' })).toHaveLength(2);
@@ -46,7 +45,19 @@ describe('CivCardComponent', () => {
 
         const style = wrapper.find('.portrait-card').attributes('style');
         expect(style).toContain('--tier-line: oklch(0.62 0.08 50)');
-        expect(style).toContain('--tier-frame: oklch(0.62 0.08 50 / 0.22)');
+        expect(style).toContain(
+            '--tier-frame: color-mix(in srgb, oklch(0.62 0.08 50) 22%, transparent)'
+        );
+    });
+
+    it('highlights the card whose details are open', () => {
+        const wrapper = mount(CivCardComponent, {
+            props: { ...mockCivilization, selected: true },
+        });
+
+        const card = wrapper.find('.portrait-card');
+        expect(card.classes()).toContain('selected');
+        expect(card.attributes('aria-pressed')).toBe('true');
     });
 
     it.each(['click', 'keydown.enter', 'keydown.space'])(

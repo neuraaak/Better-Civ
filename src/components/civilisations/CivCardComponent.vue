@@ -1,22 +1,23 @@
 <template>
     <article
         class="portrait-card"
+        :class="{ selected }"
         role="button"
         tabindex="0"
         :style="tierPalette"
         :aria-label="`Ouvrir les détails de ${displayName}`"
+        :aria-pressed="selected"
         @click="openDetails"
         @keydown.enter.prevent="openDetails"
         @keydown.space.prevent="openDetails"
     >
         <img class="card-visual" alt="" :src="imagePath" />
-        <div class="card-grain"></div>
-        <p class="visual-label">visuel · {{ displayName }}</p>
+        <div class="card-hatch"></div>
         <div class="card-gradient"></div>
         <div class="tier-frame"></div>
         <div class="tier-accent"></div>
 
-        <CivTierComponent :tier_id="tier_id" class="card-tier-badge" />
+        <CivTierComponent :tier_id="tier_id" :size="40" class="card-tier-badge" />
 
         <div class="card-footer">
             <h2>{{ displayName }}</h2>
@@ -32,6 +33,7 @@
     import { translationStore } from '../../stores/index';
     import CivTagComponent from './subcomponents/CivTagComponent.vue';
     import CivTierComponent from './subcomponents/CivTierComponent.vue';
+    import { tierBadge } from './tierDesign';
 
     const props = defineProps({
         id: Number,
@@ -40,6 +42,7 @@
         tags_id: Array,
         tier_id: Number,
         civ_leader_effect: String,
+        selected: { type: Boolean, default: false },
     });
 
     const store = translationStore();
@@ -48,46 +51,9 @@
 
     const displayName = computed(() => props.name?.split('|')[0] ?? '');
     const imagePath = computed(() => '/img/card-cover2.jpg');
-    const tierPalettes = [
-        {
-            line: 'linear-gradient(90deg, oklch(0.8 0.14 20), oklch(0.84 0.13 85), oklch(0.8 0.14 155), oklch(0.78 0.13 230), oklch(0.74 0.15 300))',
-            frame: 'oklch(0.8 0.12 300 / 0.45)',
-            hover: 'oklch(0.78 0.13 300)',
-            glow: 'oklch(0.78 0.14 300 / 0.3)',
-        },
-        {
-            line: '#9184d9',
-            frame: 'rgb(145 132 217 / 40%)',
-            hover: '#9184d9',
-            glow: 'rgb(145 132 217 / 28%)',
-        },
-        {
-            line: 'oklch(0.8 0.13 85)',
-            frame: 'oklch(0.8 0.13 85 / 0.28)',
-            hover: 'oklch(0.8 0.13 85)',
-            glow: 'oklch(0.8 0.13 85 / 0.28)',
-        },
-        {
-            line: 'oklch(0.85 0.01 260)',
-            frame: 'oklch(0.85 0.01 260 / 0.18)',
-            hover: 'oklch(0.85 0.01 260)',
-            glow: 'oklch(0.85 0.01 260 / 0.2)',
-        },
-        {
-            line: 'oklch(0.62 0.08 50)',
-            frame: 'oklch(0.62 0.08 50 / 0.22)',
-            hover: 'oklch(0.62 0.08 50)',
-            glow: 'oklch(0.62 0.08 50 / 0.22)',
-        },
-    ];
     const tierPalette = computed(() => {
-        const palette = tierPalettes[props.tier_id] ?? tierPalettes[4];
-        return {
-            '--tier-line': palette.line,
-            '--tier-frame': palette.frame,
-            '--tier-hover': palette.hover,
-            '--tier-glow': palette.glow,
-        };
+        const badge = tierBadge(props.tier_id);
+        return { '--tier-line': badge.line, '--tier-frame': badge.frame };
     });
 
     function openDetails() {
@@ -104,39 +70,35 @@
         aspect-ratio: 3 / 4;
         isolation: isolate;
         overflow: hidden;
-        border-radius: 0.9rem;
-        background: #232532;
-        box-shadow:
-            0 0 0 1px rgb(145 132 217 / 12%),
-            0 0.75rem 1.8rem rgb(0 0 0 / 35%);
+        border-radius: var(--radius-lg);
+        background: var(--color-surface);
+        box-shadow: var(--shadow-sm);
         cursor: pointer;
         transition:
-            transform 200ms ease,
-            box-shadow 200ms ease;
+            transform 0.2s ease,
+            box-shadow 0.2s ease;
     }
-
-    .portrait-card:hover {
-        transform: translateY(-0.25rem);
+    .portrait-card.selected {
         box-shadow:
-            0 0 0 1px var(--tier-hover),
-            0 0.9rem 2.25rem rgb(0 0 0 / 55%),
-            0 0 2rem var(--tier-glow);
+            0 0 0 1.5px var(--color-accent),
+            0 0 30px color-mix(in srgb, var(--color-accent) 35%, transparent);
     }
-
-    .portrait-card:focus-visible {
-        outline: 2px solid #b5abfc;
-        outline-offset: 0.25rem;
+    .portrait-card:hover {
+        transform: translateY(-4px);
+        box-shadow:
+            0 0 0 1px var(--color-accent),
+            0 14px 36px rgba(0, 0, 0, 0.55),
+            0 0 32px color-mix(in srgb, var(--color-accent) 28%, transparent);
     }
 
     .card-visual,
-    .card-grain,
+    .card-hatch,
     .card-gradient,
     .tier-frame,
     .tier-accent {
         position: absolute;
         pointer-events: none;
     }
-
     .card-visual {
         z-index: -2;
         inset: 0;
@@ -146,87 +108,64 @@
         opacity: 0.52;
         filter: saturate(0.7) contrast(1.05);
     }
-
-    .card-grain {
+    .card-hatch {
         z-index: -1;
         inset: 0;
         background: repeating-linear-gradient(
             135deg,
-            rgb(233 233 237 / 5%) 0 0.5rem,
-            transparent 0.5rem 1rem
+            color-mix(in srgb, var(--color-text) 4%, transparent) 0 8px,
+            transparent 8px 16px
         );
     }
-
-    .visual-label {
-        position: absolute;
-        z-index: 1;
-        top: 3.125rem;
-        left: 0.875rem;
-        margin: 0;
-        color: #8e92a3;
-        font-family: 'JetBrains Mono', monospace;
-        font-size: 0.625rem;
-    }
-
     .card-gradient {
-        z-index: 0;
-        right: 0;
-        bottom: 0;
-        left: 0;
+        inset: auto 0 0 0;
         height: 62%;
-        background: linear-gradient(to bottom, transparent, rgb(22 24 38 / 86%) 55%, #161826);
+        background: linear-gradient(
+            to bottom,
+            transparent,
+            color-mix(in srgb, var(--color-bg) 85%, transparent) 55%,
+            var(--color-bg)
+        );
     }
-
     .tier-frame {
-        z-index: 2;
-        inset: 0.45rem;
-        border: 1px solid var(--tier-frame);
-        border-radius: 0.625rem;
-        box-shadow: inset 0 0 0 1px rgb(0 0 0 / 8%);
+        inset: 7px;
+        border-radius: 10px;
+        box-shadow: inset 0 0 0 1px var(--tier-frame);
     }
-
     .tier-accent {
-        z-index: 2;
-        top: 0.45rem;
+        top: 7px;
         left: 50%;
         width: 36%;
-        height: 0.125rem;
-        border-radius: 999px;
+        height: 2px;
+        border-radius: 2px;
         background: var(--tier-line);
         transform: translateX(-50%);
     }
-
     .card-tier-badge {
         position: absolute;
-        z-index: 3;
-        top: 0.875rem;
-        left: 0.875rem;
-        --tier-badge-size: 2.5rem;
+        top: 14px;
+        left: 14px;
     }
-
     .card-footer {
         position: absolute;
-        z-index: 3;
-        right: 1rem;
-        bottom: 1rem;
-        left: 1rem;
+        right: 16px;
+        bottom: 16px;
+        left: 16px;
         display: flex;
         flex-direction: column;
-        gap: 0.625rem;
+        gap: 10px;
     }
-
     h2 {
         margin: 0;
-        color: #f3f5fe;
-        font-size: clamp(1.1rem, 1.8vw, 1.3125rem);
+        color: var(--color-text);
+        font-size: 21px;
         font-weight: 500;
         letter-spacing: -0.015em;
         line-height: 1.1;
     }
-
     .card-tags {
         display: flex;
         flex-wrap: wrap;
-        gap: 0.375rem;
+        gap: 6px;
     }
 </style>

@@ -27,6 +27,26 @@ describe('CivTierComponent', () => {
         expect(wrapper.find('.tier-badge').text()).toBe(letter);
     });
 
+    it('labels the badge with its tier and rank', () => {
+        const wrapper = mount(CivTierComponent, { props: { tier_id: 1 } });
+
+        expect(wrapper.find('.tier-badge').attributes('title')).toBe('Tier A · Empire');
+    });
+
+    it('sizes the badge and its letter from the design scale', () => {
+        const wrapper = mount(CivTierComponent, { props: { tier_id: 0, size: 58 } });
+        const style = wrapper.find('.tier-badge').attributes('style');
+
+        expect(style).toContain('--tier-size: 58px');
+        expect(style).toContain('--tier-font: 24px');
+    });
+
+    it('dims the badge on request', () => {
+        const wrapper = mount(CivTierComponent, { props: { tier_id: 2, dimmed: true } });
+
+        expect(wrapper.find('.tier-badge').attributes('style')).toContain('opacity: 0.35');
+    });
+
     it('falls back to the D badge for an unknown tier', () => {
         const wrapper = mount(CivTierComponent, { props: { tier_id: 999 } });
 

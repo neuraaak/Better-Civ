@@ -1,30 +1,25 @@
 <template>
-    <div class="bg-zinc-200 border-zinc-200 text-zinc-800 rounded-sm flex items-center w-20">
-        <select
-            v-model="selectedLang"
-            @change="updateLanguage"
-            class="px-2 py-1 rounded-sm bg-zinc-200 border-zinc-200 text-zinc-800 w-full"
-        >
-            <option
-                v-for="option in options"
-                :key="option.value"
-                :value="option.lang"
-                class="bg-gray-800 text-white"
-            >
+    <label class="language-select">
+        <i class="ph ph-globe-simple" aria-hidden="true"></i>
+        <span class="language-current">{{ currentLabel }}</span>
+        <i class="ph ph-caret-down language-caret" aria-hidden="true"></i>
+        <select v-model="selectedLang" aria-label="Langue" @change="updateLanguage">
+            <option v-for="option in options" :key="option.lang" :value="option.lang">
                 {{ option.label }} {{ option.flag }}
             </option>
         </select>
-    </div>
+    </label>
 </template>
 
 <script setup>
     /**
      * Select Language Component - Language selector dropdown
-     * Allows users to change the application language with flag display
+     * A native <select> laid over a ghost button, so the control keeps native
+     * keyboard and screen-reader behaviour while matching the design.
      */
     // IMPORT
     // ##############
-    import { ref } from 'vue';
+    import { computed, ref } from 'vue';
     import { translationStore } from '../../stores/index';
 
     // VARIABLES
@@ -48,6 +43,12 @@
     // Current selected language
     const selectedLang = ref('fr');
 
+    // COMPUTED
+    // ##############
+    const currentLabel = computed(
+        () => options.value.find(option => option.lang === selectedLang.value)?.label ?? 'FR'
+    );
+
     // FUNCTIONS
     // ##############
     function updateLanguage() {
@@ -56,21 +57,44 @@
 </script>
 
 <style scoped>
-    /* Muted text color for headers */
-    h1,
-    .muted {
-        color: #2c3e5099;
-    }
-
-    /* Flag text spacing */
-    .flag-text {
-        margin-left: 10px;
-    }
-
-    /* Custom select styling for better flag display */
-    select option {
-        display: flex;
+    .language-select {
+        position: relative;
+        display: inline-flex;
         align-items: center;
-        gap: 8px;
+        gap: 6px;
+        height: 34px;
+        padding: 0 12px;
+        border-radius: var(--radius-md);
+        box-shadow: var(--shadow-sm);
+        color: var(--color-neutral-300);
+        font-size: 13px;
+        cursor: pointer;
+    }
+    .language-select:hover {
+        background: color-mix(in srgb, var(--color-text) 7%, transparent);
+    }
+    .language-select:has(select:focus-visible) {
+        outline: 2px solid var(--color-accent);
+        outline-offset: 2px;
+    }
+    .ph-globe-simple {
+        font-size: 15px;
+    }
+    .language-caret {
+        font-size: 12px;
+        color: var(--color-neutral-500);
+    }
+    select {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        opacity: 0;
+        cursor: pointer;
+        appearance: none;
+    }
+    option {
+        color: var(--color-text);
+        background: var(--color-surface);
     }
 </style>

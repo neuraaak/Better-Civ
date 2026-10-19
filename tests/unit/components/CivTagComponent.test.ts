@@ -16,6 +16,18 @@ describe('CivTagComponent', () => {
         expect(wrapper.find('.civ-tag').text()).not.toBe('');
     });
 
+    it('colours the dot with its category colour', () => {
+        const wrapper = mount(CivTagComponent, { props: { tag_id: 4 } });
+
+        expect(wrapper.find('.civ-tag').attributes('style')).toContain('oklch(0.70 0.13 25)');
+    });
+
+    it('offers the larger panel variant', () => {
+        const wrapper = mount(CivTagComponent, { props: { tag_id: 1, variant: 'panel' } });
+
+        expect(wrapper.find('.civ-tag').classes()).toContain('civ-tag-panel');
+    });
+
     it('keeps rendering when the category identifier is unknown', () => {
         const wrapper = mount(CivTagComponent, { props: { tag_id: 999 } });
 

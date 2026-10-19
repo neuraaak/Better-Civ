@@ -25,10 +25,11 @@ describe('HeaderComponent', () => {
         expect(logo.attributes('alt')).toBe('Logo Better-Civ');
     });
 
-    it('keeps the brand and controls inside the fixed navigation bar', () => {
+    it('renders the brand mark, language selector and the meander rule below', () => {
         const wrapper = mount(HeaderComponent);
 
         expect(wrapper.find('.brand-mark').exists()).toBe(true);
         expect(wrapper.find('.language-selector').exists()).toBe(true);
+        expect(wrapper.find('.header-rule.meander').exists()).toBe(true);
     });
 });

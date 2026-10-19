@@ -11,7 +11,10 @@ describe('MasterCardComponent', () => {
         tags_id: [1, 2],
         tier_id: 4,
         civ_icon: '/img/france.png',
+        civ_trait_name: 'Grand Tour',
         civ_leader: 'Catherine de Médicis',
+        civ_leader_subtitle: 'Reine de France',
+        civ_leader_text: 'Fille de Laurent II de Médicis.',
         civ_leader_icon: '/img/catherine.png',
         civ_leader_effect: 'Obtient un niveau de visibilité diplomatique.',
         civ_units: [{ name: 'Garde impériale', icon: '/img/unit.png' }],
@@ -37,6 +40,41 @@ describe('MasterCardComponent', () => {
         expect(wrapper.find('.leader-name').text()).toBe(props.civ_leader);
         expect(wrapper.findAll('.unique-item')).toHaveLength(2);
         expect(wrapper.find('.panel-position').text()).toBe(props.position);
+    });
+
+    it('lays out the sections of the handoff in order', () => {
+        const wrapper = mount(MasterCardComponent, { props });
+
+        const labels = wrapper.findAll('.section-label').map(label => label.text());
+        expect(labels).toEqual([
+            'Bonus de civilisation',
+            'Dirigeant',
+            'Unités uniques',
+            'Bâtiments uniques',
+            'Histoire',
+        ]);
+        expect(wrapper.find('.bonus-block strong').text()).toBe('Grand Tour');
+        expect(wrapper.find('.bonus-block p').text()).toBe(props.civ_leader_effect);
+        expect(wrapper.find('.leader-subtitle').text()).toBe('Reine de France');
+        expect(wrapper.find('.panel-rule.meander').exists()).toBe(true);
+    });
+
+    it('keeps the footer to the previous and next civilizations only', () => {
+        const wrapper = mount(MasterCardComponent, { props });
+        const footer = wrapper.find('.panel-navigation');
+
+        expect(footer.findAll('button')).toHaveLength(2);
+        expect(footer.find('.panel-position').exists()).toBe(false);
+        expect(footer.text()).toContain('Allemagne');
+        expect(footer.text()).toContain('Grèce');
+    });
+
+    it('drops the plural form of API names', () => {
+        const wrapper = mount(MasterCardComponent, {
+            props: { ...props, civ_units: [{ name: 'Minuteman|Minutemen' }] },
+        });
+
+        expect(wrapper.findAll('.unique-item')[0].text()).toBe('Minuteman');
     });
 
     it('emits close and navigation events from panel controls', async () => {
