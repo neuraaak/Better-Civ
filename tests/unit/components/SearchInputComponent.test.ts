@@ -309,7 +309,7 @@ describe('SearchInputComponent', () => {
             expect(input.classes()).toContain('border-amber-500');
             expect(input.classes()).toContain('border-2');
             expect(input.classes()).toContain('rounded-lg');
-            expect(input.classes()).toContain('h-5');
+            expect(input.classes()).toContain('h-11');
             expect(input.classes()).toContain('pr-10');
         });
 
