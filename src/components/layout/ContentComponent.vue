@@ -592,7 +592,7 @@
         right: 12px;
         bottom: 12px;
         z-index: 21;
-        width: 460px;
+        width: 560px;
         max-width: calc(100vw - 24px);
         overflow: hidden;
         border-radius: var(--radius-lg);
