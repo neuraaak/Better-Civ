@@ -53,5 +53,15 @@ describe('App.vue', () => {
             // App should handle language changes through store
             expect(wrapper.vm).toBeDefined();
         });
+
+        it('applies the XML tier ranking while preserving civilizations absent from the report', () => {
+            const wrapper = mount(App);
+            const mergeCivilizationData = (wrapper.vm as any).mergeCivilizationData;
+
+            const [inca, spain] = mergeCivilizationData([{ id: 20 }, { id: 21 }]);
+
+            expect(inca.tier_id).toBe(0);
+            expect(spain.tier_id).toBe(2);
+        });
     });
 });

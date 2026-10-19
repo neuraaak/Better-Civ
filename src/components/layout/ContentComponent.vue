@@ -2,33 +2,33 @@
     <main class="content">
         <section class="hero">
             <p class="eyebrow">
-                <i class="ph ph-bank" aria-hidden="true"></i>Classement ·
-                {{ toRoman(civilisations.length) }} civilisations
+                <i class="ph ph-bank" aria-hidden="true"></i>{{ ui.ranking }} ·
+                {{ toRoman(civilisations.length) }} {{ ui.civilizations }}
             </p>
-            <h1>Quelle civilisation jouer ?</h1>
+            <h1>{{ ui.heroTitle }}</h1>
         </section>
 
-        <section class="controls" aria-label="Filtres des civilisations">
+        <section class="controls" :aria-label="ui.filters">
             <label class="search-control">
                 <i class="ph ph-magnifying-glass" aria-hidden="true"></i>
                 <input
                     v-model="searchedText"
                     type="search"
-                    placeholder="Rechercher une civilisation"
-                    aria-label="Rechercher une civilisation"
+                    :placeholder="ui.search"
+                    :aria-label="ui.search"
                 />
                 <button
                     v-if="searchedText"
                     type="button"
                     class="search-clear"
-                    aria-label="Effacer la recherche"
+                    :aria-label="ui.reset"
                     @click="searchedText = ''"
                 >
                     <i class="ph ph-x" aria-hidden="true"></i>
                 </button>
             </label>
 
-            <div class="chip-group category-filter" role="group" aria-label="Catégories">
+            <div class="chip-group category-filter" role="group" :aria-label="ui.categories">
                 <button
                     type="button"
                     class="category-chip"
@@ -37,7 +37,7 @@
                     @click="selectedTagId = null"
                 >
                     <span class="dot" :style="{ background: 'var(--color-neutral-600)' }"></span
-                    >Toutes
+                    >{{ ui.all }}
                 </button>
                 <button
                     v-for="tag in tagList"
@@ -61,7 +61,7 @@
                     class="tier-chip"
                     :class="{ active: selectedTierId === tier.id }"
                     :aria-pressed="selectedTierId === tier.id"
-                    :title="`${tierLabel(tier.id)} · ${tierBadge(tier.id).rank}`"
+                    :title="`${tierLabel(tier.id)} · ${badge(tier.id).rank}`"
                     @click="selectedTierId = selectedTierId === tier.id ? null : tier.id"
                 >
                     <CivTierComponent
@@ -74,18 +74,16 @@
 
             <div class="result-actions">
                 <span class="result-count"
-                    >{{ filteredCivilisations.length }} résultat{{
-                        filteredCivilisations.length > 1 ? 's' : ''
-                    }}</span
+                    >{{ filteredCivilisations.length }} {{ ui.results }}</span
                 >
-                <div class="sort-toggle" role="group" aria-label="Regroupement">
+                <div class="sort-toggle" role="group" :aria-label="ui.filters">
                     <button
                         type="button"
                         :class="{ active: groupMode === 'tier' }"
                         :aria-pressed="groupMode === 'tier'"
                         @click="groupMode = 'tier'"
                     >
-                        <i class="ph ph-ranking" aria-hidden="true"></i>Par tier
+                        <i class="ph ph-ranking" aria-hidden="true"></i>{{ ui.byTier }}
                     </button>
                     <button
                         type="button"
@@ -93,7 +91,7 @@
                         :aria-pressed="groupMode === 'alpha'"
                         @click="groupMode = 'alpha'"
                     >
-                        <i class="ph ph-sort-ascending" aria-hidden="true"></i>A → Z
+                        <i class="ph ph-sort-ascending" aria-hidden="true"></i>{{ ui.alphabetical }}
                     </button>
                 </div>
             </div>
@@ -111,11 +109,11 @@
                     <div class="tier-heading-text">
                         <div class="tier-heading-title">
                             <h2>{{ tierLabel(group.id) }}</h2>
-                            <span class="tier-rank" :style="{ color: tierBadge(group.id).label }">{{
-                                tierBadge(group.id).rank
+                            <span class="tier-rank" :style="{ color: badge(group.id).label }">{{
+                                badge(group.id).rank
                             }}</span>
                         </div>
-                        <p>{{ tierBadge(group.id).sub }}</p>
+                        <p>{{ badge(group.id).sub }}</p>
                     </div>
                     <div class="meander tier-rule" aria-hidden="true"></div>
                     <span class="tier-count">{{ toRoman(group.civilisations.length) }}</span>
@@ -137,8 +135,8 @@
         </section>
 
         <section v-else class="empty-state">
-            <h2>Aucune civilisation ne correspond</h2>
-            <button type="button" @click="resetFilters">Réinitialiser les filtres</button>
+            <h2>{{ ui.noResults }}</h2>
+            <button type="button" @click="resetFilters">{{ ui.reset }}</button>
         </section>
     </main>
 
@@ -149,7 +147,7 @@
         :class="{ open: selectedState }"
         :aria-hidden="!selectedState"
         :inert="!selectedState"
-        aria-label="Détails de la civilisation"
+        :aria-label="ui.details"
     >
         <MasterCardComponent
             v-if="selectedCiv"
@@ -185,6 +183,7 @@
     import MasterCardComponent from '../civilisations/MasterCardComponent.vue';
     import CivTierComponent from '../civilisations/subcomponents/CivTierComponent.vue';
     import { categoryColor, tierBadge, toRoman } from '../civilisations/tierDesign';
+    import { uiCopy } from '../uiCopy';
 
     const props = defineProps({ civilisations: { type: Array, required: true } });
     const store = translationStore();
@@ -196,6 +195,7 @@
     const selectedCard = ref(null);
     const searchedText = ref('');
     const groupMode = ref('tier');
+    const ui = computed(() => uiCopy(store.getLanguage));
 
     const filteredCivilisations = computed(() => {
         const query = normalize(searchedText.value);
@@ -261,7 +261,10 @@
             .trim();
     }
     function tierLabel(tierId) {
-        return store.getTierPropertyById(tierId, 'label') || `Tier ${tierBadge(tierId).letter}`;
+        return store.getTierPropertyById(tierId, 'label') || `Tier ${badge(tierId).letter}`;
+    }
+    function badge(tierId) {
+        return tierBadge(tierId, store.getLanguage);
     }
     function tagLabel(tagId) {
         return store.getTagPropertyById(tagId, 'label') || 'Catégorie';

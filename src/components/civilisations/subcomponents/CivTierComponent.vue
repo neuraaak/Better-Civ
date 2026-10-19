@@ -14,6 +14,7 @@
 
 <script setup>
     import { computed } from 'vue';
+    import { translationStore } from '../../../stores/index';
     import { tierBadge } from '../tierDesign';
 
     const props = defineProps({
@@ -26,8 +27,9 @@
 
     // Letter sizes taken from the handoff for each badge size it uses.
     const LETTER_SIZES = { 24: 11, 32: 13, 40: 16, 52: 20, 58: 24 };
+    const store = translationStore();
 
-    const badge = computed(() => tierBadge(props.tier_id));
+    const badge = computed(() => tierBadge(props.tier_id, store.getLanguage));
     const label = computed(() => `Tier ${badge.value.letter} · ${badge.value.rank}`);
     const badgeStyle = computed(() => ({
         '--tier-size': `${props.size}px`,

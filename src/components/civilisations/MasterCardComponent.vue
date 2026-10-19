@@ -11,16 +11,16 @@
                 <div class="panel-controls">
                     <button
                         type="button"
-                        title="Précédente (←)"
-                        aria-label="Civilisation précédente"
+                        :title="ui.previous"
+                        :aria-label="ui.previous"
                         @click="$emit('previous')"
                     >
                         <i class="ph ph-caret-left" aria-hidden="true"></i>
                     </button>
                     <button
                         type="button"
-                        title="Suivante (→)"
-                        aria-label="Civilisation suivante"
+                        :title="ui.next"
+                        :aria-label="ui.next"
                         @click="$emit('next')"
                     >
                         <i class="ph ph-caret-right" aria-hidden="true"></i>
@@ -29,8 +29,8 @@
                     <button
                         class="panel-close"
                         type="button"
-                        title="Fermer (Échap)"
-                        aria-label="Fermer le panneau"
+                        :title="ui.close"
+                        :aria-label="ui.close"
                         @click="$emit('close')"
                     >
                         <i class="ph ph-x" aria-hidden="true"></i>
@@ -66,7 +66,7 @@
 
                 <section v-if="civ_leader_effect" class="panel-section">
                     <span class="section-label section-label-accent">
-                        <i class="ph ph-star-four" aria-hidden="true"></i>Bonus de civilisation
+                        <i class="ph ph-star-four" aria-hidden="true"></i>{{ ui.bonus }}
                     </span>
                     <div class="bonus-block">
                         <strong v-if="civ_trait_name">{{ cleanName(civ_trait_name) }}</strong>
@@ -76,7 +76,7 @@
 
                 <section v-if="civ_leader" class="panel-section">
                     <span class="section-label">
-                        <i class="ph ph-crown-simple" aria-hidden="true"></i>Dirigeant
+                        <i class="ph ph-crown-simple" aria-hidden="true"></i>{{ ui.leader }}
                     </span>
                     <div class="leader-block">
                         <div class="leader-portrait">
@@ -95,7 +95,7 @@
                 <div v-if="units.length || buildings.length" class="unique-columns">
                     <section class="panel-section">
                         <span class="section-label">
-                            <i class="ph ph-sword" aria-hidden="true"></i>Unités uniques
+                            <i class="ph ph-sword" aria-hidden="true"></i>{{ ui.uniqueUnits }}
                         </span>
                         <div v-for="item in units" :key="item.name" class="unique-item">
                             <span class="unique-icon">
@@ -106,7 +106,8 @@
                     </section>
                     <section class="panel-section">
                         <span class="section-label">
-                            <i class="ph ph-castle-turret" aria-hidden="true"></i>Bâtiments uniques
+                            <i class="ph ph-castle-turret" aria-hidden="true"></i
+                            >{{ ui.uniqueBuildings }}
                         </span>
                         <div v-for="item in buildings" :key="item.name" class="unique-item">
                             <span class="unique-icon">
@@ -119,7 +120,7 @@
 
                 <section v-if="desc" class="panel-section">
                     <span class="section-label">
-                        <i class="ph ph-book-open-text" aria-hidden="true"></i>Histoire
+                        <i class="ph ph-book-open-text" aria-hidden="true"></i>{{ ui.history }}
                     </span>
                     <p class="civilization-description">{{ desc }}</p>
                 </section>
@@ -130,13 +131,13 @@
             <button class="panel-previous" type="button" @click="$emit('previous')">
                 <i class="ph ph-arrow-left" aria-hidden="true"></i>
                 <span class="nav-text">
-                    <small>Précédente</small>
+                    <small>{{ ui.previous }}</small>
                     <strong>{{ cleanName(previous_name) || displayName }}</strong>
                 </span>
             </button>
             <button class="panel-next" type="button" @click="$emit('next')">
                 <span class="nav-text">
-                    <small>Suivante</small>
+                    <small>{{ ui.next }}</small>
                     <strong>{{ cleanName(next_name) || displayName }}</strong>
                 </span>
                 <i class="ph ph-arrow-right" aria-hidden="true"></i>
@@ -147,6 +148,8 @@
 
 <script setup>
     import { computed } from 'vue';
+    import { translationStore } from '../../stores/index';
+    import { uiCopy } from '../uiCopy';
     import CivTagComponent from './subcomponents/CivTagComponent.vue';
     import CivTierComponent from './subcomponents/CivTierComponent.vue';
     import { tierBadge } from './tierDesign';
@@ -173,7 +176,9 @@
 
     defineEmits(['close', 'previous', 'next']);
 
-    const badge = computed(() => tierBadge(props.tier_id));
+    const store = translationStore();
+    const badge = computed(() => tierBadge(props.tier_id, store.getLanguage));
+    const ui = computed(() => uiCopy(store.getLanguage));
     const displayName = computed(() => cleanName(props.name));
     const civBackground = computed(() => '/img/card-cover2.jpg');
     const units = computed(() => (props.civ_units || []).map(normalizeItem));

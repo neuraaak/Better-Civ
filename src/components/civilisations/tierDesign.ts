@@ -25,8 +25,86 @@ export interface TierBadge {
     line: string;
 }
 
+interface TierCopy {
+    rank: string;
+    sub: string;
+}
+
 const PRISM =
     'oklch(0.80 0.14 20), oklch(0.84 0.13 85), oklch(0.80 0.14 155), oklch(0.78 0.13 230), oklch(0.74 0.15 300), oklch(0.80 0.14 20)';
+
+const TIER_COPY: Record<string, TierCopy[]> = {
+    fr: [
+        { rank: 'Légende', sub: 'Dominantes — viables dans toutes les situations' },
+        { rank: 'Empire', sub: 'Très fortes — excellentes dans leur créneau' },
+        { rank: 'Royaume', sub: 'Solides — demandent un peu plus de maîtrise' },
+        { rank: 'Cité', sub: 'Situationnelles — dépendent de la carte' },
+        { rank: 'Tribu', sub: 'En retrait — à réserver aux défis' },
+    ],
+    en: [
+        { rank: 'Legend', sub: 'Dominant — viable in every situation' },
+        { rank: 'Empire', sub: 'Very strong — excellent in their niche' },
+        { rank: 'Kingdom', sub: 'Solid — require a little more mastery' },
+        { rank: 'City', sub: 'Situational — depend on the map' },
+        { rank: 'Tribe', sub: 'Behind the curve — best reserved for challenges' },
+    ],
+    de: [
+        { rank: 'Legende', sub: 'Dominant — in jeder Situation spielbar' },
+        { rank: 'Imperium', sub: 'Sehr stark — in ihrer Nische hervorragend' },
+        { rank: 'Königreich', sub: 'Solide — erfordern etwas mehr Erfahrung' },
+        { rank: 'Stadt', sub: 'Situativ — von der Karte abhängig' },
+        { rank: 'Stamm', sub: 'Schwächer — besser für Herausforderungen' },
+    ],
+    es: [
+        { rank: 'Leyenda', sub: 'Dominantes — viables en cualquier situación' },
+        { rank: 'Imperio', sub: 'Muy fuertes — excelentes en su especialidad' },
+        { rank: 'Reino', sub: 'Sólidos — requieren algo más de dominio' },
+        { rank: 'Ciudad', sub: 'Situacionales — dependen del mapa' },
+        { rank: 'Tribu', sub: 'Rezagadas — mejor para desafíos' },
+    ],
+    it: [
+        { rank: 'Leggenda', sub: 'Dominanti — valide in ogni situazione' },
+        { rank: 'Impero', sub: 'Molto forti — eccellenti nella loro nicchia' },
+        { rank: 'Regno', sub: 'Solide — richiedono un po’ più di padronanza' },
+        { rank: 'Città', sub: 'Situazionali — dipendono dalla mappa' },
+        { rank: 'Tribù', sub: 'Meno efficaci — adatte alle sfide' },
+    ],
+    jp: [
+        { rank: '伝説', sub: '支配的 — あらゆる状況で活躍' },
+        { rank: '帝国', sub: '非常に強力 — 得意分野で優秀' },
+        { rank: '王国', sub: '堅実 — 少し高い習熟が必要' },
+        { rank: '都市', sub: '状況次第 — マップに依存' },
+        { rank: '部族', sub: '控えめ — 挑戦向け' },
+    ],
+    kr: [
+        { rank: '전설', sub: '압도적 — 어떤 상황에서도 강력합니다' },
+        { rank: '제국', sub: '매우 강력함 — 특화 분야에서 뛰어납니다' },
+        { rank: '왕국', sub: '탄탄함 — 약간의 숙련이 필요합니다' },
+        { rank: '도시', sub: '상황 의존적 — 지도에 따라 달라집니다' },
+        { rank: '부족', sub: '다소 약함 — 도전용으로 적합합니다' },
+    ],
+    pl: [
+        { rank: 'Legenda', sub: 'Dominujące — sprawdzają się w każdej sytuacji' },
+        { rank: 'Imperium', sub: 'Bardzo silne — świetne w swojej niszy' },
+        { rank: 'Królestwo', sub: 'Solidne — wymagają nieco więcej wprawy' },
+        { rank: 'Miasto', sub: 'Sytuacyjne — zależne od mapy' },
+        { rank: 'Plemię', sub: 'Słabsze — dobre na wyzwania' },
+    ],
+    ru: [
+        { rank: 'Легенда', sub: 'Доминируют — сильны в любой ситуации' },
+        { rank: 'Империя', sub: 'Очень сильные — превосходны в своей нише' },
+        { rank: 'Королевство', sub: 'Надёжные — требуют чуть больше мастерства' },
+        { rank: 'Город', sub: 'Ситуативные — зависят от карты' },
+        { rank: 'Племя', sub: 'Слабее — лучше оставить для испытаний' },
+    ],
+    zh: [
+        { rank: '传奇', sub: '统治级 — 适用于任何局面' },
+        { rank: '帝国', sub: '非常强大 — 在专长领域表现卓越' },
+        { rank: '王国', sub: '扎实 — 需要更多熟练度' },
+        { rank: '城邦', sub: '看情况 — 取决于地图' },
+        { rank: '部落', sub: '较弱 — 更适合挑战玩法' },
+    ],
+};
 
 /** n-pointed star clip-path whose inner vertices sit at `inner` × the outer radius. */
 export function star(points: number, inner: number): string {
@@ -146,8 +224,10 @@ export const CATEGORY_COLORS = [
 // FUNCTIONS
 // ##############
 /** Badge for a tier id, falling back to tier D for unknown ids. */
-export function tierBadge(tierId: number | null | undefined): TierBadge {
-    return TIER_BADGES[tierId ?? -1] ?? TIER_BADGES[4];
+export function tierBadge(tierId: number | null | undefined, language = 'fr'): TierBadge {
+    const index = TIER_BADGES[tierId ?? -1] ? (tierId ?? -1) : 4;
+    const badge = TIER_BADGES[index];
+    return { ...badge, ...(TIER_COPY[language] ?? TIER_COPY.en)[index] };
 }
 
 export function categoryColor(tagId: number | null | undefined): string {
