@@ -11,7 +11,7 @@
         @keydown.enter.prevent="openDetails"
         @keydown.space.prevent="openDetails"
     >
-        <img class="card-visual" alt="" :src="imagePath" />
+        <img class="card-visual" alt="" :src="imagePath" loading="lazy" decoding="async" />
         <div class="card-hatch"></div>
         <div class="card-gradient"></div>
         <div class="tier-frame"></div>
@@ -50,7 +50,7 @@
     const selectedCard = ref(null);
 
     const displayName = computed(() => props.name?.split('|')[0] ?? '');
-    const imagePath = computed(() => '/img/card-cover2.jpg');
+    const imagePath = computed(() => '/img/card-cover.webp');
     const tierPalette = computed(() => {
         const badge = tierBadge(props.tier_id);
         return { '--tier-line': badge.line, '--tier-frame': badge.frame };

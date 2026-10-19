@@ -1,5 +1,10 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { createPinia, setActivePinia } from 'pinia';
+import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 describe('App Integration', () => {
     beforeEach(() => {
@@ -8,9 +13,6 @@ describe('App Integration', () => {
 
     describe('App Structure', () => {
         it('should have proper file structure', () => {
-            const fs = require('fs');
-            const path = require('path');
-
             // Check if main files exist
             const appPath = path.resolve(__dirname, '../../src/App.vue');
             const mainPath = path.resolve(__dirname, '../../src/main.ts');
@@ -20,9 +22,6 @@ describe('App Integration', () => {
         });
 
         it('should have proper Vue component structure', () => {
-            const fs = require('fs');
-            const path = require('path');
-
             const appPath = path.resolve(__dirname, '../../src/App.vue');
             const appContent = fs.readFileSync(appPath, 'utf8');
 
@@ -31,9 +30,6 @@ describe('App Integration', () => {
         });
 
         it('should have store integration', () => {
-            const fs = require('fs');
-            const path = require('path');
-
             const storePath = path.resolve(__dirname, '../../src/stores/index.ts');
             const storeContent = fs.readFileSync(storePath, 'utf8');
 
@@ -44,21 +40,14 @@ describe('App Integration', () => {
 
     describe('Component Structure', () => {
         it('should have global components', () => {
-            const fs = require('fs');
-            const path = require('path');
-
             const globalComponentsPath = path.resolve(__dirname, '../../src/components/global');
             const files = fs.readdirSync(globalComponentsPath);
 
             expect(files.length).toBeGreaterThan(0);
             expect(files.some((file: string) => file.includes('SelectLanguage'))).toBe(true);
-            expect(files.some((file: string) => file.includes('SearchInput'))).toBe(true);
         });
 
         it('should have layout components', () => {
-            const fs = require('fs');
-            const path = require('path');
-
             const layoutComponentsPath = path.resolve(__dirname, '../../src/components/layout');
             const files = fs.readdirSync(layoutComponentsPath);
 
@@ -68,9 +57,6 @@ describe('App Integration', () => {
         });
 
         it('should have civilization components', () => {
-            const fs = require('fs');
-            const path = require('path');
-
             const civComponentsPath = path.resolve(__dirname, '../../src/components/civilisations');
             const files = fs.readdirSync(civComponentsPath);
 
@@ -82,9 +68,6 @@ describe('App Integration', () => {
 
     describe('Type Definitions', () => {
         it('should have proper TypeScript types', () => {
-            const fs = require('fs');
-            const path = require('path');
-
             const typesPath = path.resolve(__dirname, '../../src/types/index.ts');
             const typesContent = fs.readFileSync(typesPath, 'utf8');
 
@@ -96,9 +79,6 @@ describe('App Integration', () => {
 
     describe('Configuration', () => {
         it('should have proper Vite configuration', () => {
-            const fs = require('fs');
-            const path = require('path');
-
             const viteConfigPath = path.resolve(__dirname, '../../config/vite.config.js');
             const viteContent = fs.readFileSync(viteConfigPath, 'utf8');
 
@@ -107,9 +87,6 @@ describe('App Integration', () => {
         });
 
         it('should have proper test configuration', () => {
-            const fs = require('fs');
-            const path = require('path');
-
             const vitestConfigPath = path.resolve(__dirname, '../../config/vitest.config.js');
             const vitestContent = fs.readFileSync(vitestConfigPath, 'utf8');
 

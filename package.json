@@ -60,21 +60,13 @@
         "prepare": "husky"
     },
     "dependencies": {
-        "@phosphor-icons/web": "2.1.1",
-        "@tailwindcss/postcss": "^4.1.11",
         "@vueuse/core": "^13.6.0",
-        "autoprefixer": "^10.4.21",
-        "cssnano": "^7.1.0",
         "pinia": "^3.0.3",
-        "postcss": "^8.5.6",
-        "primeicons": "^7.0.0",
-        "primevue": "4.3.6",
-        "tailwindcss": "^4.1.11",
-        "vue": "^3.5.18",
-        "vue3-grid-layout-next": "^1.0.7"
+        "vue": "^3.5.18"
     },
     "devDependencies": {
         "@eslint/js": "^9.32.0",
+        "@tailwindcss/postcss": "^4.3.3",
         "@testing-library/jest-dom": "^6.6.4",
         "@testing-library/vue": "^8.1.0",
         "@types/node": "^24.1.0",
@@ -84,7 +76,9 @@
         "@vitest/coverage-v8": "3.2.4",
         "@vitest/ui": "^3.2.4",
         "@vue/test-utils": "^2.4.6",
+        "autoprefixer": "^10.6.1",
         "copyfiles": "^2.4.1",
+        "cssnano": "^7.1.9",
         "eslint": "^9.32.0",
         "eslint-config-prettier": "^10.1.8",
         "eslint-plugin-prettier": "^5.5.3",
@@ -93,7 +87,9 @@
         "husky": "^9.1.7",
         "jsdom": "^26.1.0",
         "lint-staged": "^17.0.5",
+        "postcss": "^8.5.30",
         "prettier": "^3.6.2",
+        "tailwindcss": "^4.3.3",
         "typescript": "^5.8.3",
         "vite": "^7.0.6",
         "vitest": "^3.2.4",

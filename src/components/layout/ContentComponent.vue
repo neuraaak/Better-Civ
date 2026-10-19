@@ -2,15 +2,15 @@
     <main class="content">
         <section class="hero">
             <p class="eyebrow">
-                <i class="ph ph-bank" aria-hidden="true"></i>{{ ui.ranking }} ·
-                {{ toRoman(civilisations.length) }} {{ ui.civilizations }}
+                <PhIcon name="bank" />{{ ui.ranking }} · {{ toRoman(civilisations.length) }}
+                {{ ui.civilizations }}
             </p>
             <h1>{{ ui.heroTitle }}</h1>
         </section>
 
         <section class="controls" :aria-label="ui.filters">
             <label class="search-control">
-                <i class="ph ph-magnifying-glass" aria-hidden="true"></i>
+                <PhIcon name="magnifying-glass" />
                 <input
                     v-model="searchedText"
                     type="search"
@@ -24,7 +24,7 @@
                     :aria-label="ui.reset"
                     @click="searchedText = ''"
                 >
-                    <i class="ph ph-x" aria-hidden="true"></i>
+                    <PhIcon name="x" />
                 </button>
             </label>
 
@@ -83,7 +83,7 @@
                         :aria-pressed="groupMode === 'tier'"
                         @click="groupMode = 'tier'"
                     >
-                        <i class="ph ph-ranking" aria-hidden="true"></i>{{ ui.byTier }}
+                        <PhIcon name="ranking" />{{ ui.byTier }}
                     </button>
                     <button
                         type="button"
@@ -91,7 +91,7 @@
                         :aria-pressed="groupMode === 'alpha'"
                         @click="groupMode = 'alpha'"
                     >
-                        <i class="ph ph-sort-ascending" aria-hidden="true"></i>{{ ui.alphabetical }}
+                        <PhIcon name="sort-ascending" />{{ ui.alphabetical }}
                     </button>
                 </div>
             </div>
@@ -177,6 +177,7 @@
 </template>
 
 <script setup>
+    import PhIcon from '../icons/PhIcon.vue';
     import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
     import { translationStore } from '../../stores/index';
     import CivCardComponent from '../civilisations/CivCardComponent.vue';

@@ -1,8 +1,8 @@
 <template>
     <label class="language-select">
-        <i class="ph ph-globe-simple" aria-hidden="true"></i>
+        <PhIcon name="globe-simple" />
         <span class="language-current">{{ currentLabel }}</span>
-        <i class="ph ph-caret-down language-caret" aria-hidden="true"></i>
+        <PhIcon name="caret-down" class="language-caret" />
         <select v-model="selectedLang" aria-label="Langue" @change="updateLanguage">
             <option v-for="option in options" :key="option.lang" :value="option.lang">
                 {{ option.label }} {{ option.flag }}
@@ -12,6 +12,7 @@
 </template>
 
 <script setup>
+    import PhIcon from '../icons/PhIcon.vue';
     /**
      * Select Language Component - Language selector dropdown
      * A native <select> laid over a ghost button, so the control keeps native

@@ -15,7 +15,7 @@
                         :aria-label="ui.previous"
                         @click="$emit('previous')"
                     >
-                        <i class="ph ph-caret-left" aria-hidden="true"></i>
+                        <PhIcon name="caret-left" />
                     </button>
                     <button
                         type="button"
@@ -23,7 +23,7 @@
                         :aria-label="ui.next"
                         @click="$emit('next')"
                     >
-                        <i class="ph ph-caret-right" aria-hidden="true"></i>
+                        <PhIcon name="caret-right" />
                     </button>
                     <span v-if="position" class="panel-position">{{ position }}</span>
                     <button
@@ -33,7 +33,7 @@
                         :aria-label="ui.close"
                         @click="$emit('close')"
                     >
-                        <i class="ph ph-x" aria-hidden="true"></i>
+                        <PhIcon name="x" />
                     </button>
                 </div>
 
@@ -66,7 +66,7 @@
 
                 <section v-if="civ_leader_effect" class="panel-section">
                     <span class="section-label section-label-accent">
-                        <i class="ph ph-star-four" aria-hidden="true"></i>{{ ui.bonus }}
+                        <PhIcon name="star-four" />{{ ui.bonus }}
                     </span>
                     <div class="bonus-block">
                         <strong v-if="civ_trait_name">{{ cleanName(civ_trait_name) }}</strong>
@@ -76,7 +76,7 @@
 
                 <section v-if="civ_leader" class="panel-section">
                     <span class="section-label">
-                        <i class="ph ph-crown-simple" aria-hidden="true"></i>{{ ui.leader }}
+                        <PhIcon name="crown-simple" />{{ ui.leader }}
                     </span>
                     <div class="leader-block">
                         <div class="leader-portrait">
@@ -95,7 +95,7 @@
                 <div v-if="units.length || buildings.length" class="unique-columns">
                     <section class="panel-section">
                         <span class="section-label">
-                            <i class="ph ph-sword" aria-hidden="true"></i>{{ ui.uniqueUnits }}
+                            <PhIcon name="sword" />{{ ui.uniqueUnits }}
                         </span>
                         <div v-for="item in units" :key="item.name" class="unique-item">
                             <span class="unique-icon">
@@ -106,8 +106,7 @@
                     </section>
                     <section class="panel-section">
                         <span class="section-label">
-                            <i class="ph ph-castle-turret" aria-hidden="true"></i
-                            >{{ ui.uniqueBuildings }}
+                            <PhIcon name="castle-turret" />{{ ui.uniqueBuildings }}
                         </span>
                         <div v-for="item in buildings" :key="item.name" class="unique-item">
                             <span class="unique-icon">
@@ -120,7 +119,7 @@
 
                 <section v-if="desc" class="panel-section">
                     <span class="section-label">
-                        <i class="ph ph-book-open-text" aria-hidden="true"></i>{{ ui.history }}
+                        <PhIcon name="book-open-text" />{{ ui.history }}
                     </span>
                     <p class="civilization-description">{{ desc }}</p>
                 </section>
@@ -129,7 +128,7 @@
 
         <footer class="panel-navigation">
             <button class="panel-previous" type="button" @click="$emit('previous')">
-                <i class="ph ph-arrow-left" aria-hidden="true"></i>
+                <PhIcon name="arrow-left" />
                 <span class="nav-text">
                     <small>{{ ui.previous }}</small>
                     <strong>{{ cleanName(previous_name) || displayName }}</strong>
@@ -140,13 +139,14 @@
                     <small>{{ ui.next }}</small>
                     <strong>{{ cleanName(next_name) || displayName }}</strong>
                 </span>
-                <i class="ph ph-arrow-right" aria-hidden="true"></i>
+                <PhIcon name="arrow-right" />
             </button>
         </footer>
     </article>
 </template>
 
 <script setup>
+    import PhIcon from '../icons/PhIcon.vue';
     import { computed } from 'vue';
     import { translationStore } from '../../stores/index';
     import { uiCopy } from '../uiCopy';
@@ -180,7 +180,7 @@
     const badge = computed(() => tierBadge(props.tier_id, store.getLanguage));
     const ui = computed(() => uiCopy(store.getLanguage));
     const displayName = computed(() => cleanName(props.name));
-    const civBackground = computed(() => '/img/card-cover2.jpg');
+    const civBackground = computed(() => '/img/card-cover.webp');
     const units = computed(() => (props.civ_units || []).map(normalizeItem));
     const buildings = computed(() => (props.civ_building || []).map(normalizeItem));
 

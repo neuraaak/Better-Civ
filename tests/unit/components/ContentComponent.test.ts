@@ -81,13 +81,6 @@ describe('ContentComponent', () => {
             expect(wrapper.find('.result-count').text()).toBe('3 résultats');
         });
 
-        it('no longer renders the legacy select/search widgets', () => {
-            const wrapper = mountContent();
-
-            expect(wrapper.findComponent({ name: 'SelectInputComponent' }).exists()).toBe(false);
-            expect(wrapper.findComponent({ name: 'SearchInputComponent' }).exists()).toBe(false);
-        });
-
         it('colours each category dot with its category colour', () => {
             const wrapper = mountContent();
             const dots = wrapper.findAll('.category-chip .dot');

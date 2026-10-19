@@ -2,7 +2,13 @@
     <header class="header">
         <div class="brand">
             <div class="brand-mark">
-                <img src="/img/logo.png" alt="Logo Better-Civ" class="logo" />
+                <img
+                    src="/img/logo.webp"
+                    alt="Logo Better-Civ"
+                    class="logo"
+                    width="32"
+                    height="32"
+                />
             </div>
             <div class="brand-text">
                 <p class="brand-title">Tier List</p>
