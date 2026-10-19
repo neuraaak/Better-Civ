@@ -1,0 +1,9 @@
+{
+    "ignore": [".github", "node_modules", "dist", "tests"],
+    "rules": {
+        "disable": ["magic-numbers"]
+    },
+    "thresholds": {
+        "maxFileLines": 500
+    }
+}

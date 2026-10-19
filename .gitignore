@@ -19,6 +19,7 @@ pnpm-debug.log*
 
 # Fichiers et dossiers de cache
 .cache/
+*.tsbuildinfo
 dist/
 temp/
 .temp/
@@ -48,6 +49,9 @@ temp/
 
 # VS Code
 .vscode/
+
+# Workflows CI temporaires
+.github/workflows/
 
 # Cursor IDE
 .cursor/
