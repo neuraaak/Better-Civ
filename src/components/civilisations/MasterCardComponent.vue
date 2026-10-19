@@ -1,221 +1,116 @@
 <template>
-    <div class="h-full rounded-xl">
-        <div class="content w-full h-full rounded-xl overflow-hidden">
-            <div
-                class="back absolute flex justify-center items-center w-full h-full bg-zinc-800"
-                style="background-color: rgb(39 39 42) !important"
-            >
-                <div
-                    class="back-content absolute flex justify-center items-center bg-zinc-900 rounded-xl"
+    <article class="civilization-panel" :style="tierPalette">
+        <div class="panel-accent" :style="{ background: tierPalette['--tier-line'] }"></div>
+        <header class="panel-hero">
+            <img class="hero-visual" alt="" :src="civBackground" />
+            <div class="hero-grain"></div>
+            <p class="hero-label">illustration · {{ displayName }}</p>
+            <div class="hero-gradient"></div>
+            <div class="panel-controls">
+                <button
+                    type="button"
+                    aria-label="Civilisation précédente"
+                    @click="$emit('previous')"
                 >
-                    <Card
-                        class="mastercard bg-zinc-950 rounded-xl hover:border-zinc-800 flex flex-col h-full justify-items-stretch"
-                        style="
-                            width: 100%;
-                            overflow: hidden;
-                            background-color: rgb(9 9 11) !important;
-                            border-radius: 0.75rem !important;
-                        "
-                        @click=""
-                    >
-                        <template #header>
-                            <img
-                                :src="civBackground"
-                                alt="user header"
-                                class="object-cover object-top w-full h-[220px]"
-                                style="border-radius: 0.75rem 0.75rem 0 0"
-                            />
-                        </template>
-
-                        <template #title>
-                            <div class="flex flex-row items-baseline gap-0 px-4 pb-1 mt-1">
-                                <div class="flex h-full">
-                                    <img
-                                        :src="civ_icon"
-                                        class="object-contain object-bottom h-[36px] w-auto translate-y-1"
-                                        alt="Icon of the civilization"
-                                    />
-                                </div>
-                                <h1
-                                    class="shrink font-mono font-bold tracking-tighter pl-3"
-                                    :class="sizeClass"
-                                >
-                                    {{ name?.split('|')[0] }}
-                                </h1>
-                                <div class="grow shrink-0 -translate-y-1 pl-4">
-                                    <CivTierComponent :key="tier_id" :tier_id="tier_id" class="">
-                                    </CivTierComponent>
-                                </div>
-                            </div>
-                        </template>
-
-                        <template #subtitle>
-                            <!-- Description -->
-                            <div id="desc">
-                                <h3 class="font-mono font-bold text-md px-4">
-                                    {{ descriptionLabel }}
-                                </h3>
-                                <p
-                                    class="font-sans italic font-light text-sm leading-5 px-4 max-h-16"
-                                    style="overflow-y: scroll"
-                                >
-                                    {{ desc }}
-                                </p>
-                            </div>
-                        </template>
-
-                        <template #content>
-                            <div class="overflow-y-auto">
-                                <!-- Categories -->
-                                <div
-                                    id="category"
-                                    class="bg-zinc-900 rounded-md mt-4 mx-4 px-2 py-1"
-                                    style="background-color: rgb(24 24 27) !important"
-                                >
-                                    <div class="flex flex-row flex-wrap gap-x-1 mt-2 mb-2">
-                                        <CivTagComponent
-                                            v-for="tag_id in tags_id"
-                                            :key="tag_id"
-                                            :tag_id="tag_id"
-                                        >
-                                        </CivTagComponent>
-                                    </div>
-                                </div>
-
-                                <!-- Leader -->
-                                <div
-                                    id="leader"
-                                    class="bg-zinc-900 rounded-md mt-3 mx-4 px-2 py-1"
-                                    style="background-color: rgb(24 24 27) !important"
-                                >
-                                    <!-- <h3 class="font-mono font-bold text-md">{{ civ_leader }}</h3> -->
-                                    <div class="flex flex-row gap-x-1">
-                                        <div
-                                            v-if="civ_leader_icon !== undefined"
-                                            class="flex h-full shrink-0 w-16"
-                                        >
-                                            <img
-                                                :src="civ_leader_icon"
-                                                class="object-contain object-bottom max-h-full w-full translate-y-1"
-                                                alt="Icon of the civilization"
-                                            />
-                                        </div>
-                                        <div
-                                            class="flex flex-col flex-grow shrink flex-nowrap gap-x-1 mb-2"
-                                        >
-                                            <h2 class="font-mono font-bold text-2xl pl-1 pt-1">
-                                                {{ civ_leader?.split('|')[0] }}
-                                            </h2>
-                                            <p
-                                                v-html="civLeaderEffectWithIcons"
-                                                class="font-sans font-light text-sm pl-1 -translate-y-0.5"
-                                            ></p>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!-- Unique items -->
-                                <div class="flex flex-row gap-x-3">
-                                    <!-- Unique unit -->
-                                    <div
-                                        class="flex flex-col bg-zinc-900 rounded-md w-1/2 mt-3 ml-4 px-2 py-1"
-                                        style="background-color: rgb(24 24 27) !important"
-                                    >
-                                        <h3 class="font-mono font-bold text-sm text-left ml-1 mt-1">
-                                            {{ unitsLabel }}
-                                        </h3>
-                                        <div v-for="(unit, index) in unitData" :key="unit.name">
-                                            <div class="flex flex-row gap-x-1 h-8">
-                                                <div class="flex h-full shrink-0 w-6">
-                                                    <img
-                                                        v-if="unit.icon !== undefined"
-                                                        :src="unit.icon"
-                                                        class="object-contain object-center h-full w-full"
-                                                        :alt="unit.name.split('|')[0]"
-                                                    />
-                                                </div>
-                                                <div
-                                                    class="flex flex-col flex-grow shrink flex-nowrap gap-x-1 mb-2"
-                                                >
-                                                    <h3
-                                                        v-if="unit.name !== undefined"
-                                                        class="font-sans font-normal text-sm my-1 pl-1 pt-1"
-                                                    >
-                                                        {{ unit.name.split('|')[0] }}
-                                                    </h3>
-                                                </div>
-                                            </div>
-                                            <div
-                                                v-if="index != unitData.length - 1"
-                                                class="bg-zinc-800 h-[1px] mt-1"
-                                            ></div>
-                                        </div>
-                                    </div>
-
-                                    <!-- Unique building -->
-                                    <div
-                                        class="flex flex-col bg-zinc-900 rounded-md w-1/2 mt-3 mr-4 px-2 py-1"
-                                        style="background-color: rgb(24 24 27) !important"
-                                    >
-                                        <h3 class="font-mono font-bold text-sm text-left ml-1 mt-1">
-                                            {{ buildingsLabel }}
-                                        </h3>
-                                        <div v-for="(building, index) in buildingData">
-                                            <div class="flex flex-row gap-x-1 h-8">
-                                                <div class="flex h-full shrink-0 w-6">
-                                                    <img
-                                                        v-if="building.name !== undefined"
-                                                        :src="building.icon"
-                                                        class="object-contain object-center h-full w-full"
-                                                        :alt="building.name.split('|')[0]"
-                                                    />
-                                                </div>
-                                                <div
-                                                    class="flex flex-col flex-grow shrink flex-nowrap gap-x-1 mb-2"
-                                                >
-                                                    <h3
-                                                        v-if="building.name !== undefined"
-                                                        class="font-sans font-normal text-sm my-1 pl-1 pt-1"
-                                                    >
-                                                        {{ building.name.split('|')[0] }}
-                                                    </h3>
-                                                </div>
-                                            </div>
-                                            <div
-                                                v-if="index != buildingData.length - 1"
-                                                class="bg-zinc-800 h-[1px] mt-1"
-                                            ></div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </template>
-
-                        <template #footer>
-                            <div class="flex flex-row flex-wrap gap-x-2 pl-3 mt-1"></div>
-                        </template>
-                    </Card>
-                </div>
+                    ‹
+                </button>
+                <button type="button" aria-label="Civilisation suivante" @click="$emit('next')">
+                    ›
+                </button>
+                <span class="panel-position">{{ position }}</span>
+                <button
+                    class="panel-close"
+                    type="button"
+                    aria-label="Fermer le panneau"
+                    @click="$emit('close')"
+                >
+                    ×
+                </button>
             </div>
+        </header>
+
+        <div class="panel-content">
+            <section class="panel-heading">
+                <div>
+                    <div class="identity-row">
+                        <img v-if="civ_icon" class="civilization-icon" :src="civ_icon" alt="" />
+                        <h1 class="panel-name">{{ displayName }}</h1>
+                    </div>
+                    <div v-if="tags_id?.length" class="panel-tags">
+                        <CivTagComponent v-for="tag_id in tags_id" :key="tag_id" :tag_id="tag_id" />
+                    </div>
+                </div>
+                <div class="tier-summary">
+                    <div class="tier-meta">
+                        <span>TIER {{ tier.letter }}</span>
+                        <strong :style="{ color: tier.label }">{{ tier.rank }}</strong>
+                    </div>
+                    <CivTierComponent :tier_id="tier_id" class="panel-tier-badge" />
+                </div>
+            </section>
+
+            <div class="ornament" aria-hidden="true"></div>
+
+            <section v-if="civ_leader_effect" class="ability-block">
+                <span>Atout du dirigeant</span>
+                <p>{{ civ_leader_effect }}</p>
+            </section>
+
+            <section v-if="civ_leader" class="leader-block">
+                <img v-if="civ_leader_icon" :src="civ_leader_icon" alt="" />
+                <div>
+                    <span>Dirigeant</span>
+                    <h2 class="leader-name">{{ civ_leader?.split('|')[0] }}</h2>
+                </div>
+            </section>
+
+            <section v-if="uniqueItems.length" class="unique-section">
+                <span class="section-label">Éléments uniques</span>
+                <div class="unique-grid">
+                    <div
+                        v-for="item in uniqueItems"
+                        :key="`${item.type}-${item.name}`"
+                        class="unique-item"
+                    >
+                        <img v-if="item.icon" :src="item.icon" alt="" />
+                        <div>
+                            <span>{{ item.type }}</span>
+                            <strong>{{ item.name }}</strong>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section v-if="desc" class="description-block">
+                <span class="section-label">À propos</span>
+                <p class="civilization-description">{{ desc }}</p>
+            </section>
         </div>
-    </div>
+
+        <footer class="panel-navigation">
+            <button class="panel-previous" type="button" @click="$emit('previous')">
+                <span aria-hidden="true">←</span>
+                <span
+                    ><small>Précédente</small
+                    ><strong>{{ previous_name || displayName }}</strong></span
+                >
+            </button>
+            <span class="panel-position">{{ position }}</span>
+            <button class="panel-next" type="button" @click="$emit('next')">
+                <span
+                    ><small>Suivante</small><strong>{{ next_name || displayName }}</strong></span
+                >
+                <span aria-hidden="true">→</span>
+            </button>
+        </footer>
+    </article>
 </template>
 
 <script setup>
-    /**
-     * Master Card Component - Detailed civilization information display
-     * Shows comprehensive civilization data including units, buildings, and leader information
-     */
-    // IMPORT
-    // ##############
-    import { ref, watch, computed, onMounted, onUnmounted } from 'vue';
-    import { translationStore } from '../../stores/index';
-    import Card from 'primevue/card';
-    import CivTierComponent from './subcomponents/CivTierComponent.vue'; // cspell:ignore subcomponents
-    import CivTagComponent from './subcomponents/CivTagComponent.vue'; // cspell:ignore subcomponents
+    import { computed } from 'vue';
+    import CivTagComponent from './subcomponents/CivTagComponent.vue';
+    import CivTierComponent from './subcomponents/CivTierComponent.vue';
 
-    // VARIABLES
-    // ##############
     const props = defineProps({
         id: Number,
         name: String,
@@ -228,246 +123,368 @@
         civ_leader_effect: String,
         civ_units: Array,
         civ_building: Array,
+        position: String,
+        previous_name: String,
+        next_name: String,
     });
 
-    const store = translationStore();
+    defineEmits(['close', 'previous', 'next']);
 
-    // Component data
-    const unitData = ref([]);
-    const buildingData = ref([]);
-    const descriptionLabel = ref('');
-    const unitsLabel = ref('');
-    const buildingsLabel = ref('');
-    const keywordIcons = ref([]);
-    const sizeClass = ref('');
-
-    // Update translated labels based on current language
-    const updateLabels = () => {
-        descriptionLabel.value = store.getTranslation('description');
-        unitsLabel.value = store.getTranslation('unique_units');
-        buildingsLabel.value = store.getTranslation('unique_buildings');
-    };
-
-    // Set font size based on language (smaller for CJK languages)
-    const sizeLabelUnicode = () => {
-        sizeClass.value = ['jp', 'kr', 'zh'].includes(store.lang)
-            ? 'text-[2.5rem] leading-[3.75rem] translate-y-0.5'
-            : 'text-[2.75rem] leading-[3.5rem]';
-    };
-
-    // Initialize keyword icons from store
-    const buildKeywordIcons = () => {
-        keywordIcons.value = store.getIconKeywordsDict;
-    };
-
-    // COMPUTED
-    const civBackground = computed(() => {
-        return `/img/card-cover2.jpg`;
-    });
-
-    const civLeaderEffectWithIcons = computed(() => {
-        let text = props.civ_leader_effect?.replace(/\[.*?\]/g, '').trim();
-
-        keywordIcons.value.forEach(({ text: keyword, icon }) => {
-            const iconPath = icon;
-            let regex = null;
-            if (['ru', 'jp', 'kr', 'zh'].includes(store.lang)) {
-                regex = new RegExp(`${keyword}`, 'ui');
-            } else {
-                regex = new RegExp(`\\b${keyword}\\b`, 'gi');
-            }
-
-            if (text !== undefined) {
-                text = text.replace(
-                    regex,
-                    `<span class="keyword-icon translate-y-[0.2rem]" style="display: inline-flex; align-items: center; height: 20px;"><img src="${iconPath}" alt="${keyword}" style="display: inline; height: 16px; vertical-align: middle;">${keyword}</span>`
-                );
-            }
-        });
-
-        return text;
-    });
-
-    // WATCHER
-    // ##############
-    watch(
-        () => store.getLanguage,
-        () => {
-            buildKeywordIcons();
+    const tiers = [
+        {
+            letter: 'S',
+            rank: 'Légende',
+            label: 'oklch(0.86 0.1 85)',
+            line: 'linear-gradient(90deg, oklch(0.8 0.14 20), oklch(0.84 0.13 85), oklch(0.8 0.14 155), oklch(0.78 0.13 230), oklch(0.74 0.15 300))',
         },
-        { immediate: false }
-    );
+        { letter: 'A', rank: 'Empire', label: '#b5abfc', line: '#9184d9' },
+        { letter: 'B', rank: 'Royaume', label: 'oklch(0.84 0.11 88)', line: 'oklch(0.8 0.13 85)' },
+        { letter: 'C', rank: 'Cité', label: 'oklch(0.82 0.01 260)', line: 'oklch(0.85 0.01 260)' },
+        { letter: 'D', rank: 'Tribu', label: 'oklch(0.72 0.08 60)', line: 'oklch(0.62 0.08 50)' },
+    ];
 
-    watch(
-        () => store.getLanguage,
-        () => {
-            updateLabels();
-            sizeLabelUnicode();
-            // Call fetchUnitsBuildings whenever language changes
-            fetchUnitsBuildings();
-        },
-        { immediate: true }
-    ); // { immediate: true } ensures that fetchUnitsBuildings is called on component mount
+    const tier = computed(() => tiers[props.tier_id] ?? tiers[4]);
+    const displayName = computed(() => props.name?.split('|')[0] ?? '');
+    const civBackground = computed(() => '/img/card-cover2.jpg');
+    const tierPalette = computed(() => ({ '--tier-line': tier.value.line }));
+    const uniqueItems = computed(() => [
+        ...(props.civ_units || []).map(item => normalizeItem(item, 'Unité')),
+        ...(props.civ_building || []).map(item => normalizeItem(item, 'Bâtiment')),
+    ]);
 
-    // HOOKS
-    // ##############
-    onMounted(() => {
-        fetchUnitsBuildings();
-        buildKeywordIcons();
-
-        const handleMouseMove = e => {
-            for (const card of document.getElementsByClassName('mastercard')) {
-                const rect = card.getBoundingClientRect(),
-                    x = e.clientX - rect.left,
-                    y = e.clientY - rect.top;
-                card.style.setProperty('--mouse-x', `${x}px`);
-                card.style.setProperty('--mouse-y', `${y}px`);
-            }
-        };
-
-        document.addEventListener('mousemove', handleMouseMove);
-
-        // Cleanup on component destruction
-        onUnmounted(() => {
-            document.removeEventListener('mousemove', handleMouseMove);
-        });
-    });
-
-    // FUNCTIONS
-    // ##############
-    async function fetchUnitsBuildings() {
-        // Load unit data
-        const units = props.civ_units || []; // Ensure array exists
-        const unitFetches = units.map(async unit => {
-            try {
-                if (!unit.url) {
-                    return { ...unit, icon: undefined };
-                }
-                const response = await fetch(unit.url.replace('/en/', `/${store.getLanguage}/`));
-                if (!response.ok) throw new Error('Network response was not ok');
-                const data = await response.json();
-                return { ...unit, icon: data.icon }; // Keep name and add icon
-            } catch (error) {
-                console.error('Error fetching unit data:', error);
-                return { ...unit, icon: undefined }; // Handle error by keeping unit name
-            }
-        });
-
-        // Load building data
-        const buildings = props.civ_building || []; // Ensure array exists
-        const buildingFetches = buildings.map(async building => {
-            try {
-                if (!building.url) {
-                    return { ...building, icon: undefined };
-                }
-                const response = await fetch(
-                    building.url.replace('/en/', `/${store.getLanguage}/`)
-                );
-                if (!response.ok) throw new Error('Network response was not ok');
-                const data = await response.json();
-                return { ...building, icon: data.icon }; // Keep name and add icon
-            } catch (error) {
-                console.error('Error fetching building data:', error);
-                return { ...building, icon: undefined }; // Handle error by keeping building name
-            }
-        });
-
-        // Resolve all promises and store results
-        unitData.value = await Promise.all(unitFetches);
-        buildingData.value = await Promise.all(buildingFetches);
-    }
-
-    function getTranslation(key) {
-        const item = translations.find(translation => translation.key === key);
-        const translationObj = item.translations.find(t => t.lang === store.lang);
-        return translationObj ? translationObj.text : key; // Return default key if no translation found
+    function normalizeItem(item, type) {
+        if (typeof item === 'string') return { name: item.split('|')[0], icon: '', type };
+        return { name: item?.name?.split('|')[0] || '', icon: item?.icon || '', type };
     }
 </script>
 
 <style scoped>
-    /* Card content with 3D transform support */
-    .content {
-        transform-style: preserve-3d;
-        transition: transform 300ms;
+    .civilization-panel {
+        min-height: 100%;
+        display: flex;
+        flex-direction: column;
+        color: #f3f5fe;
+        background: linear-gradient(to bottom, #232532, #161826);
     }
-
-    /* Animated background gradient */
-    .back::before {
+    .panel-accent {
         position: absolute;
-        content: ' ';
-        display: block;
-        width: 120%;
-        height: 120%;
-        background-image: linear-gradient(
-            to right,
-            rgb(39 39 42) 0%,
-            rgb(82 82 91) 7%,
-            rgb(113 113 122) 25%,
-            rgb(82 82 91) 38%,
-            rgb(24 24 27) 50%,
-            rgb(82 82 91) 66%,
-            rgb(113 113 122) 75%,
-            rgb(82 82 91) 92%,
-            rgb(39 39 42) 100%
-        );
-        animation: rotation_481 24000ms infinite cubic-bezier(0.172, 0.5, 0.662, 1);
-        box-sizing: content-box !important;
-    }
-
-    /* Background content with padding */
-    .back-content {
-        width: calc(100% - 8px);
-        height: calc(100% - 8px);
-    }
-
-    /* Background rotation animation */
-    @keyframes rotation_481 {
-        0% {
-            transform: rotateZ(0deg);
-        }
-
-        100% {
-            transform: rotateZ(360deg);
-        }
-    }
-
-    /* Master card hover effects */
-    .mastercard:hover::before {
-        opacity: 1;
-    }
-
-    /* Master card pseudo-elements for mouse tracking effects */
-    .mastercard::before,
-    .mastercard::after {
-        pointer-events: none;
-        border-radius: inherit;
-        content: '';
-        height: 100%;
-        left: 0px;
-        opacity: 0;
-        position: absolute;
-        top: 0px;
-        transition: opacity 500ms;
-        width: 100%;
-    }
-
-    /* Primary mouse tracking effect */
-    .mastercard::before {
-        background: radial-gradient(
-            800px circle at var(--mouse-x) var(--mouse-y),
-            rgba(255, 255, 255, 0.06),
-            transparent 40%
-        );
         z-index: 3;
+        top: 0;
+        right: 0;
+        left: 0;
+        height: 0.125rem;
     }
-
-    /* Secondary mouse tracking effect */
-    .mastercard::after {
-        background: radial-gradient(
-            600px circle at var(--mouse-x) var(--mouse-y),
-            rgba(255, 255, 255, 0.4),
-            transparent 40%
+    .panel-hero {
+        position: relative;
+        height: 15rem;
+        overflow: hidden;
+        background: #232532;
+    }
+    .hero-visual {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        opacity: 0.56;
+        filter: saturate(0.7) contrast(1.05);
+    }
+    .hero-grain {
+        position: absolute;
+        inset: 0;
+        background: repeating-linear-gradient(
+            135deg,
+            rgb(233 233 237 / 5%) 0 0.5rem,
+            transparent 0.5rem 1rem
         );
+    }
+    .hero-label {
+        position: absolute;
         z-index: 1;
+        top: 4rem;
+        left: 1.5rem;
+        margin: 0;
+        color: #8e92a3;
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 0.625rem;
+    }
+    .hero-gradient {
+        position: absolute;
+        right: 0;
+        bottom: 0;
+        left: 0;
+        height: 8.75rem;
+        background: linear-gradient(to bottom, transparent, #232532);
+    }
+    .panel-controls {
+        position: absolute;
+        z-index: 2;
+        top: 0.75rem;
+        right: 0.75rem;
+        left: 0.75rem;
+        display: flex;
+        align-items: center;
+        gap: 0.375rem;
+    }
+    .panel-controls button {
+        display: grid;
+        width: 2.125rem;
+        height: 2.125rem;
+        place-items: center;
+        border: 1px solid #595d6c;
+        border-radius: 0.5rem;
+        color: #cfd3e5;
+        background: rgb(22 24 38 / 72%);
+        font-size: 1.25rem;
+        line-height: 1;
+        cursor: pointer;
+    }
+    .panel-controls button:hover {
+        border-color: var(--tier-line);
+        background: #343744;
+    }
+    .panel-controls .panel-close {
+        margin-left: auto;
+        font-size: 1.35rem;
+    }
+    .panel-controls .panel-position {
+        display: block;
+        min-width: 0;
+        padding: 0.25rem 0.5rem;
+        border-radius: 0.375rem;
+        color: #aeb3c6;
+        background: rgb(22 24 38 / 72%);
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 0.6875rem;
+        letter-spacing: 0.08em;
+    }
+    .panel-content {
+        position: relative;
+        z-index: 1;
+        display: flex;
+        flex: 1;
+        flex-direction: column;
+        gap: 1.5rem;
+        padding: 0 1.5rem 1.75rem;
+    }
+    .panel-heading {
+        display: flex;
+        align-items: flex-end;
+        justify-content: space-between;
+        gap: 1rem;
+        margin-top: -3.5rem;
+    }
+    .identity-row {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+    .civilization-icon {
+        width: 2.75rem;
+        height: 2.75rem;
+        object-fit: contain;
+        filter: drop-shadow(0 0.2rem 0.35rem rgb(0 0 0 / 50%));
+    }
+    .panel-name {
+        margin: 0;
+        font-size: clamp(2rem, 7vw, 2.125rem);
+        font-weight: 500;
+        letter-spacing: -0.025em;
+        line-height: 1.05;
+    }
+    .panel-tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.375rem;
+        margin-top: 0;
+    }
+    .tier-summary {
+        display: flex;
+        align-items: flex-end;
+        gap: 0.625rem;
+        flex: none;
+    }
+    .tier-meta {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 0.125rem;
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 0.625rem;
+        letter-spacing: 0.14em;
+        color: #8e92a3;
+    }
+    .tier-meta strong {
+        font-size: 0.6875rem;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+    }
+    .panel-tier-badge {
+        --tier-badge-size: 3.25rem;
+    }
+    .ornament {
+        height: 0.625rem;
+        opacity: 0.6;
+        background-image: repeating-linear-gradient(
+            90deg,
+            transparent 0 0.5rem,
+            #595d6c 0.5rem 0.625rem,
+            transparent 0.625rem 1rem
+        );
+        mask-image: linear-gradient(to right, transparent, #000 12%, #000 88%, transparent);
+    }
+    .ability-block {
+        padding: 0.875rem 1rem;
+        border: 1px solid color-mix(in srgb, var(--tier-line) 38%, transparent);
+        border-radius: 0.625rem;
+        background: linear-gradient(
+            135deg,
+            color-mix(in srgb, var(--tier-line) 16%, transparent),
+            transparent
+        );
+    }
+    .ability-block span,
+    .section-label,
+    .leader-block span,
+    .unique-item span {
+        color: #8e92a3;
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 0.625rem;
+        font-weight: 500;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+    }
+    .ability-block p {
+        margin: 0.35rem 0 0;
+        color: #e3e5ee;
+        font-size: 0.875rem;
+        line-height: 1.55;
+    }
+    .leader-block {
+        display: flex;
+        align-items: center;
+        gap: 0.875rem;
+    }
+    .leader-block img {
+        width: 3.5rem;
+        height: 3.5rem;
+        object-fit: contain;
+        border-radius: 50%;
+        background: #1e202b;
+        box-shadow:
+            0 0 0 1px var(--tier-line),
+            0 0 1.125rem color-mix(in srgb, var(--tier-line) 30%, transparent);
+    }
+    .leader-name {
+        margin: 0.2rem 0 0;
+        font-size: 1rem;
+        font-weight: 500;
+    }
+    .unique-section,
+    .description-block {
+        display: flex;
+        flex-direction: column;
+        gap: 0.625rem;
+    }
+    .unique-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 0.625rem;
+    }
+    .unique-item {
+        display: flex;
+        align-items: center;
+        gap: 0.625rem;
+        min-height: 4rem;
+        padding: 0.625rem;
+        border: 1px solid #3f424d;
+        border-radius: 0.625rem;
+        background: rgb(35 37 50 / 78%);
+    }
+    .unique-item img {
+        width: 2rem;
+        height: 2rem;
+        object-fit: contain;
+    }
+    .unique-item div {
+        display: flex;
+        min-width: 0;
+        flex-direction: column;
+        gap: 0.25rem;
+    }
+    .unique-item strong {
+        overflow: hidden;
+        font-size: 0.8125rem;
+        font-weight: 500;
+        line-height: 1.2;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+    .civilization-description {
+        margin: 0;
+        color: #aeb3c6;
+        font-size: 0.875rem;
+        line-height: 1.65;
+        text-wrap: pretty;
+    }
+    .panel-navigation {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        margin-top: auto;
+        border-top: 1px solid #3f424d;
+    }
+    .panel-navigation button {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        min-width: 0;
+        padding: 0.875rem 1.25rem;
+        border: 0;
+        color: #e3e5ee;
+        background: transparent;
+        text-align: left;
+        cursor: pointer;
+    }
+    .panel-navigation button:hover {
+        background: rgb(233 233 237 / 5%);
+    }
+    .panel-navigation button > span:last-child {
+        display: flex;
+        min-width: 0;
+        flex-direction: column;
+        gap: 0.125rem;
+    }
+    .panel-navigation small {
+        color: #8e92a3;
+        font-size: 0.6875rem;
+    }
+    .panel-navigation strong {
+        overflow: hidden;
+        font-size: 0.8125rem;
+        font-weight: 500;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+    .panel-next {
+        justify-content: flex-end;
+        border-left: 1px solid #3f424d !important;
+        text-align: right !important;
+    }
+    @media (max-width: 420px) {
+        .panel-content {
+            padding-inline: 1rem;
+        }
+        .panel-heading {
+            align-items: flex-start;
+        }
+        .panel-tier-badge {
+            --tier-badge-size: 2.75rem;
+        }
+        .unique-grid {
+            grid-template-columns: 1fr;
+        }
+        .panel-navigation button {
+            padding-inline: 0.75rem;
+        }
     }
 </style>

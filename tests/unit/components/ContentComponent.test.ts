@@ -108,6 +108,14 @@ describe('ContentComponent', () => {
     });
 
     describe('Computed Properties', () => {
+        it('groups visible civilizations by tier', () => {
+            const wrapper = mount(ContentComponent, {
+                props: { civilisations: mockCivilizations },
+            });
+
+            expect(wrapper.findAll('[data-testid="tier-section"]')).toHaveLength(2);
+        });
+
         it('should filter civilizations by tags', () => {
             const wrapper = mount(ContentComponent, {
                 props: { civilisations: mockCivilizations },
@@ -230,63 +238,35 @@ describe('ContentComponent', () => {
         });
     });
 
-    describe('Styling', () => {
-        it('should have correct content styling', () => {
+    describe('Tier list layout', () => {
+        it('renders the handoff hero and sticky filter bar', () => {
             const wrapper = mount(ContentComponent, {
                 props: { civilisations: mockCivilizations },
             });
 
-            const content = wrapper.find('.content');
-            expect(content.classes()).toContain('content');
-            expect(content.classes()).toContain('relative');
-            expect(content.classes()).toContain('flex');
-            expect(content.classes()).toContain('flex-col');
-            expect(content.classes()).toContain('align-top');
-            expect(content.classes()).toContain('items-start');
+            expect(wrapper.find('.hero').exists()).toBe(true);
+            expect(wrapper.find('.controls').exists()).toBe(true);
+            expect(wrapper.find('.search-control input').attributes('placeholder')).toBe(
+                'Rechercher une civilisation'
+            );
         });
 
-        it('should have correct overlay styling', () => {
+        it('renders the side detail panel inside its backdrop', () => {
             const wrapper = mount(ContentComponent, {
                 props: { civilisations: mockCivilizations },
             });
 
             const overlay = wrapper.find('.content-overlay');
-            expect(overlay.classes()).toContain('content-overlay');
-            expect(overlay.classes()).toContain('w-full');
-            expect(overlay.classes()).toContain('fixed');
-            expect(overlay.classes()).toContain('flex');
-            expect(overlay.classes()).toContain('flex-row');
-            expect(overlay.classes()).toContain('justify-center');
-            expect(overlay.classes()).toContain('items-center');
-            expect(overlay.classes()).toContain('bg-zinc-950/70');
-            expect(overlay.classes()).toContain('backdrop-blur-md');
-            expect(overlay.classes()).toContain('backdrop-brightness-80');
-            expect(overlay.classes()).toContain('shadow-xl');
+            expect(overlay.exists()).toBe(true);
+            expect(overlay.find('.detail-panel').exists()).toBe(true);
         });
 
-        it('should have correct grid container styling', () => {
+        it('keeps cards in responsive tier grids', () => {
             const wrapper = mount(ContentComponent, {
                 props: { civilisations: mockCivilizations },
             });
 
-            const gridContainer = wrapper.find('.grid-container');
-            expect(gridContainer.classes()).toContain('grid-container');
-            expect(gridContainer.classes()).toContain('mt-8');
-            expect(gridContainer.classes()).toContain('mb-24');
-        });
-
-        it('should have correct fixed content styling', () => {
-            const wrapper = mount(ContentComponent, {
-                props: { civilisations: mockCivilizations },
-            });
-
-            const fixedContent = wrapper.find('.fixedcontent');
-            expect(fixedContent.classes()).toContain('fixedcontent');
-            expect(fixedContent.classes()).toContain('flex');
-            expect(fixedContent.classes()).toContain('flex-row');
-            expect(fixedContent.classes()).toContain('align-top');
-            expect(fixedContent.classes()).toContain('gap-8');
-            expect(fixedContent.classes()).toContain('mt-16');
+            expect(wrapper.findAll('.tier-section .grid-container')).toHaveLength(2);
         });
     });
 
@@ -331,9 +311,7 @@ describe('ContentComponent', () => {
             const civCards = wrapper.findAllComponents({ name: 'CivCardComponent' });
             expect(civCards).toHaveLength(2);
 
-            // Check that props are passed correctly
-            expect(civCards[0].props('id')).toBe(1);
-            expect(civCards[0].props('name')).toBe('France');
+            expect(civCards.map(card => card.props('name'))).toEqual(['Germany', 'France']);
         });
     });
 

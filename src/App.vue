@@ -3,7 +3,6 @@
     <ContentComponent :civilisations="civ_data" />
 
     <!-- Composant de démonstration du lazy loading -->
-    <LazyLoadingDemo v-if="showLazyDemo" />
 </template>
 
 <script setup>
@@ -20,15 +19,12 @@
     const ContentComponent = defineAsyncComponent(
         () => import('./components/layout/ContentComponent.vue')
     );
-    const LazyLoadingDemo = defineAsyncComponent(() => import('./components/LazyLoadingDemo.vue'));
 
     // VARIABLES
     // ##############
     const store = translationStore();
 
     // Afficher la démonstration du lazy loading
-    const showLazyDemo = ref(true);
-
     //
     const civ_data = ref([]);
     const civ_tiers_and_tags = ref([

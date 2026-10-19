@@ -1,81 +1,38 @@
 <template>
-    <Card
-        class="bg-zinc-950 border-4 border-zinc-900 rounded-xl hover:border-zinc-800 flex flex-col h-full justify-items-stretch pb-1"
-        style="
-            width: 100%;
-            overflow: hidden;
-            background-color: rgb(9 9 11) !important;
-            border-radius: 0.75rem !important;
-        "
-        @click="toggleSelected"
+    <article
+        class="portrait-card"
+        role="button"
+        tabindex="0"
+        :style="tierPalette"
+        :aria-label="`Ouvrir les détails de ${displayName}`"
+        @click="openDetails"
+        @keydown.enter.prevent="openDetails"
+        @keydown.space.prevent="openDetails"
     >
-        <template #header>
-            <img alt="user header" :src="imagePath" />
-        </template>
+        <img class="card-visual" alt="" :src="imagePath" />
+        <div class="card-grain"></div>
+        <p class="visual-label">visuel · {{ displayName }}</p>
+        <div class="card-gradient"></div>
+        <div class="tier-frame"></div>
+        <div class="tier-accent"></div>
 
-        <template #title>
-            <div class="flex flex-row items-baseline gap-0 pb-1">
-                <h1 class="shrink font-mono font-bold px-3 pt-2" :class="sizeClass">
-                    {{ name?.split('|')[0] }}
-                </h1>
-                <CivTierComponent
-                    :key="tier_id"
-                    :tier_id="tier_id"
-                    class="shrink-0 -translate-y-0.5 pr-3"
-                >
-                </CivTierComponent>
+        <CivTierComponent :tier_id="tier_id" class="card-tier-badge" />
+
+        <div class="card-footer">
+            <h2>{{ displayName }}</h2>
+            <div v-if="tags_id?.length" class="card-tags">
+                <CivTagComponent v-for="tag_id in tags_id" :key="tag_id" :tag_id="tag_id" />
             </div>
-        </template>
-
-        <template #subtitle>
-            <p
-                class="font-sans italic font-light text-sm leading-5 px-3 h-16"
-                style="overflow-y: scroll"
-            >
-                {{ desc }}
-            </p>
-            <div
-                id="leader"
-                class="bg-zinc-900 rounded-md mt-2 mx-2 px-2 pb-2 max-h-[3.75rem] min-h-[3.75rem] overflow-y-auto"
-            >
-                <p
-                    v-html="civLeaderEffectWithIcons"
-                    class="font-sans font-light text-sm pl-1 py-1"
-                ></p>
-            </div>
-        </template>
-
-        <template #content>
-            <div class="h-1"></div>
-        </template>
-
-        <template #footer>
-            <div class="flex flex-row flex-wrap gap-x-2 px-3 mt-2 pb-3">
-                <CivTagComponent
-                    v-for="tag_id in tags_id"
-                    :key="tag_id"
-                    :tag_id="tag_id"
-                ></CivTagComponent>
-            </div>
-        </template>
-    </Card>
+        </div>
+    </article>
 </template>
 
 <script setup>
-    /**
-     * Civilization Card Component - Displays civilization information in a card format
-     * Shows civilization name, tier, description, leader effect, and tags
-     */
-    // IMPORT
-    // ##############
-    import { ref, watch, computed, onMounted } from 'vue';
+    import { computed, ref } from 'vue';
     import { translationStore } from '../../stores/index';
-    import Card from 'primevue/card';
-    import CivTierComponent from './subcomponents/CivTierComponent.vue'; // cspell:ignore subcomponents
-    import CivTagComponent from './subcomponents/CivTagComponent.vue'; // cspell:ignore subcomponents
+    import CivTagComponent from './subcomponents/CivTagComponent.vue';
+    import CivTierComponent from './subcomponents/CivTierComponent.vue';
 
-    // VARIABLES
-    // ##############
     const props = defineProps({
         id: Number,
         name: String,
@@ -86,87 +43,190 @@
     });
 
     const store = translationStore();
-
-    // Component state
     const selectedState = ref(false);
     const selectedCard = ref(null);
-    const keywordIcons = ref([]);
-    const sizeClass = ref('');
 
-    // Initialize keyword icons from store
-    const buildKeywordIcons = () => {
-        keywordIcons.value = store.getIconKeywordsDict;
-    };
-
-    // Set font size based on language (smaller for CJK languages)
-    const sizeLabelUnicode = () => {
-        sizeClass.value = ['jp', 'kr', 'zh'].includes(store.lang)
-            ? 'text-[1.4rem] leading-8'
-            : 'text-2xl';
-    };
-
-    // COMPUTED
-    const imagePath = computed(() => {
-        return `/img/card-cover2.jpg`;
-    });
-
-    const civLeaderEffectWithIcons = computed(() => {
-        let text = props.civ_leader_effect?.replace(/\[.*?\]/g, '').trim();
-
-        keywordIcons.value.forEach(({ text: keyword, icon }) => {
-            const iconPath = icon;
-            let regex = null;
-            if (['ru', 'jp', 'kr', 'zh'].includes(store.lang)) {
-                regex = new RegExp(`${keyword}`, 'ui');
-            } else {
-                regex = new RegExp(`\\b${keyword}\\b`, 'gi');
-            }
-
-            if (text !== undefined) {
-                text = text.replace(
-                    regex,
-                    `<span class="keyword-icon translate-y-[0.2rem]" style="display: inline-flex; align-items: center; height: 20px;"><img src="${iconPath}" alt="${keyword}" style="display: inline; height: 16px; vertical-align: middle;">${keyword}</span>`
-                );
-            }
-        });
-
-        return text;
-    });
-
-    // WATCHER
-    // ##############
-    watch(() => store.getLanguage, buildKeywordIcons);
-
-    watch(
-        () => store.getLanguage,
-        () => {
-            sizeLabelUnicode();
+    const displayName = computed(() => props.name?.split('|')[0] ?? '');
+    const imagePath = computed(() => '/img/card-cover2.jpg');
+    const tierPalettes = [
+        {
+            line: 'linear-gradient(90deg, oklch(0.8 0.14 20), oklch(0.84 0.13 85), oklch(0.8 0.14 155), oklch(0.78 0.13 230), oklch(0.74 0.15 300))',
+            frame: 'oklch(0.8 0.12 300 / 0.45)',
+            hover: 'oklch(0.78 0.13 300)',
+            glow: 'oklch(0.78 0.14 300 / 0.3)',
         },
-        { immediate: true }
-    ); // { immediate: true } ensures that sizeLabelUnicode is called on component mount
+        {
+            line: '#9184d9',
+            frame: 'rgb(145 132 217 / 40%)',
+            hover: '#9184d9',
+            glow: 'rgb(145 132 217 / 28%)',
+        },
+        {
+            line: 'oklch(0.8 0.13 85)',
+            frame: 'oklch(0.8 0.13 85 / 0.28)',
+            hover: 'oklch(0.8 0.13 85)',
+            glow: 'oklch(0.8 0.13 85 / 0.28)',
+        },
+        {
+            line: 'oklch(0.85 0.01 260)',
+            frame: 'oklch(0.85 0.01 260 / 0.18)',
+            hover: 'oklch(0.85 0.01 260)',
+            glow: 'oklch(0.85 0.01 260 / 0.2)',
+        },
+        {
+            line: 'oklch(0.62 0.08 50)',
+            frame: 'oklch(0.62 0.08 50 / 0.22)',
+            hover: 'oklch(0.62 0.08 50)',
+            glow: 'oklch(0.62 0.08 50 / 0.22)',
+        },
+    ];
+    const tierPalette = computed(() => {
+        const palette = tierPalettes[props.tier_id] ?? tierPalettes[4];
+        return {
+            '--tier-line': palette.line,
+            '--tier-frame': palette.frame,
+            '--tier-hover': palette.hover,
+            '--tier-glow': palette.glow,
+        };
+    });
 
-    // HOOKS
-    // ##############
-    onMounted(buildKeywordIcons);
-
-    // FUNCTIONS
-    function toggleSelected() {
+    function openDetails() {
         selectedCard.value = props.id;
+        selectedState.value = true;
         store.setSelectedCard(selectedCard.value);
-        //
-        selectedState.value = !selectedState.value;
-        store.setSelectedState(selectedState.value);
+        store.setSelectedState(true);
     }
 </script>
 
 <style scoped>
-    .h-30 {
-        height: 6.5rem;
+    .portrait-card {
+        position: relative;
+        aspect-ratio: 3 / 4;
+        isolation: isolate;
+        overflow: hidden;
+        border-radius: 0.9rem;
+        background: #232532;
+        box-shadow:
+            0 0 0 1px rgb(145 132 217 / 12%),
+            0 0.75rem 1.8rem rgb(0 0 0 / 35%);
+        cursor: pointer;
+        transition:
+            transform 200ms ease,
+            box-shadow 200ms ease;
     }
 
-    .card-height {
-        height: 24rem;
-        max-height: 24rem;
+    .portrait-card:hover {
+        transform: translateY(-0.25rem);
+        box-shadow:
+            0 0 0 1px var(--tier-hover),
+            0 0.9rem 2.25rem rgb(0 0 0 / 55%),
+            0 0 2rem var(--tier-glow);
+    }
+
+    .portrait-card:focus-visible {
+        outline: 2px solid #b5abfc;
+        outline-offset: 0.25rem;
+    }
+
+    .card-visual,
+    .card-grain,
+    .card-gradient,
+    .tier-frame,
+    .tier-accent {
+        position: absolute;
+        pointer-events: none;
+    }
+
+    .card-visual {
+        z-index: -2;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        opacity: 0.52;
+        filter: saturate(0.7) contrast(1.05);
+    }
+
+    .card-grain {
+        z-index: -1;
+        inset: 0;
+        background: repeating-linear-gradient(
+            135deg,
+            rgb(233 233 237 / 5%) 0 0.5rem,
+            transparent 0.5rem 1rem
+        );
+    }
+
+    .visual-label {
+        position: absolute;
+        z-index: 1;
+        top: 3.125rem;
+        left: 0.875rem;
+        margin: 0;
+        color: #8e92a3;
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 0.625rem;
+    }
+
+    .card-gradient {
+        z-index: 0;
+        right: 0;
+        bottom: 0;
+        left: 0;
+        height: 62%;
+        background: linear-gradient(to bottom, transparent, rgb(22 24 38 / 86%) 55%, #161826);
+    }
+
+    .tier-frame {
+        z-index: 2;
+        inset: 0.45rem;
+        border: 1px solid var(--tier-frame);
+        border-radius: 0.625rem;
+        box-shadow: inset 0 0 0 1px rgb(0 0 0 / 8%);
+    }
+
+    .tier-accent {
+        z-index: 2;
+        top: 0.45rem;
+        left: 50%;
+        width: 36%;
+        height: 0.125rem;
+        border-radius: 999px;
+        background: var(--tier-line);
+        transform: translateX(-50%);
+    }
+
+    .card-tier-badge {
+        position: absolute;
+        z-index: 3;
+        top: 0.875rem;
+        left: 0.875rem;
+        --tier-badge-size: 2.5rem;
+    }
+
+    .card-footer {
+        position: absolute;
+        z-index: 3;
+        right: 1rem;
+        bottom: 1rem;
+        left: 1rem;
+        display: flex;
+        flex-direction: column;
+        gap: 0.625rem;
+    }
+
+    h2 {
+        margin: 0;
+        color: #f3f5fe;
+        font-size: clamp(1.1rem, 1.8vw, 1.3125rem);
+        font-weight: 500;
+        letter-spacing: -0.015em;
+        line-height: 1.1;
+    }
+
+    .card-tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.375rem;
     }
 </style>
-../../stores/index./subcomponents/CivTagComponent.vue./subcomponents/CivTierComponent.vue
