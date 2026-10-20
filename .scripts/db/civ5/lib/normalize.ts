@@ -72,6 +72,7 @@ export function normalizeResource(
         language,
         resourceKey,
         sourceUrl,
+        sourceId: Number.isInteger(document.id) ? Number(document.id) : null,
         name: typeof document.name === 'string' ? document.name : null,
         payload: document,
     };

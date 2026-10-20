@@ -1,9 +1,11 @@
-import { mkdir, writeFile } from 'node:fs/promises';
+import { mkdir, rm, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { CIV5_LANGUAGES, CIV5_RESOURCE_KINDS } from './constants';
-import { writeDatabase } from './database';
+import { createFinalDatabase, createStagingDatabase } from './database';
 import { fetchResourceList } from './lib/civvapi-client';
-import { assertSameResourceKeys, deduplicateResources, normalizeResource } from './lib/normalize';
+import { deduplicateResources, normalizeResource } from './lib/normalize';
+import { readStagedResources, stageResources, validateStagingCoverage } from './lib/staging';
+import { transformStagedResources } from './lib/transform';
 import { createFetchJson, type FetchJson } from '../shared/http-client';
 import { createManifest, replaceArtifactsAtomically } from './manifest';
 import type { ImportSummary, NormalizedResource } from './types';
@@ -21,7 +23,6 @@ export async function buildCiv5Database(options: BuildOptions): Promise<ImportSu
         const englishResources = deduplicateResources(
             englishDocuments.map(document => normalizeResource(kind, 'en', document))
         );
-        const expectedKeys = englishResources.map(resource => resource.resourceKey);
         dataset.push(...englishResources);
 
         for (const language of CIV5_LANGUAGES.slice(1)) {
@@ -29,8 +30,6 @@ export async function buildCiv5Database(options: BuildOptions): Promise<ImportSu
             const resources = deduplicateResources(
                 documents.map(document => normalizeResource(kind, language, document))
             );
-            const keys = resources.map(resource => resource.resourceKey);
-            assertSameResourceKeys(expectedKeys, keys, kind, language);
             dataset.push(...resources);
         }
     }
@@ -38,21 +37,45 @@ export async function buildCiv5Database(options: BuildOptions): Promise<ImportSu
     await mkdir(options.outputDirectory, { recursive: true });
     const finalDatabase = join(options.outputDirectory, 'civilization-5.sqlite');
     const finalManifest = join(options.outputDirectory, 'civilization-5.manifest.json');
+    const stagingDatabase = join(options.outputDirectory, 'civilization-5.staging.sqlite');
     const stagedDatabase = `${finalDatabase}.tmp`;
     const stagedManifest = `${finalManifest}.tmp`;
-    writeDatabase(stagedDatabase, dataset);
-    const manifest = await createManifest(stagedDatabase, 1, 'civvapi-v1');
-    await writeFile(stagedManifest, `${JSON.stringify(manifest, null, 2)}\n`);
-    await replaceArtifactsAtomically(
-        { database: stagedDatabase, manifest: stagedManifest },
-        { database: finalDatabase, manifest: finalManifest }
-    );
-
-    return {
-        families: CIV5_RESOURCE_KINDS.length,
-        languages: CIV5_LANGUAGES.length,
-        resources: dataset.length,
-    };
+    try {
+        const staging = createStagingDatabase(stagingDatabase);
+        try {
+            stageResources(staging, dataset);
+            validateStagingCoverage(staging, CIV5_LANGUAGES);
+            const final = createFinalDatabase(stagedDatabase);
+            let summary;
+            try {
+                summary = transformStagedResources(readStagedResources(staging), final);
+                if (final.prepare('PRAGMA foreign_key_check').all().length > 0)
+                    throw new Error('Final Civ V database has foreign key violations');
+            } finally {
+                final.close();
+            }
+            const manifest = await createManifest(stagedDatabase, 2, 'civvapi-v1');
+            await writeFile(stagedManifest, `${JSON.stringify(manifest, null, 2)}\n`);
+            await replaceArtifactsAtomically(
+                { database: stagedDatabase, manifest: stagedManifest },
+                { database: finalDatabase, manifest: finalManifest }
+            );
+            return {
+                families: CIV5_RESOURCE_KINDS.length,
+                languages: CIV5_LANGUAGES.length,
+                resources: dataset.length,
+                ...summary,
+            };
+        } finally {
+            staging.close();
+        }
+    } finally {
+        await Promise.all([
+            rm(stagingDatabase, { force: true }),
+            rm(stagedDatabase, { force: true }),
+            rm(stagedManifest, { force: true }),
+        ]);
+    }
 }
 
 export async function main(): Promise<void> {

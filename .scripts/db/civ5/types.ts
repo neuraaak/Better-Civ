@@ -10,9 +10,12 @@ export interface NormalizedResource {
     language: Language;
     resourceKey: string;
     sourceUrl: string;
+    sourceId: number | null;
     name: string | null;
     payload: ApiDocument;
 }
+
+export interface StagedResource extends NormalizedResource {}
 
 export interface ResourceRelation {
     targetKind: ResourceKind;
@@ -25,4 +28,6 @@ export interface ImportSummary {
     families: number;
     languages: number;
     resources: number;
+    entities: number;
+    translations: number;
 }

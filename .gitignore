@@ -211,3 +211,4 @@ bin/assets/db/*.manifest.json
 
 .senior-review/
 .superpowers/
+.worktrees/

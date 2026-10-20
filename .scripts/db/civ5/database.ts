@@ -1,7 +1,6 @@
 import { DatabaseSync } from 'node:sqlite';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
-import { extractResourceRelations } from './lib/relations';
 import type { NormalizedResource } from './types';
 
 export interface DatabaseSummary {
@@ -9,7 +8,22 @@ export interface DatabaseSummary {
     localizations: number;
 }
 
-const schemaPath = resolve(process.cwd(), '.scripts/db/civ5/schema.sql');
+const finalSchemaPath = resolve(process.cwd(), '.scripts/db/civ5/schema.sql');
+const stagingSchemaPath = resolve(process.cwd(), '.scripts/db/civ5/staging-schema.sql');
+
+function createDatabase(path: string, schemaPath: string): DatabaseSync {
+    const database = new DatabaseSync(path);
+    database.exec(readFileSync(schemaPath, 'utf8'));
+    return database;
+}
+
+export function createStagingDatabase(path: string): DatabaseSync {
+    return createDatabase(path, stagingSchemaPath);
+}
+
+export function createFinalDatabase(path: string): DatabaseSync {
+    return createDatabase(path, finalSchemaPath);
+}
 
 function lastInsertId(database: DatabaseSync): number {
     const row = database.prepare('SELECT last_insert_rowid() AS id').get() as
@@ -22,9 +36,8 @@ export function writeDatabase(
     path: string,
     dataset: readonly NormalizedResource[]
 ): DatabaseSummary {
-    const database = new DatabaseSync(path);
+    const database = createStagingDatabase(path);
     try {
-        database.exec(readFileSync(schemaPath, 'utf8'));
         database.exec('BEGIN');
         database
             .prepare(
@@ -44,9 +57,6 @@ export function writeDatabase(
         const insertLocalization = database.prepare(
             'INSERT INTO resource_localizations (resource_id, language, source_url, name, payload_json) VALUES (?, ?, ?, ?, ?)'
         );
-        const insertRelation = database.prepare(
-            'INSERT OR IGNORE INTO resource_relations (source_resource_id, target_kind, target_resource_key, relation_path, position) VALUES (?, ?, ?, ?, ?)'
-        );
 
         for (const resource of dataset) {
             let resourceId = resourceIds.get(resource.resourceKey);
@@ -62,17 +72,6 @@ export function writeDatabase(
                 resource.name,
                 JSON.stringify(resource.payload)
             );
-            for (const relation of extractResourceRelations(resource.payload)) {
-                if (relation.targetKey !== resource.resourceKey) {
-                    insertRelation.run(
-                        resourceId,
-                        relation.targetKind,
-                        relation.targetKey,
-                        relation.path,
-                        relation.position
-                    );
-                }
-            }
         }
         database.exec('COMMIT');
         return { resources: resourceIds.size, localizations: dataset.length };
