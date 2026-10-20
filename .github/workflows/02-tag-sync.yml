@@ -3,7 +3,7 @@ name: 02 · Tag Sync
 # Release orchestration — three modes driven by tag_action:
 #
 #   create  — push to main, vX.Y.Z tag doesn't exist yet
-#               → create immutable vX.Y.Z + move vX-latest alias
+#               → create immutable vX.Y.Z (no floating vX-latest alias)
 #
 #   skip    — push to main, vX.Y.Z already exists (chore/fix without version bump)
 #               → no tag
@@ -93,32 +93,25 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
-      - name: Create tag & move alias
+      - name: Create tag
         if: steps.gate.outputs.tag_action == 'create'
         env:
-          VERSION: ${{ steps.version.outputs.version }}
+          TAG_NAME: ${{ steps.gate.outputs.tag_name }}
         run: |
-          TAG_NAME="v$VERSION"
-          MAJOR=$(echo "$VERSION" | cut -d. -f1)
-          LATEST_TAG="v${MAJOR}-latest"
-
           git tag "$TAG_NAME"            # NEVER -f: the release tag is immutable
           git push origin "$TAG_NAME"
-          git tag -f "$LATEST_TAG"       # only the alias ever moves
-          git push origin --force "$LATEST_TAG"
-          echo "✅ Created $TAG_NAME, moved $LATEST_TAG"
+          echo "✅ Created $TAG_NAME"
 
       - name: Summary
         env:
           VERSION: ${{ steps.version.outputs.version }}
           TAG_ACTION: ${{ steps.gate.outputs.tag_action }}
         run: |
-          MAJOR=$(echo "$VERSION" | cut -d. -f1)
           {
             echo "## 🏷️ Tag sync"
             echo "- **Version**: $VERSION"
             echo "- **Action**: \`$TAG_ACTION\`"
             if [ "$TAG_ACTION" = "create" ]; then
-              echo "- **Tags**: \`v$VERSION\` (immutable) + \`v${MAJOR}-latest\` (alias moved)"
+              echo "- **Tag**: \`v$VERSION\` (immutable)"
             fi
           } >> "$GITHUB_STEP_SUMMARY"

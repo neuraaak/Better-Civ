@@ -7,7 +7,7 @@ chain follows the shared `00`–`04` architecture; this repo uses the first thre
 ```text
 00-install-deps  ← primes the pnpm store cache (keyed on pnpm-lock.yaml)
 01-ci            ← format, lint, type-check, audit, tests + coverage gate, build
-02-tag-sync      ← orchestrator: CI gate → immutable vX.Y.Z tag + vX-latest alias
+02-tag-sync      ← orchestrator: CI gate → immutable vX.Y.Z tag
 ```
 
 There is no `03-publish` (the app is private, nothing goes to a registry) and
@@ -43,18 +43,19 @@ Together they are `pnpm check` plus the dependency audit and the coverage gate.
 `02-tag-sync` does **not** bump the version — a human writes it in
 `package.json`. One `tag_action` drives the release:
 
-| Context                            | `tag_action` | Tag                    |
-| ---------------------------------- | ------------ | ---------------------- |
-| push to `main`, version is new     | `create`     | `vX.Y.Z` + `vX-latest` |
-| push to `main`, tag already exists | `skip`       | none                   |
-| `workflow_dispatch` off `main`     | `preview`    | none                   |
-| pull request                       | —            | none (`01-ci` only)    |
+| Context                            | `tag_action` | Tag                 |
+| ---------------------------------- | ------------ | ------------------- |
+| push to `main`, version is new     | `create`     | `vX.Y.Z`            |
+| push to `main`, tag already exists | `skip`       | none                |
+| `workflow_dispatch` off `main`     | `preview`    | none                |
+| pull request                       | —            | none (`01-ci` only) |
 
 ## Tag immutability
 
 - **`vX.Y.Z`** — created once, **never force-pushed**. Bump the version to
   release again.
-- **`vX-latest`** — floating major alias, force-pushed on every release.
+- No floating alias (`vX-latest`): nothing consumes this app by tag, so only
+  the release tag exists.
 
 ## CI gates everything
 

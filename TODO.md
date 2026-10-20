@@ -6,7 +6,7 @@ Items deferred from the October 2026 code review. Each one keeps its review ID.
 
 - [x] **01-CONF-003 — Add a CI workflow.** Done: `.github/workflows/` `00-install-deps` →
       `01-ci` (format, lint, `vue-tsc`, `pnpm audit --prod`, `test:coverage`, build) →
-      `02-tag-sync` (CI gate, then immutable `vX.Y.Z` + `vX-latest` on a version bump).
+      `02-tag-sync` (CI gate, then immutable `vX.Y.Z` tag on a version bump).
       Remaining manual step: mark the `01 · CI` jobs as required status checks on `main`.
 
 ## Vercel deployment
