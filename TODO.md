@@ -4,14 +4,10 @@ Items deferred from the October 2026 code review. Each one keeps its review ID.
 
 ## CI pipeline
 
-- [ ] **01-CONF-003 — Add a CI workflow.** No `.github/workflows` exists, so `pnpm check` is
-      never enforced before merge or deploy. Add a workflow that runs on pull requests and on
-      pushes to `main`:
-    - set up pnpm (`packageManager` pins `pnpm@11.1.2`) and Node from `.nvmrc` (24.16.0);
-    - `pnpm install --frozen-lockfile` with the pnpm store cached;
-    - `pnpm check` (format, lint, `vue-tsc` type-check, tests, build);
-    - optionally `pnpm test:coverage`, which fails below the thresholds set in
-      `config/vitest.config.js`.
+- [x] **01-CONF-003 — Add a CI workflow.** Done: `.github/workflows/` `00-install-deps` →
+      `01-ci` (format, lint, `vue-tsc`, `pnpm audit --prod`, `test:coverage`, build) →
+      `02-tag-sync` (CI gate, then immutable `vX.Y.Z` + `vX-latest` on a version bump).
+      Remaining manual step: mark the `01 · CI` jobs as required status checks on `main`.
 
 ## Vercel deployment
 

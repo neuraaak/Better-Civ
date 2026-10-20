@@ -4,16 +4,16 @@ name: 02 · Tag Sync
 #
 #   create  — push to main, vX.Y.Z tag doesn't exist yet
 #               → create immutable vX.Y.Z + move vX-latest alias
-#               → publish to npm (03) then deploy versioned docs (04)
 #
 #   skip    — push to main, vX.Y.Z already exists (chore/fix without version bump)
-#               → no tag, no publish
-#               → redeploy docs to the 'dev' alias so main stays visible
+#               → no tag
 #
 #   preview — workflow_dispatch from a non-main branch
-#               → no tag ever created
-#               → publish: build + pack only (no upload) — tests pipeline resilience
-#               → docs: build only (no deploy, mike without --push)
+#               → no tag ever created; CI gate + version resolution only
+#
+# No 03-publish / 04-docs in this repo: the app is private (nothing goes to a
+# registry) and has no docs site. Vercel deploys main through its Git
+# integration, independently of this cascade.
 #
 # This workflow does NOT bump the version — the human writes it in package.json.
 
@@ -30,7 +30,7 @@ concurrency:
   cancel-in-progress: false # never interrupt an in-flight release
 
 jobs:
-  # Release gate — never publish a red commit.
+  # Release gate — never tag a red commit.
   ci:
     name: CI gate
     uses: ./.github/workflows/01-ci.yml
@@ -46,7 +46,6 @@ jobs:
       tag_action: ${{ steps.gate.outputs.tag_action }} # create | skip | preview
       version: ${{ steps.version.outputs.version }}
       tag_name: ${{ steps.gate.outputs.tag_name }}
-      docs_changed: ${{ steps.changed.outputs.docs }} # only consulted on skip
 
     steps:
       - uses: actions/checkout@9f698171ed81b15d1823a05fc7211befd50c8ae0 # v6.0.3
@@ -66,65 +65,42 @@ jobs:
 
       - name: Determine tag action
         id: gate
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
         run: |
-          VERSION="${{ steps.version.outputs.version }}"
           TAG_NAME="v$VERSION"
           echo "tag_name=$TAG_NAME" >> "$GITHUB_OUTPUT"
 
           # Not on main → preview (dry-run, nothing mutates the world)
-          if [ "${{ github.ref }}" != "refs/heads/main" ]; then
+          if [ "$GITHUB_REF" != "refs/heads/main" ]; then
             echo "tag_action=preview" >> "$GITHUB_OUTPUT"
-            echo "Not on main — preview mode (no tag, no upload, no deploy)."
+            echo "Not on main — preview mode (no tag)."
             exit 0
           fi
 
           # On main: create if tag is new, skip if it already exists
           if git rev-parse -q --verify "refs/tags/$TAG_NAME" >/dev/null; then
             echo "tag_action=skip" >> "$GITHUB_OUTPUT"
-            echo "Tag $TAG_NAME already exists — skip publish, redeploy docs to 'dev'."
+            echo "Tag $TAG_NAME already exists — nothing to release."
           else
             echo "tag_action=create" >> "$GITHUB_OUTPUT"
             echo "Version $VERSION is new — will release $TAG_NAME."
           fi
 
-      # Consulted only on `skip`: a release always redeploys the docs. Unknown
-      # range (first push, dispatch) → 'true': a scoping optimisation must never
-      # be the reason a version ships without its documentation.
-      - name: Determine changed paths
-        id: changed
-        env:
-          BEFORE: ${{ github.event.before }}
+      - name: Configure git
+        if: steps.gate.outputs.tag_action == 'create'
         run: |
-          case "$BEFORE" in
-            '' | 0000000000000000000000000000000000000000)
-              echo "docs=true" >> "$GITHUB_OUTPUT"
-              echo "Unknown diff range — assuming docs changed."
-              exit 0
-              ;;
-          esac
-          # A force-push can leave BEFORE unreachable even with fetch-depth: 0.
-          if ! git cat-file -e "${BEFORE}^{commit}" 2>/dev/null; then
-            echo "docs=true" >> "$GITHUB_OUTPUT"
-            echo "$BEFORE is unreachable — assuming docs changed."
-            exit 0
-          fi
-          if git diff --name-only "$BEFORE" HEAD |
-            grep -qE '^(docs/|cliff\.toml|package\.json|pnpm-lock\.yaml|\.github/workflows/04-docs\.yml)'; then
-            echo "docs=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "docs=false" >> "$GITHUB_OUTPUT"
-          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
 
       - name: Create tag & move alias
         if: steps.gate.outputs.tag_action == 'create'
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
         run: |
-          VERSION="${{ steps.version.outputs.version }}"
           TAG_NAME="v$VERSION"
           MAJOR=$(echo "$VERSION" | cut -d. -f1)
           LATEST_TAG="v${MAJOR}-latest"
-
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
 
           git tag "$TAG_NAME"            # NEVER -f: the release tag is immutable
           git push origin "$TAG_NAME"
@@ -133,9 +109,10 @@ jobs:
           echo "✅ Created $TAG_NAME, moved $LATEST_TAG"
 
       - name: Summary
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+          TAG_ACTION: ${{ steps.gate.outputs.tag_action }}
         run: |
-          VERSION="${{ steps.version.outputs.version }}"
-          TAG_ACTION="${{ steps.gate.outputs.tag_action }}"
           MAJOR=$(echo "$VERSION" | cut -d. -f1)
           {
             echo "## 🏷️ Tag sync"
@@ -145,48 +122,3 @@ jobs:
               echo "- **Tags**: \`v$VERSION\` (immutable) + \`v${MAJOR}-latest\` (alias moved)"
             fi
           } >> "$GITHUB_STEP_SUMMARY"
-
-  # publish is irreversible → runs before docs on create (golden rule #5).
-  # On preview: runs in dry-run (build + pack, no upload).
-  # On skip: not called (already published in a previous event).
-  publish:
-    name: Publish (npm)
-    needs: tag-sync
-    if: needs.tag-sync.outputs.tag_action != 'skip'
-    permissions:
-      contents: read
-      id-token: write
-    uses: ./.github/workflows/03-publish.yml
-    with:
-      version: ${{ needs.tag-sync.outputs.version }}
-      tag_action: ${{ needs.tag-sync.outputs.tag_action }}
-
-  # Docs ordering:
-  #   create  → wait for publish (irreversible first), then deploy vX.Y.Z + latest
-  #   skip    → independent of publish (not called), deploy dev alias
-  #   preview → independent of publish result, build only (no deploy)
-  docs:
-    name: Docs
-    needs: [tag-sync, publish]
-    if: |
-      always() &&
-      needs.tag-sync.result == 'success' &&
-      (
-        needs.tag-sync.outputs.tag_action == 'skip' ||
-        needs.tag-sync.outputs.tag_action == 'preview' ||
-        needs.publish.result == 'success'
-      ) &&
-      (
-        needs.tag-sync.outputs.tag_action != 'skip' ||
-        needs.tag-sync.outputs.docs_changed == 'true'
-      )
-    permissions:
-      # Build-time versioning: the site is deployed as a Pages artifact, so
-      # nothing is pushed to a docs branch — checkout-level read is enough.
-      contents: read
-      pages: write
-      id-token: write
-    uses: ./.github/workflows/04-docs.yml
-    with:
-      version: ${{ needs.tag-sync.outputs.version }}
-      tag_action: ${{ needs.tag-sync.outputs.tag_action }}
