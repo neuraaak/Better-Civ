@@ -3,8 +3,10 @@ import vue from 'eslint-plugin-vue';
 import tseslint from '@typescript-eslint/eslint-plugin';
 import tsparser from '@typescript-eslint/parser';
 import globals from 'globals';
+import vueParser from 'vue-eslint-parser';
 
 export default [
+    { ignores: ['dist/', '_temp/', 'coverage/'] },
     js.configs.recommended,
     {
         files: ['**/*.vue'],
@@ -18,7 +20,7 @@ export default [
                 ...globals.browser,
                 ...globals.es2021,
             },
-            parser: vue.parser,
+            parser: vueParser,
             parserOptions: {
                 ecmaVersion: 2021,
                 sourceType: 'module',
@@ -47,10 +49,21 @@ export default [
         },
         rules: {
             ...tseslint.configs.recommended.rules,
+            // TypeScript already reports undefined identifiers, including DOM types
+            'no-undef': 'off',
             'no-console': 'off',
             'no-debugger': 'off',
             '@typescript-eslint/no-explicit-any': 'warn',
             '@typescript-eslint/no-empty-object-type': 'warn',
+        },
+    },
+    {
+        files: ['tests/**/*.{ts,js}'],
+        languageOptions: {
+            globals: {
+                ...globals.node,
+                ...globals.vitest,
+            },
         },
     },
     {

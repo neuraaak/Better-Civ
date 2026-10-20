@@ -19,6 +19,7 @@ pnpm-debug.log*
 
 # Fichiers et dossiers de cache
 .cache/
+*.tsbuildinfo
 dist/
 temp/
 .temp/
@@ -206,3 +207,6 @@ logs/
 *.backup
 *.old
 *.orig
+
+.senior-review/
+.superpowers/

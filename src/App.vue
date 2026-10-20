@@ -1,158 +1,93 @@
 <template>
-    <HeaderComponent class="fixed" />
-    <ContentComponent :civilisations="civ_data" />
-    <!-- Stagewise Toolbar - Configuration selon la documentation officielle -->
-    <StagewiseToolbar v-if="isDevelopment" :config="stagewiseConfig" />
+    <div class="page">
+        <div class="ambient-glow" aria-hidden="true"></div>
+        <div class="ambient-dots" aria-hidden="true"></div>
+
+        <div class="page-inner">
+            <HeaderComponent />
+            <ContentComponent :civilisations="civilizations" :status="status" @retry="retry" />
+        </div>
+    </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
     // IMPORT
     // ##############
-    import { ref, watch, computed, onMounted, onBeforeUnmount } from 'vue';
-    import { translationStore } from './stores/index';
-    import HeaderComponent from './components/layout/HeaderComponent.vue';
-    import ContentComponent from './components/layout/ContentComponent.vue';
-    import { StagewiseToolbar } from '@stagewise/toolbar-vue';
-    import VuePlugin from '@stagewise-plugins/vue';
+    import { defineAsyncComponent, onMounted, watchEffect } from 'vue';
+    import { useCivilizations } from './composables/useCivilizations';
+    import { htmlLang } from './i18n/languages';
+    import { useAppStore } from './stores/app';
+
+    // Lazy loading des composants lourds
+    const HeaderComponent = defineAsyncComponent(
+        () => import('./components/layout/HeaderComponent.vue')
+    );
+    const ContentComponent = defineAsyncComponent(
+        () => import('./components/layout/ContentComponent.vue')
+    );
 
     // VARIABLES
     // ##############
-    const store = translationStore();
-
-    // Vérification du mode développement
-    const isDevelopment = import.meta.env.DEV;
-
-    // Configuration stagewise selon la documentation officielle
-    const stagewiseConfig = ref({
-        plugins: [VuePlugin],
-    });
-
-    //
-    const civ_data = ref([]);
-    const civ_tiers_and_tags = ref([
-        { id: 1, tags_id: [5, 6], tier_id: 1 }, // 'America'
-        { id: 2, tags_id: [5, 2], tier_id: 0 }, // 'Arabia'
-        { id: 3, tags_id: [6, 1], tier_id: 2 }, // 'Aztecs'
-        { id: 4, tags_id: [6], tier_id: 2 }, // 'China'
-        { id: 5, tags_id: [4], tier_id: 2 }, // 'Egypt'
-        { id: 6, tags_id: [6], tier_id: 1 }, // 'England'
-        { id: 7, tags_id: [1], tier_id: 4 }, // 'France'
-        { id: 8, tags_id: [6, 5], tier_id: 1 }, // 'Germany'
-        { id: 9, tags_id: [0], tier_id: 1 }, // 'Greece'
-        { id: 10, tags_id: [0], tier_id: 4 }, // 'India'
-        { id: 11, tags_id: [0], tier_id: 4 }, // 'Iroquois'
-        { id: 12, tags_id: [6, 1], tier_id: 3 }, // 'Japan'
-        { id: 13, tags_id: [6], tier_id: 3 }, // 'Ottomans'
-        { id: 14, tags_id: [0], tier_id: 0 }, // 'Persia'
-        { id: 15, tags_id: [4], tier_id: 4 }, // 'Rome'
-        { id: 16, tags_id: [4], tier_id: 2 }, // 'Russia'
-        { id: 17, tags_id: [0], tier_id: 3 }, // 'Siam'
-        { id: 18, tags_id: [6], tier_id: 1 }, // 'Songhai'
-        { id: 19, tags_id: [6], tier_id: 1 }, // 'Mongolia'
-        { id: 20, tags_id: [0], tier_id: 1 }, // 'Incas'
-        { id: 21, tags_id: [1], tier_id: 2 }, // 'Spain'
-        { id: 22, tags_id: [6], tier_id: 2 }, // 'Polynesia'
-        { id: 23, tags_id: [6], tier_id: 2 }, // 'Denmark'
-        { id: 24, tags_id: [3], tier_id: 0 }, // 'Korea'
-        { id: 25, tags_id: [3], tier_id: 0 }, // 'Babylon'
-        { id: 26, tags_id: [0], tier_id: 3 }, // 'Austria'
-        { id: 27, tags_id: [2], tier_id: 4 }, // 'Byzantium'
-        { id: 28, tags_id: [0], tier_id: 4 }, // 'Carthage'
-        { id: 29, tags_id: [2], tier_id: 2 }, // 'Celts'
-        { id: 30, tags_id: [6], tier_id: 2 }, // 'Ethiopia'
-        { id: 31, tags_id: [6, 4], tier_id: 1 }, // 'Huns'
-        { id: 32, tags_id: [0], tier_id: 1 }, // 'Mayans'
-        { id: 33, tags_id: [0], tier_id: 2 }, // 'Netherlands'
-        { id: 34, tags_id: [0], tier_id: 2 }, // 'Sweden'
-        { id: 35, tags_id: [3], tier_id: 3 }, // 'Assyria'
-        { id: 36, tags_id: [1], tier_id: 2 }, // 'Brazil'
-        { id: 37, tags_id: [0], tier_id: 4 }, // 'Indonesia'
-        { id: 38, tags_id: [5, 1], tier_id: 2 }, // 'Morocco'
-        { id: 39, tags_id: [0], tier_id: 0 }, // 'Poland'
-        { id: 40, tags_id: [5], tier_id: 4 }, // 'Portugal'
-        { id: 41, tags_id: [0], tier_id: 2 }, // 'Shoshone'
-        { id: 42, tags_id: [5], tier_id: 1 }, // 'Venice'
-        { id: 43, tags_id: [6], tier_id: 0 }, // 'Zulus'
-    ]);
-
-    // COMPUTED
-    // ##############
-    const fetchUrl = computed(
-        () =>
-            `https://eyefyre.github.io/civvapi/v1/${store.getLanguage}/civilizations/civilizations.json`
-    );
-
-    // WATCHER
-    // ##############
-    watch(
-        () => store.getLanguage,
-        (newLanguage, oldLanguage) => {
-            // Calls fetchCivilizations every time the language changes
-            fetchCivilizations();
-        },
-        { immediate: true }
-    ); // { immediate: true } ensures that fetchCivilizations is called when the component mounts
+    const store = useAppStore();
+    const { civilizations, status, retry } = useCivilizations(() => store.lang);
 
     // HOOKS
     // ##############
     onMounted(() => {
         document.title = 'Better Civ5';
-        document.documentElement.lang = 'fr';
-        window.addEventListener('mousemove', movingBackground);
-        fetchCivilizations();
-
-        // Debug: Vérifier si stagewise est chargé
-        console.log('Stagewise config:', stagewiseConfig.value);
-        console.log('VuePlugin:', VuePlugin);
-        console.log('StagewiseToolbar component:', StagewiseToolbar);
     });
-
-    onBeforeUnmount(() => {
-        window.removeEventListener('mousemove', movingBackground);
+    // Screen readers and hyphenation follow the language picked in the selector
+    watchEffect(() => {
+        document.documentElement.lang = htmlLang(store.lang);
     });
+</script>
 
-    // FUNCTIONS
-    // ##############
-    function movingBackground(event) {
-        const { clientX, clientY } = event;
-        const screenWidth = window.innerWidth;
-        const screenHeight = window.innerHeight;
-
-        // Reduces movement to 10% of mouse position and reverses direction
-        const positionX = 50 - (clientX / screenWidth) * 2;
-        const positionY = 50 - (clientY / screenHeight) * 2;
-
-        document.body.style.backgroundPosition = `${positionX}% ${positionY}%`;
+<style scoped>
+    .page {
+        position: relative;
+        min-height: 100vh;
+        overflow-x: clip;
+        color: var(--color-text);
+        background: var(--color-bg);
+        font-family: var(--font-body);
     }
-
-    async function fetchCivilizations() {
-        try {
-            const response = await fetch(fetchUrl.value);
-            if (!response.ok) throw new Error('Network response was not ok');
-            let data = await response.json();
-            civ_data.value = mergeCivilizationData(data);
-            // console.log(civ_data.value)
-        } catch (error) {
-            console.error('There has been a problem with your fetch operation:', error);
+    .ambient-glow,
+    .ambient-dots {
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+    }
+    .ambient-glow {
+        background:
+            radial-gradient(
+                900px 520px at 12% -8%,
+                color-mix(in srgb, var(--color-accent) 16%, transparent),
+                transparent 70%
+            ),
+            radial-gradient(
+                700px 500px at 100% 0%,
+                color-mix(in srgb, var(--color-section) 60%, transparent),
+                transparent 70%
+            );
+    }
+    .ambient-dots {
+        background-image: radial-gradient(
+            color-mix(in srgb, var(--color-text) 7%, transparent) 1px,
+            transparent 1px
+        );
+        background-size: 22px 22px;
+        -webkit-mask-image: linear-gradient(to bottom, #000, transparent 640px);
+        mask-image: linear-gradient(to bottom, #000, transparent 640px);
+    }
+    .page-inner {
+        position: relative;
+        max-width: 1480px;
+        margin: 0 auto;
+        padding: 0 40px 80px;
+    }
+    @media (max-width: 800px) {
+        .page-inner {
+            padding-inline: 16px;
         }
     }
-
-    function mergeCivilizationData(civilizations) {
-        return civilizations.map(civ => {
-            // Finds the corresponding object in additionalData
-            let additionalInfo = civ_tiers_and_tags.value.find(addCiv => addCiv.id === civ.id);
-
-            // If found, adds the new properties to the civ object
-            if (additionalInfo) {
-                return {
-                    ...civ,
-                    tags_id: additionalInfo.tags_id,
-                    tier_id: additionalInfo.tier_id,
-                };
-            }
-
-            // If not found, returns the civ object without modifications
-            return civ;
-        });
-    }
-</script>
+</style>

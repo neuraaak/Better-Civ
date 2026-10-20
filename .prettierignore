@@ -1,6 +1,4 @@
 # Configuration files
-.eslintrc.js
-config/.eslintrc.cjs
 config/eslint.config.js
 
 # Build outputs
@@ -38,6 +36,3 @@ pnpm-lock.yaml
 
 # Documentation
 docs/
-
-# Config files
-utils/ 

@@ -1,0 +1,117 @@
+name: 02 · Tag Sync
+
+# Release orchestration — three modes driven by tag_action:
+#
+#   create  — push to main, vX.Y.Z tag doesn't exist yet
+#               → create immutable vX.Y.Z (no floating vX-latest alias)
+#
+#   skip    — push to main, vX.Y.Z already exists (chore/fix without version bump)
+#               → no tag
+#
+#   preview — workflow_dispatch from a non-main branch
+#               → no tag ever created; CI gate + version resolution only
+#
+# No 03-publish / 04-docs in this repo: the app is private (nothing goes to a
+# registry) and has no docs site. Vercel deploys main through its Git
+# integration, independently of this cascade.
+#
+# This workflow does NOT bump the version — the human writes it in package.json.
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch: # run manually from any branch to test preview mode
+
+permissions:
+  contents: read # minimum for 01-ci nested workflow_call (checkout + install-deps)
+
+concurrency:
+  group: tag-sync-${{ github.ref }}
+  cancel-in-progress: false # never interrupt an in-flight release
+
+jobs:
+  # Release gate — never tag a red commit.
+  ci:
+    name: CI gate
+    uses: ./.github/workflows/01-ci.yml
+
+  tag-sync:
+    name: Tag sync
+    needs: ci
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    permissions:
+      contents: write # push tags
+    outputs:
+      tag_action: ${{ steps.gate.outputs.tag_action }} # create | skip | preview
+      version: ${{ steps.version.outputs.version }}
+      tag_name: ${{ steps.gate.outputs.tag_name }}
+
+    steps:
+      - uses: actions/checkout@9f698171ed81b15d1823a05fc7211befd50c8ae0 # v6.0.3
+        with:
+          fetch-depth: 0 # full history: need every tag
+
+      - name: Resolve version
+        id: version
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+          if [ -z "$VERSION" ]; then
+            echo "::error::No version found in package.json"
+            exit 1
+          fi
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "Version: $VERSION"
+
+      - name: Determine tag action
+        id: gate
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          TAG_NAME="v$VERSION"
+          echo "tag_name=$TAG_NAME" >> "$GITHUB_OUTPUT"
+
+          # Not on main → preview (dry-run, nothing mutates the world)
+          if [ "$GITHUB_REF" != "refs/heads/main" ]; then
+            echo "tag_action=preview" >> "$GITHUB_OUTPUT"
+            echo "Not on main — preview mode (no tag)."
+            exit 0
+          fi
+
+          # On main: create if tag is new, skip if it already exists
+          if git rev-parse -q --verify "refs/tags/$TAG_NAME" >/dev/null; then
+            echo "tag_action=skip" >> "$GITHUB_OUTPUT"
+            echo "Tag $TAG_NAME already exists — nothing to release."
+          else
+            echo "tag_action=create" >> "$GITHUB_OUTPUT"
+            echo "Version $VERSION is new — will release $TAG_NAME."
+          fi
+
+      - name: Configure git
+        if: steps.gate.outputs.tag_action == 'create'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Create tag
+        if: steps.gate.outputs.tag_action == 'create'
+        env:
+          TAG_NAME: ${{ steps.gate.outputs.tag_name }}
+        run: |
+          git tag "$TAG_NAME"            # NEVER -f: the release tag is immutable
+          git push origin "$TAG_NAME"
+          echo "✅ Created $TAG_NAME"
+
+      - name: Summary
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+          TAG_ACTION: ${{ steps.gate.outputs.tag_action }}
+        run: |
+          {
+            echo "## 🏷️ Tag sync"
+            echo "- **Version**: $VERSION"
+            echo "- **Action**: \`$TAG_ACTION\`"
+            if [ "$TAG_ACTION" = "create" ]; then
+              echo "- **Tag**: \`v$VERSION\` (immutable)"
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"

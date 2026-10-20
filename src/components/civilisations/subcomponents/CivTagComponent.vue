@@ -1,33 +1,64 @@
 <template>
-    <Tag>
-        <div class="font-sans font-light text-xs">
-            <span
-                class="bg-zinc-700 px-3 py-0.5 font-medium tracking-wider rounded-xl"
-                :class="store.getTagPropertyById(tag_id, 'color')"
-                >{{ store.getTagPropertyById(tag_id, 'label') }}</span
-            >
-        </div>
-    </Tag>
+    <span class="civ-tag" :class="`civ-tag-${variant}`" :style="{ '--tag-color': color }">
+        <span class="category-dot"></span>
+        {{ label }}
+    </span>
 </template>
 
-<script setup>
-    /**
-     * Civilization Tag Component - Displays civilization tags with styling
-     * Uses translation store to get tag properties and colors
-     */
-    // IMPORT
-    // ##############
-    import { translationStore } from '../../../stores/index';
-    import Tag from 'primevue/tag';
+<script setup lang="ts">
+    import { computed } from 'vue';
+    import type { TagId } from '../../../data/taxonomy';
+    import { useMessages } from '../../../i18n/useMessages';
+    import { categoryColor } from '../tierDesign';
 
-    // VARIABLES
-    // ##############
-    const props = defineProps({
-        tag_id: Number,
-    });
+    const props = withDefaults(
+        defineProps<{
+            tag_id: TagId;
+            /** `card` sits over the portrait visual, `panel` is the larger detail-panel tag. */
+            variant?: 'card' | 'panel';
+        }>(),
+        { variant: 'card' }
+    );
 
-    const store = translationStore();
+    const t = useMessages();
+    const label = computed(() => t.value.tags[props.tag_id]);
+    const color = computed(() => categoryColor(props.tag_id));
 </script>
 
-<style scoped></style>
-../../stores/index
+<style scoped>
+    .civ-tag {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        height: 22px;
+        padding: 0 8px;
+        border-radius: 6px;
+        color: var(--color-neutral-300);
+        font-size: 11px;
+        line-height: 1;
+        white-space: nowrap;
+    }
+    .civ-tag-card {
+        background: color-mix(in srgb, var(--color-neutral-900) 80%, transparent);
+        box-shadow: inset 0 0 0 1px var(--color-neutral-800);
+    }
+    .civ-tag-panel {
+        gap: 7px;
+        height: 26px;
+        padding: 0 10px;
+        background: var(--color-neutral-900);
+        color: var(--color-neutral-200);
+        font-size: 12px;
+    }
+    .category-dot {
+        width: 6px;
+        height: 6px;
+        flex: none;
+        border-radius: 50%;
+        background: var(--tag-color);
+    }
+    .civ-tag-panel .category-dot {
+        width: 7px;
+        height: 7px;
+    }
+</style>
