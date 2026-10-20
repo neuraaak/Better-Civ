@@ -57,4 +57,17 @@ describe('Civ V importer constants', () => {
             }
         );
     });
+
+    it('uses a wonder URL as its canonical key when the payload provides one', () => {
+        expect(
+            normalizeResource('wonders', 'en', {
+                id: 1,
+                name: 'Alhambra',
+                url: 'https://eyefyre.github.io/civvapi/v1/en/wonders/alhambra.json',
+            })
+        ).toMatchObject({
+            resourceKey: 'wonders/alhambra',
+            sourceUrl: 'https://eyefyre.github.io/civvapi/v1/en/wonders/alhambra.json',
+        });
+    });
 });

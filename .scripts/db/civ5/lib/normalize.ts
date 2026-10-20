@@ -62,10 +62,7 @@ export function normalizeResource(
         typeof document.url === 'string'
             ? document.url
             : `${CIV5_API_ROOT}/v1/${language}/wonders/id-${fallbackWonderId}.json`;
-    const resourceKey =
-        fallbackWonderId === null
-            ? canonicalResourceKey(sourceUrl)
-            : `wonders/id-${fallbackWonderId}`;
+    const resourceKey = canonicalResourceKey(sourceUrl);
     if (!resourceKey.startsWith(`${kind}/`)) {
         throw new TypeError(`Unexpected resource kind in ${sourceUrl}`);
     }
