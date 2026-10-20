@@ -2,14 +2,15 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import { mount } from '@vue/test-utils';
 import { createPinia, setActivePinia } from 'pinia';
 import MasterCardComponent from '@/components/civilisations/MasterCardComponent.vue';
+import type { TagId, TierId } from '@/data/taxonomy';
 
 describe('MasterCardComponent', () => {
     const props = {
         id: 1,
         name: 'France|La France',
         desc: 'Une civilisation culturelle.',
-        tags_id: [1, 2],
-        tier_id: 4,
+        tags_id: [1, 2] as TagId[],
+        tier_id: 4 as TierId,
         civ_icon: '/img/france.png',
         civ_trait_name: 'Grand Tour',
         civ_leader: 'Catherine de Médicis',

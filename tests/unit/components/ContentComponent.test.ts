@@ -1,11 +1,16 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { mount } from '@vue/test-utils';
+import { afterEach, describe, it, expect, beforeEach } from 'vitest';
+import { enableAutoUnmount, mount, type VueWrapper } from '@vue/test-utils';
 import { createPinia, setActivePinia } from 'pinia';
 import ContentComponent from '@/components/layout/ContentComponent.vue';
-import { translationStore } from '@/stores/index';
+import type { LoadStatus } from '@/composables/useCivilizations';
+import { useAppStore } from '@/stores/app';
+import type { Civilization } from '@/types';
+
+// Unmount between tests so window keydown listeners do not leak across tests
+enableAutoUnmount(afterEach);
 
 describe('ContentComponent', () => {
-    const mockCivilizations = [
+    const mockCivilizations: Civilization[] = [
         {
             id: 1,
             name: 'France',
@@ -51,12 +56,15 @@ describe('ContentComponent', () => {
         },
     ];
 
-    const mountContent = (civilisations = mockCivilizations) =>
-        mount(ContentComponent, { props: { civilisations }, attachTo: document.body });
+    const mountContent = (civilisations = mockCivilizations, status: LoadStatus = 'ready') =>
+        mount(ContentComponent, { props: { civilisations, status }, attachTo: document.body });
+
+    /** Ids of the cards in display order. */
+    const visibleIds = (wrapper: VueWrapper) =>
+        wrapper.findAllComponents({ name: 'CivCardComponent' }).map(card => card.props('id'));
 
     beforeEach(() => {
         setActivePinia(createPinia());
-        vi.clearAllMocks();
         document.body.innerHTML = '';
     });
 
@@ -96,9 +104,7 @@ describe('ContentComponent', () => {
 
             await wrapper.findAll('.category-chip')[5].trigger('click'); // Militaire (tag 4)
 
-            expect((wrapper.vm as any).filteredCivilisations.map((civ: any) => civ.id)).toEqual([
-                2, 3,
-            ]);
+            expect(visibleIds(wrapper)).toEqual([2, 3]);
         });
 
         it('filters by tier, dims the other tier chips and toggles back off', async () => {
@@ -106,27 +112,23 @@ describe('ContentComponent', () => {
             const chip = wrapper.findAll('.tier-chip')[1]; // Tier A
 
             await chip.trigger('click');
-            expect((wrapper.vm as any).filteredCivilisations.map((civ: any) => civ.id)).toEqual([
-                2,
-            ]);
+            expect(visibleIds(wrapper)).toEqual([2]);
             expect(
                 wrapper.findAll('.tier-chip')[0].find('.tier-badge').attributes('style')
             ).toContain('opacity: 0.35');
 
             await chip.trigger('click');
-            expect((wrapper.vm as any).filteredCivilisations).toHaveLength(3);
+            expect(visibleIds(wrapper)).toHaveLength(3);
         });
 
         it('searches on the name, ignoring accents and case', async () => {
             const wrapper = mountContent();
 
             await wrapper.find('.search-control input').setValue('egy');
-            expect((wrapper.vm as any).filteredCivilisations.map((civ: any) => civ.id)).toEqual([
-                3,
-            ]);
+            expect(visibleIds(wrapper)).toEqual([3]);
 
             await wrapper.find('.search-control input').setValue('production');
-            expect((wrapper.vm as any).filteredCivilisations).toHaveLength(0);
+            expect(visibleIds(wrapper)).toHaveLength(0);
         });
 
         it('shows the empty state and resets every filter', async () => {
@@ -136,7 +138,7 @@ describe('ContentComponent', () => {
             expect(wrapper.find('.empty-state').exists()).toBe(true);
 
             await wrapper.find('.empty-state button').trigger('click');
-            expect((wrapper.vm as any).filteredCivilisations).toHaveLength(3);
+            expect(visibleIds(wrapper)).toHaveLength(3);
         });
     });
 
@@ -170,10 +172,8 @@ describe('ContentComponent', () => {
     });
 
     describe('Detail panel', () => {
-        const openCiv = async (wrapper: any, id: number) => {
-            const store = translationStore();
-            store.setSelectedCard(id);
-            store.setSelectedState(true);
+        const openCiv = async (wrapper: VueWrapper, id: number) => {
+            useAppStore().openDetail(id);
             await wrapper.vm.$nextTick();
         };
 
@@ -207,11 +207,11 @@ describe('ContentComponent', () => {
 
             window.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight' }));
             await wrapper.vm.$nextTick();
-            expect((wrapper.vm as any).selectedCard).toBe(2);
+            expect(useAppStore().selectedCivId).toBe(2);
 
             window.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowLeft' }));
             await wrapper.vm.$nextTick();
-            expect((wrapper.vm as any).selectedCard).toBe(1);
+            expect(useAppStore().selectedCivId).toBe(1);
         });
 
         it('closes on Escape and on backdrop click', async () => {
@@ -227,13 +227,51 @@ describe('ContentComponent', () => {
             expect(wrapper.find('.detail-panel').classes()).not.toContain('open');
         });
 
+        it('moves to the neighbouring civilization from the panel buttons', async () => {
+            const wrapper = mountContent();
+            await openCiv(wrapper, 2);
+
+            const panel = wrapper.findComponent({ name: 'MasterCardComponent' });
+            expect(panel.props('previous_name')).toBe('France');
+            expect(panel.props('next_name')).toBe('Égypte');
+
+            panel.vm.$emit('next');
+            await wrapper.vm.$nextTick();
+            expect(useAppStore().selectedCivId).toBe(3);
+        });
+
         it('ignores keys when the panel is closed or the list is empty', () => {
-            const wrapper = mountContent([]);
+            mountContent([]);
 
             expect(() => {
                 window.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight' }));
             }).not.toThrow();
-            expect((wrapper.vm as any).selectedCard).toBe(null);
+            expect(useAppStore().selectedCivId).toBe(null);
+        });
+    });
+
+    describe('Loading states', () => {
+        it('shows a loading message before the first list arrives', () => {
+            const wrapper = mountContent([], 'loading');
+
+            expect(wrapper.find('.empty-state h2').text()).toBe('Chargement des civilisations…');
+            expect(wrapper.find('.empty-state button').exists()).toBe(false);
+        });
+
+        it('keeps the previous list visible while another language loads', () => {
+            const wrapper = mountContent(mockCivilizations, 'loading');
+
+            expect(visibleIds(wrapper)).toHaveLength(3);
+        });
+
+        it('shows the error with a retry button that emits retry', async () => {
+            const wrapper = mountContent([], 'error');
+
+            expect(wrapper.find('.empty-state[role="alert"] h2').text()).toBe(
+                'Impossible de charger les civilisations.'
+            );
+            await wrapper.find('.empty-state button').trigger('click');
+            expect(wrapper.emitted('retry')).toHaveLength(1);
         });
     });
 });

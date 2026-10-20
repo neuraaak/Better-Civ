@@ -2,13 +2,11 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import { mount } from '@vue/test-utils';
 import { createPinia, setActivePinia } from 'pinia';
 import SelectLanguageComponent from '@/components/global/SelectLanguageComponent.vue';
+import { useAppStore } from '@/stores/app';
 
 describe('SelectLanguageComponent', () => {
-    let pinia: any;
-
     beforeEach(() => {
-        pinia = createPinia();
-        setActivePinia(pinia);
+        setActivePinia(createPinia());
     });
 
     describe('Template', () => {
@@ -54,63 +52,23 @@ describe('SelectLanguageComponent', () => {
         });
     });
 
-    describe('Data', () => {
-        it('should have correct language options with flags', () => {
+    describe('Language change', () => {
+        it('updates the store language when the user picks one', async () => {
             const wrapper = mount(SelectLanguageComponent);
-            const vm = wrapper.vm as any;
 
-            expect(vm.options).toHaveLength(10);
-            expect(vm.options[0]).toEqual({ label: 'EN', flag: '🇺🇸', lang: 'en' });
-            expect(vm.options[9]).toEqual({ label: 'ZH', flag: '🇨🇳', lang: 'zh' });
+            await wrapper.find('select').setValue('de');
+
+            expect(useAppStore().lang).toBe('de');
         });
 
-        it('should have default selected language', () => {
+        it('reflects a language set elsewhere in the store', async () => {
             const wrapper = mount(SelectLanguageComponent);
-            const vm = wrapper.vm as any;
 
-            expect(vm.selectedLang).toBe('fr');
-        });
-    });
+            useAppStore().setLanguage('ru');
+            await wrapper.vm.$nextTick();
 
-    describe('Methods', () => {
-        it('should call store.setLanguage when language changes', async () => {
-            const wrapper = mount(SelectLanguageComponent);
-            const select = wrapper.find('select');
-
-            await select.setValue('en');
-
-            // Verify that the language was changed
-            expect((wrapper.vm as any).selectedLang).toBe('en');
-        });
-
-        it('should call store.setLanguage with correct language code', async () => {
-            const wrapper = mount(SelectLanguageComponent);
-            const select = wrapper.find('select');
-
-            await select.setValue('de');
-
-            // Verify that the language was changed
-            expect((wrapper.vm as any).selectedLang).toBe('de');
-        });
-    });
-
-    describe('User Interactions', () => {
-        it('should update selected language when user changes selection', async () => {
-            const wrapper = mount(SelectLanguageComponent);
-            const select = wrapper.find('select');
-
-            await select.setValue('es');
-
-            expect((wrapper.vm as any).selectedLang).toBe('es');
-        });
-
-        it('should trigger change event when language is selected', async () => {
-            const wrapper = mount(SelectLanguageComponent);
-            const select = wrapper.find('select');
-
-            await select.setValue('it');
-
-            expect((wrapper.vm as any).selectedLang).toBe('it');
+            expect(wrapper.find('select').element.value).toBe('ru');
+            expect(wrapper.find('.language-current').text()).toBe('RU');
         });
     });
 

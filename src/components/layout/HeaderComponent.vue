@@ -20,7 +20,7 @@
     <div class="meander header-rule" aria-hidden="true"></div>
 </template>
 
-<script setup>
+<script setup lang="ts">
     /**
      * Header Component - Brand bar with logo and language selector
      */

@@ -2,6 +2,11 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { flushPromises, mount } from '@vue/test-utils';
 import { createPinia, setActivePinia } from 'pinia';
 import App from '@/App.vue';
+import { clearCivilizationsCache } from '@/composables/useCivilizations';
+import { useAppStore } from '@/stores/app';
+
+const jsonResponse = (body: unknown, status = 200) =>
+    Promise.resolve(new Response(JSON.stringify(body), { status }));
 
 // Header and Content are async components: wait for their dynamic imports to resolve
 const mountApp = async () => {
@@ -11,73 +16,69 @@ const mountApp = async () => {
     return wrapper;
 };
 
+const cardNames = (wrapper: Awaited<ReturnType<typeof mountApp>>) =>
+    wrapper.findAll('.portrait-card h2').map(title => title.text());
+
 describe('App.vue', () => {
+    const fetchMock = vi.fn();
+
     beforeEach(() => {
         setActivePinia(createPinia());
-        vi.stubGlobal(
-            'fetch',
-            vi.fn().mockResolvedValue({ ok: true, json: () => Promise.resolve([]) })
-        );
+        clearCivilizationsCache();
+        fetchMock.mockReset();
+        vi.stubGlobal('fetch', fetchMock);
+        vi.spyOn(console, 'error').mockImplementation(() => {});
     });
 
     afterEach(() => {
         vi.unstubAllGlobals();
+        vi.restoreAllMocks();
     });
 
-    describe('Template', () => {
-        it('should render App component', () => {
-            const wrapper = mount(App);
-            expect(wrapper.exists()).toBe(true);
-        });
+    it('renders the header and the rated civilizations of the current language', async () => {
+        fetchMock.mockImplementation(() =>
+            jsonResponse([
+                { id: 20, name: 'Inca|Incas' },
+                { id: 21, name: 'Espagne' },
+            ])
+        );
 
-        it('should have header component', async () => {
-            const wrapper = await mountApp();
-            const header = wrapper.findComponent({ name: 'HeaderComponent' });
-            expect(header.exists()).toBe(true);
-        });
+        const wrapper = await mountApp();
 
-        it('should have content component', async () => {
-            const wrapper = await mountApp();
-            const content = wrapper.findComponent({ name: 'ContentComponent' });
-            expect(content.exists()).toBe(true);
-        });
+        expect(fetchMock).toHaveBeenCalledTimes(1);
+        expect(fetchMock.mock.calls[0][0]).toContain('/v1/fr/civilizations/');
+        expect(wrapper.find('.brand-title').text()).toBe('Tier List');
+        // Inca is tier S, Spain tier B
+        expect(cardNames(wrapper)).toEqual(['Inca', 'Espagne']);
     });
 
-    describe('Structure', () => {
-        it('should have proper component structure', async () => {
-            const wrapper = await mountApp();
-            expect(wrapper.findComponent({ name: 'HeaderComponent' }).exists()).toBe(true);
-            expect(wrapper.findComponent({ name: 'ContentComponent' }).exists()).toBe(true);
-        });
+    it('shows an error with a working retry when the API fails', async () => {
+        fetchMock.mockImplementationOnce(() => jsonResponse({}, 500));
+        const wrapper = await mountApp();
 
-        it('should pass civilisations data to ContentComponent', async () => {
-            const wrapper = await mountApp();
-            const contentComponent = wrapper.findComponent({ name: 'ContentComponent' });
-            expect(contentComponent.props('civilisations')).toBeDefined();
-        });
+        expect(wrapper.find('[role="alert"]').text()).toContain(
+            'Impossible de charger les civilisations.'
+        );
+
+        fetchMock.mockImplementationOnce(() => jsonResponse([{ id: 24, name: 'Corée' }]));
+        await wrapper.find('[role="alert"] button').trigger('click');
+        await flushPromises();
+
+        expect(fetchMock).toHaveBeenCalledTimes(2);
+        expect(cardNames(wrapper)).toEqual(['Corée']);
     });
 
-    describe('Integration', () => {
-        it('should integrate with Pinia store', () => {
-            const wrapper = mount(App);
-            // App should work with Pinia store
-            expect(wrapper.vm).toBeDefined();
-        });
+    it('reloads the list when the language changes', async () => {
+        fetchMock.mockImplementation((url: string) =>
+            jsonResponse([{ id: 7, name: url.includes('/en/') ? 'France (EN)' : 'France' }])
+        );
+        const wrapper = await mountApp();
 
-        it('should handle language changes', () => {
-            const wrapper = mount(App);
-            // App should handle language changes through store
-            expect(wrapper.vm).toBeDefined();
-        });
+        useAppStore().setLanguage('en');
+        await flushPromises();
 
-        it('applies the XML tier ranking while preserving civilizations absent from the report', () => {
-            const wrapper = mount(App);
-            const mergeCivilizationData = (wrapper.vm as any).mergeCivilizationData;
-
-            const [inca, spain] = mergeCivilizationData([{ id: 20 }, { id: 21 }]);
-
-            expect(inca.tier_id).toBe(0);
-            expect(spain.tier_id).toBe(2);
-        });
+        expect(fetchMock.mock.calls[1][0]).toContain('/v1/en/civilizations/');
+        expect(cardNames(wrapper)).toEqual(['France (EN)']);
+        expect(wrapper.find('.hero h1').text()).toBe('Which civilization should you play?');
     });
 });

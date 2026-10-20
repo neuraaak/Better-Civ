@@ -3,16 +3,15 @@
         <PhIcon name="globe-simple" />
         <span class="language-current">{{ currentLabel }}</span>
         <PhIcon name="caret-down" class="language-caret" />
-        <select v-model="selectedLang" aria-label="Langue" @change="updateLanguage">
-            <option v-for="option in options" :key="option.lang" :value="option.lang">
+        <select :value="store.lang" aria-label="Langue" @change="updateLanguage">
+            <option v-for="option in options" :key="option.code" :value="option.code">
                 {{ option.label }} {{ option.flag }}
             </option>
         </select>
     </label>
 </template>
 
-<script setup>
-    import PhIcon from '../icons/PhIcon.vue';
+<script setup lang="ts">
     /**
      * Select Language Component - Language selector dropdown
      * A native <select> laid over a ghost button, so the control keeps native
@@ -20,40 +19,27 @@
      */
     // IMPORT
     // ##############
-    import { computed, ref } from 'vue';
-    import { translationStore } from '../../stores/index';
+    import { computed } from 'vue';
+    import { isLang, LANGUAGES } from '../../i18n/languages';
+    import { useAppStore } from '../../stores/app';
+    import PhIcon from '../icons/PhIcon.vue';
 
     // VARIABLES
     // ##############
-    const store = translationStore();
-
-    // Available languages with flags and labels
-    const options = ref([
-        { label: 'EN', flag: '🇺🇸', lang: 'en' },
-        { label: 'DE', flag: '🇩🇪', lang: 'de' },
-        { label: 'ES', flag: '🇪🇸', lang: 'es' },
-        { label: 'FR', flag: '🇫🇷', lang: 'fr' },
-        { label: 'IT', flag: '🇮🇹', lang: 'it' },
-        { label: 'JP', flag: '🇯🇵', lang: 'jp' },
-        { label: 'KR', flag: '🇰🇷', lang: 'kr' },
-        { label: 'PL', flag: '🇵🇱', lang: 'pl' },
-        { label: 'RU', flag: '🇷🇺', lang: 'ru' },
-        { label: 'ZH', flag: '🇨🇳', lang: 'zh' },
-    ]);
-
-    // Current selected language
-    const selectedLang = ref('fr');
+    const store = useAppStore();
+    const options = LANGUAGES;
 
     // COMPUTED
     // ##############
     const currentLabel = computed(
-        () => options.value.find(option => option.lang === selectedLang.value)?.label ?? 'FR'
+        () => options.find(option => option.code === store.lang)?.label ?? 'FR'
     );
 
     // FUNCTIONS
     // ##############
-    function updateLanguage() {
-        store.setLanguage(selectedLang.value);
+    function updateLanguage(event: Event) {
+        const value = (event.target as HTMLSelectElement).value;
+        if (isLang(value)) store.setLanguage(value);
     }
 </script>
 

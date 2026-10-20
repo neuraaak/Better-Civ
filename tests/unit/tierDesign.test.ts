@@ -13,10 +13,8 @@ describe('tierBadge', () => {
         });
     });
 
-    it('falls back to English copy for an unsupported language', () => {
-        expect(tierBadge(4, 'unknown')).toMatchObject({
-            rank: 'Tribe',
-            sub: 'Behind the curve — best reserved for challenges',
-        });
+    it('falls back to the tier D badge for an unknown tier id', () => {
+        expect(tierBadge(undefined, 'en')).toMatchObject({ letter: 'D', rank: 'Tribe' });
+        expect(tierBadge(99, 'fr')).toMatchObject({ letter: 'D', rank: 'Tribu' });
     });
 });

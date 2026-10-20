@@ -145,52 +145,74 @@
     </article>
 </template>
 
-<script setup>
-    import PhIcon from '../icons/PhIcon.vue';
+<script setup lang="ts">
     import { computed } from 'vue';
-    import { translationStore } from '../../stores/index';
-    import { uiCopy } from '../uiCopy';
+    import type { UniqueItemDto } from '../../api/civApi';
+    import type { TagId, TierId } from '../../data/taxonomy';
+    import { useMessages } from '../../i18n/useMessages';
+    import { useAppStore } from '../../stores/app';
+    import PhIcon from '../icons/PhIcon.vue';
     import CivTagComponent from './subcomponents/CivTagComponent.vue';
     import CivTierComponent from './subcomponents/CivTierComponent.vue';
     import { tierBadge } from './tierDesign';
 
-    const props = defineProps({
-        id: Number,
-        name: String,
-        desc: String,
-        tags_id: Array,
-        tier_id: Number,
-        civ_icon: String,
-        civ_trait_name: String,
-        civ_leader: String,
-        civ_leader_icon: String,
-        civ_leader_subtitle: String,
-        civ_leader_text: String,
-        civ_leader_effect: String,
-        civ_units: Array,
-        civ_building: Array,
-        position: String,
-        previous_name: String,
-        next_name: String,
-    });
+    const props = withDefaults(
+        defineProps<{
+            id: number;
+            name: string;
+            desc?: string;
+            tags_id?: TagId[];
+            tier_id?: TierId;
+            civ_icon?: string;
+            civ_trait_name?: string;
+            civ_leader?: string;
+            civ_leader_icon?: string;
+            civ_leader_subtitle?: string;
+            civ_leader_text?: string;
+            civ_leader_effect?: string;
+            civ_units?: UniqueItemDto[];
+            civ_building?: UniqueItemDto[];
+            position?: string;
+            previous_name?: string;
+            next_name?: string;
+        }>(),
+        {
+            desc: '',
+            tags_id: () => [],
+            tier_id: undefined,
+            civ_icon: undefined,
+            civ_trait_name: undefined,
+            civ_leader: undefined,
+            civ_leader_icon: undefined,
+            civ_leader_subtitle: undefined,
+            civ_leader_text: undefined,
+            civ_leader_effect: undefined,
+            civ_units: () => [],
+            civ_building: () => [],
+            position: '',
+            previous_name: undefined,
+            next_name: undefined,
+        }
+    );
 
-    defineEmits(['close', 'previous', 'next']);
+    defineEmits<{ close: []; previous: []; next: [] }>();
 
-    const store = translationStore();
-    const badge = computed(() => tierBadge(props.tier_id, store.getLanguage));
-    const ui = computed(() => uiCopy(store.getLanguage));
+    const store = useAppStore();
+    const t = useMessages();
+    const ui = computed(() => t.value.ui);
+    const badge = computed(() => tierBadge(props.tier_id, store.lang));
     const displayName = computed(() => cleanName(props.name));
     const civBackground = computed(() => '/img/card-cover.webp');
-    const units = computed(() => (props.civ_units || []).map(normalizeItem));
-    const buildings = computed(() => (props.civ_building || []).map(normalizeItem));
+    const units = computed(() => props.civ_units.map(normalizeItem));
+    const buildings = computed(() => props.civ_building.map(normalizeItem));
 
     /** API names carry singular|plural forms ("Minuteman|Minutemen"). */
-    function cleanName(value) {
+    function cleanName(value: string | undefined): string {
         return value?.split('|')[0] ?? '';
     }
-    function normalizeItem(item) {
+    function normalizeItem(item: UniqueItemDto): { name: string; icon: string } {
         if (typeof item === 'string') return { name: cleanName(item), icon: '' };
-        return { name: cleanName(item?.name), icon: item?.icon || '' };
+        return { name: cleanName(item.name), icon: item.icon || '' };
     }
 </script>
 

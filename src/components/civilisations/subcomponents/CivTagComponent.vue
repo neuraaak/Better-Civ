@@ -5,19 +5,23 @@
     </span>
 </template>
 
-<script setup>
+<script setup lang="ts">
     import { computed } from 'vue';
-    import { translationStore } from '../../../stores/index';
+    import type { TagId } from '../../../data/taxonomy';
+    import { useMessages } from '../../../i18n/useMessages';
     import { categoryColor } from '../tierDesign';
 
-    const props = defineProps({
-        tag_id: Number,
-        /** `card` sits over the portrait visual, `panel` is the larger detail-panel tag. */
-        variant: { type: String, default: 'card' },
-    });
+    const props = withDefaults(
+        defineProps<{
+            tag_id: TagId;
+            /** `card` sits over the portrait visual, `panel` is the larger detail-panel tag. */
+            variant?: 'card' | 'panel';
+        }>(),
+        { variant: 'card' }
+    );
 
-    const store = translationStore();
-    const label = computed(() => store.getTagPropertyById(props.tag_id, 'label') || 'Catégorie');
+    const t = useMessages();
+    const label = computed(() => t.value.tags[props.tag_id]);
     const color = computed(() => categoryColor(props.tag_id));
 </script>
 

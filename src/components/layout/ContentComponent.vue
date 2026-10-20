@@ -40,34 +40,34 @@
                     >{{ ui.all }}
                 </button>
                 <button
-                    v-for="tag in tagList"
-                    :key="tag.id"
+                    v-for="tagId in TAG_IDS"
+                    :key="tagId"
                     type="button"
                     class="category-chip"
-                    :class="{ active: selectedTagId === tag.id }"
-                    :aria-pressed="selectedTagId === tag.id"
-                    @click="selectedTagId = tag.id"
+                    :class="{ active: selectedTagId === tagId }"
+                    :aria-pressed="selectedTagId === tagId"
+                    @click="selectedTagId = tagId"
                 >
-                    <span class="dot" :style="{ background: categoryColor(tag.id) }"></span
-                    >{{ tagLabel(tag.id) }}
+                    <span class="dot" :style="{ background: categoryColor(tagId) }"></span
+                    >{{ t.tags[tagId] }}
                 </button>
             </div>
 
             <div class="chip-group tier-filter" role="group" aria-label="Tiers">
                 <button
-                    v-for="tier in tierList"
-                    :key="tier.id"
+                    v-for="tierId in TIER_IDS"
+                    :key="tierId"
                     type="button"
                     class="tier-chip"
-                    :class="{ active: selectedTierId === tier.id }"
-                    :aria-pressed="selectedTierId === tier.id"
-                    :title="`${tierLabel(tier.id)} · ${badge(tier.id).rank}`"
-                    @click="selectedTierId = selectedTierId === tier.id ? null : tier.id"
+                    :class="{ active: selectedTierId === tierId }"
+                    :aria-pressed="selectedTierId === tierId"
+                    :title="`${tierLabel(tierId)} · ${badge(tierId).rank}`"
+                    @click="selectedTierId = selectedTierId === tierId ? null : tierId"
                 >
                     <CivTierComponent
-                        :tier_id="tier.id"
+                        :tier_id="tierId"
                         :size="24"
-                        :dimmed="selectedTierId !== null && selectedTierId !== tier.id"
+                        :dimmed="selectedTierId !== null && selectedTierId !== tierId"
                     />
                 </button>
             </div>
@@ -100,20 +100,20 @@
         <section v-if="tierGroups.length" class="tier-list">
             <section
                 v-for="group in tierGroups"
-                :key="group.id"
+                :key="group.key"
                 data-testid="tier-section"
                 class="tier-section"
             >
-                <header v-if="groupMode === 'tier'" class="tier-heading">
-                    <CivTierComponent :tier_id="group.id" :size="58" />
+                <header v-if="group.tierId !== null" class="tier-heading">
+                    <CivTierComponent :tier_id="group.tierId" :size="58" />
                     <div class="tier-heading-text">
                         <div class="tier-heading-title">
-                            <h2>{{ tierLabel(group.id) }}</h2>
-                            <span class="tier-rank" :style="{ color: badge(group.id).label }">{{
-                                badge(group.id).rank
+                            <h2>{{ tierLabel(group.tierId) }}</h2>
+                            <span class="tier-rank" :style="{ color: badge(group.tierId).label }">{{
+                                badge(group.tierId).rank
                             }}</span>
                         </div>
-                        <p>{{ badge(group.id).sub }}</p>
+                        <p>{{ badge(group.tierId).sub }}</p>
                     </div>
                     <div class="meander tier-rule" aria-hidden="true"></div>
                     <span class="tier-count">{{ toRoman(group.civilisations.length) }}</span>
@@ -124,29 +124,34 @@
                         :id="civ.id"
                         :key="civ.id"
                         :name="civ.name"
-                        :desc="civ.historical_info?.[0]?.text || ''"
                         :tags_id="civ.tags_id"
                         :tier_id="civ.tier_id"
-                        :civ_leader_effect="civ.leader?.trait?.effect || ''"
-                        :selected="selectedState && selectedCard === civ.id"
+                        :selected="detailOpen && selectedCivId === civ.id"
                     />
                 </div>
             </section>
         </section>
 
+        <section v-else-if="status === 'error'" class="empty-state" role="alert">
+            <h2>{{ ui.loadError }}</h2>
+            <button type="button" @click="$emit('retry')">{{ ui.retry }}</button>
+        </section>
+        <section v-else-if="status === 'loading' && !civilisations.length" class="empty-state">
+            <h2 aria-live="polite">{{ ui.loading }}</h2>
+        </section>
         <section v-else class="empty-state">
             <h2>{{ ui.noResults }}</h2>
             <button type="button" @click="resetFilters">{{ ui.reset }}</button>
         </section>
     </main>
 
-    <div class="content-overlay" :class="{ hidden: !selectedState }" @click="closeOverlay"></div>
+    <div class="content-overlay" :class="{ hidden: !detailOpen }" @click="closeOverlay"></div>
     <aside
         id="master-card"
         class="detail-panel"
-        :class="{ open: selectedState }"
-        :aria-hidden="!selectedState"
-        :inert="!selectedState"
+        :class="{ open: detailOpen }"
+        :aria-hidden="!detailOpen"
+        :inert="!detailOpen"
         :aria-label="ui.details"
     >
         <MasterCardComponent
@@ -176,52 +181,66 @@
     </aside>
 </template>
 
-<script setup>
-    import PhIcon from '../icons/PhIcon.vue';
-    import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
-    import { translationStore } from '../../stores/index';
+<script setup lang="ts">
+    import { storeToRefs } from 'pinia';
+    import { computed, onMounted, onUnmounted, ref } from 'vue';
+    import type { LoadStatus } from '../../composables/useCivilizations';
+    import { TAG_IDS, TIER_IDS, type TagId, type TierId } from '../../data/taxonomy';
+    import { useMessages } from '../../i18n/useMessages';
+    import { useAppStore } from '../../stores/app';
+    import type { Civilization } from '../../types';
     import CivCardComponent from '../civilisations/CivCardComponent.vue';
     import MasterCardComponent from '../civilisations/MasterCardComponent.vue';
     import CivTierComponent from '../civilisations/subcomponents/CivTierComponent.vue';
     import { categoryColor, tierBadge, toRoman } from '../civilisations/tierDesign';
-    import { uiCopy } from '../uiCopy';
+    import PhIcon from '../icons/PhIcon.vue';
 
-    const props = defineProps({ civilisations: { type: Array, required: true } });
-    const store = translationStore();
-    const tagList = store.getTagList;
-    const tierList = store.getTierList;
-    const selectedTagId = ref(null);
-    const selectedTierId = ref(null);
-    const selectedState = ref(false);
-    const selectedCard = ref(null);
+    interface CivilizationGroup {
+        key: string;
+        /** Tier of the section, `null` for the single alphabetical group. */
+        tierId: TierId | null;
+        civilisations: Civilization[];
+    }
+
+    const props = withDefaults(
+        defineProps<{ civilisations: Civilization[]; status?: LoadStatus }>(),
+        { status: 'ready' }
+    );
+    defineEmits<{ retry: [] }>();
+
+    const store = useAppStore();
+    const { selectedCivId, detailOpen } = storeToRefs(store);
+    const t = useMessages();
+    const ui = computed(() => t.value.ui);
+
+    const selectedTagId = ref<TagId | null>(null);
+    const selectedTierId = ref<TierId | null>(null);
     const searchedText = ref('');
-    const groupMode = ref('tier');
-    const ui = computed(() => uiCopy(store.getLanguage));
+    const groupMode = ref<'tier' | 'alpha'>('tier');
 
     const filteredCivilisations = computed(() => {
         const query = normalize(searchedText.value);
+        const tagId = selectedTagId.value;
         const civilisations = props.civilisations.filter(civ => {
-            const matchesTag =
-                selectedTagId.value === null || (civ.tags_id || []).includes(selectedTagId.value);
+            const matchesTag = tagId === null || (civ.tags_id ?? []).includes(tagId);
             const matchesTier =
                 selectedTierId.value === null || civ.tier_id === selectedTierId.value;
-            const matchesName = !query || normalize(civ.name || '').includes(query);
+            const matchesName = !query || normalize(civ.name).includes(query);
             return matchesTag && matchesTier && matchesName;
         });
-
         // Alphabetical, then (stable) by tier when grouped — the order the grid
         // shows is the order the detail panel steps through.
         civilisations.sort((left, right) => left.name.localeCompare(right.name, store.lang));
         if (groupMode.value === 'tier')
-            civilisations.sort((left, right) => left.tier_id - right.tier_id);
+            civilisations.sort((left, right) => tierRank(left) - tierRank(right));
         return civilisations;
     });
 
     const selectedCiv = computed(
-        () => props.civilisations.find(civ => civ.id === selectedCard.value) ?? null
+        () => props.civilisations.find(civ => civ.id === selectedCivId.value) ?? null
     );
     const selectedCardIndex = computed(() =>
-        filteredCivilisations.value.findIndex(civ => civ.id === selectedCard.value)
+        filteredCivilisations.value.findIndex(civ => civ.id === selectedCivId.value)
     );
     const selectedCardPosition = computed(() => {
         if (selectedCardIndex.value < 0) return '';
@@ -229,52 +248,44 @@
     });
     const previousCivilization = computed(() => getRelativeCivilization(-1));
     const nextCivilization = computed(() => getRelativeCivilization(1));
-    const tierGroups = computed(() => {
+
+    const tierGroups = computed<CivilizationGroup[]>(() => {
         const visible = filteredCivilisations.value;
         if (groupMode.value === 'alpha')
-            return visible.length ? [{ id: 'all', civilisations: visible }] : [];
-        return tierList
-            .map(tier => ({
-                id: tier.id,
-                civilisations: visible.filter(civ => civ.tier_id === tier.id),
-            }))
-            .filter(group => group.civilisations.length);
+            return visible.length ? [{ key: 'all', tierId: null, civilisations: visible }] : [];
+        return TIER_IDS.map(tierId => ({
+            key: `tier-${tierId}`,
+            tierId,
+            civilisations: visible.filter(civ => civ.tier_id === tierId),
+        })).filter(group => group.civilisations.length);
     });
-
-    watch(
-        () => [store.getSelectedState, store.getSelectedCard],
-        () => {
-            selectedState.value = store.getSelectedState;
-            selectedCard.value = store.getSelectedCard;
-        },
-        { immediate: true }
-    );
 
     onMounted(() => window.addEventListener('keydown', navigateCards));
     onUnmounted(() => window.removeEventListener('keydown', navigateCards));
 
-    function normalize(value) {
-        return String(value)
+    /** Unrated civilizations sort after every tier. */
+    function tierRank(civ: Civilization): number {
+        return civ.tier_id ?? TIER_IDS.length;
+    }
+    function normalize(value: string): string {
+        return value
             .split('|')[0]
             .normalize('NFD')
-            .replace(/[̀-ͯ]/g, '')
+            .replace(/[\u0300-\u036f]/g, '')
             .toLocaleLowerCase()
             .trim();
     }
-    function tierLabel(tierId) {
-        return store.getTierPropertyById(tierId, 'label') || `Tier ${badge(tierId).letter}`;
+    function tierLabel(tierId: TierId): string {
+        return t.value.tiers[tierId].label;
     }
-    function badge(tierId) {
-        return tierBadge(tierId, store.getLanguage);
-    }
-    function tagLabel(tagId) {
-        return store.getTagPropertyById(tagId, 'label') || 'Catégorie';
+    function badge(tierId: TierId) {
+        return tierBadge(tierId, store.lang);
     }
     function closeOverlay() {
-        store.setSelectedState(false);
+        store.closeDetail();
     }
-    function navigateCards(event) {
-        if (!selectedState.value) return;
+    function navigateCards(event: KeyboardEvent) {
+        if (!detailOpen.value) return;
         if (event.key === 'Escape') {
             closeOverlay();
             return;
@@ -283,13 +294,11 @@
             return;
         navigateBy(event.key === 'ArrowRight' ? 1 : -1);
     }
-    function navigateBy(direction) {
+    function navigateBy(direction: 1 | -1) {
         const target = getRelativeCivilization(direction);
-        if (!target) return;
-        selectedCard.value = target.id;
-        store.setSelectedCard(target.id);
+        if (target) store.selectCiv(target.id);
     }
-    function getRelativeCivilization(direction) {
+    function getRelativeCivilization(direction: 1 | -1): Civilization | null {
         const count = filteredCivilisations.value.length;
         if (!count) return null;
         // A selection hidden by the filters steps to the first / last visible civilization.

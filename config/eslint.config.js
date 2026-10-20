@@ -48,6 +48,8 @@ export default [
         },
         rules: {
             ...tseslint.configs.recommended.rules,
+            // TypeScript already reports undefined identifiers, including DOM types
+            'no-undef': 'off',
             'no-console': 'off',
             'no-debugger': 'off',
             '@typescript-eslint/no-explicit-any': 'warn',
