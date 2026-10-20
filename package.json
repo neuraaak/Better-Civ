@@ -48,6 +48,8 @@
         "test:run": "vitest run --config config/vitest.config.js",
         "test:coverage": "vitest run --coverage --config config/vitest.config.js",
         "test:watch": "vitest --watch --config config/vitest.config.js",
+        "db:build:civ5": "tsx .scripts/db/civ5/import.ts",
+        "type-check:scripts": "tsc --noEmit -p .scripts/tsconfig.json",
         "check": "pnpm format:check && pnpm lint && pnpm type-check && pnpm test:run && pnpm build",
         "prepare": "husky"
     },
@@ -82,6 +84,7 @@
         "prettier": "^3.6.2",
         "tailwindcss": "^4.3.3",
         "typescript": "^5.8.3",
+        "tsx": "^4.20.6",
         "vite": "^7.0.6",
         "vitest": "^3.2.4",
         "vue-eslint-parser": "^10.2.0",

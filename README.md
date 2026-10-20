@@ -69,6 +69,16 @@ pnpm clean
 
 `pnpm deps:check` lists available dependency updates, `pnpm deps:audit` checks known vulnerabilities, and `pnpm clean` removes generated build files. The `deps:update*` scripts update dependency ranges and should be reviewed before use.
 
+To rebuild the complete local Civ V dataset from the public civvapi source:
+
+```bash
+pnpm db:build:civ5
+```
+
+The command writes `bin/assets/db/civilization-5.sqlite` and its integrity
+metadata to `bin/assets/db/civilization-5.manifest.json`. Both files are
+generated artifacts and are ignored by Git.
+
 ## Deployment
 
 Vercel deploys through its Git integration: every pushed branch gets a preview deployment, and `main` goes to production. The build settings and HTTP headers live in `vercel.json`.

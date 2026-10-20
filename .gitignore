@@ -180,6 +180,7 @@ logs/
 *.db
 *.sqlite
 *.sqlite3
+bin/assets/db/*.manifest.json
 *.mdb
 *.accdb
 
