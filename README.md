@@ -71,12 +71,7 @@ pnpm clean
 
 ## Deployment
 
-```bash
-pnpm deploy:dev
-pnpm deploy
-```
-
-`pnpm deploy:dev` creates a Vercel preview deployment. `pnpm deploy` builds the project and publishes it to production.
+Vercel deploys through its Git integration: every pushed branch gets a preview deployment, and `main` goes to production. The build settings and HTTP headers live in `vercel.json`.
 
 ## License
 

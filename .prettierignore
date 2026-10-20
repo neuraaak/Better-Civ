@@ -36,6 +36,3 @@ pnpm-lock.yaml
 
 # Documentation
 docs/
-
-# Config files
-utils/ 
