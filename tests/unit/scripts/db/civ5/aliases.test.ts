@@ -18,6 +18,10 @@ describe('resolveRelationTarget', () => {
         expect(resolveRelationTarget(target, entities)).toBe(expected);
     });
 
+    it('drops a target CivVAPI never publishes', () => {
+        expect(resolveRelationTarget('promotions/bonus_vs_armored_(25)', entities)).toBeNull();
+    });
+
     it('rejects missing and ambiguous targets', () => {
         expect(() => resolveRelationTarget('units/missing', entities)).toThrow(/missing/i);
         expect(() =>

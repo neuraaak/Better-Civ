@@ -73,7 +73,8 @@ CREATE TABLE civilization_leaders (
 );
 CREATE TABLE civilization_unique_units (
     civilization_id INTEGER NOT NULL REFERENCES civilizations(entity_id),
-    unit_id INTEGER NOT NULL REFERENCES units(entity_id),
+    -- entities, not units: CivVAPI publishes some unique units (Khan) under specialists/.
+    unit_id INTEGER NOT NULL REFERENCES entities(id),
     PRIMARY KEY (civilization_id, unit_id)
 );
 CREATE TABLE civilization_unique_buildings (
@@ -125,7 +126,8 @@ CREATE TABLE resource_revealing_techs (
 );
 CREATE TABLE improvement_buildable_terrains (
     improvement_id INTEGER NOT NULL REFERENCES improvements(entity_id),
-    terrain_id INTEGER NOT NULL REFERENCES terrains(entity_id),
+    -- entities, not terrains: can_be_built_on mixes terrains and features (Lumber Mill, Polder).
+    terrain_id INTEGER NOT NULL REFERENCES entities(id),
     PRIMARY KEY (improvement_id, terrain_id)
 );
 CREATE TABLE improvement_resources (

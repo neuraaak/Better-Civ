@@ -326,6 +326,38 @@ describe('transformStagedResources', () => {
         database.close();
     });
 
+    it('keeps an aliased unique unit when CivVAPI classifies it as a specialist', () => {
+        const directory = mkdtempSync(join(tmpdir(), 'better-civ-transform-'));
+        directories.push(directory);
+        const database = createFinalDatabase(join(directory, 'final.sqlite'));
+        transformStagedResources(
+            [
+                ...resources('civilizations', {
+                    city_names: [],
+                    spy_names: [],
+                    unique_units: [
+                        { url: 'https://eyefyre.github.io/civvapi/v1/en/units/khan.json' },
+                    ],
+                }),
+                ...CIV5_LANGUAGES.map((language, index) => ({
+                    kind: 'specialists' as const,
+                    language,
+                    resourceKey: 'specialists/khan',
+                    sourceUrl: `https://eyefyre.github.io/civvapi/v1/${language}/specialists/khan.json`,
+                    sourceId: index + 70,
+                    name: `khan-${language}`,
+                    payload: { id: index + 70, name: `khan-${language}` },
+                })),
+            ],
+            database
+        );
+
+        expect(
+            database.prepare('SELECT COUNT(*) AS count FROM civilization_unique_units').get()
+        ).toEqual({ count: 1 });
+        database.close();
+    });
+
     it('writes localized civilization names and resource revealing technologies', () => {
         const directory = mkdtempSync(join(tmpdir(), 'better-civ-transform-'));
         directories.push(directory);

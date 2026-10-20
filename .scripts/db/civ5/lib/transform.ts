@@ -410,8 +410,9 @@ export function transformStagedResources(
         const insertPolicyPrerequisite = database.prepare(
             'INSERT INTO policy_prerequisites (policy_id, prerequisite_id) VALUES (?, ?)'
         );
+        // OR IGNORE: a tech lists its unlocks and each unlocked entity names its prereq_tech.
         const insertTechUnlock = database.prepare(
-            'INSERT INTO tech_unlocks (tech_id, entity_id) VALUES (?, ?)'
+            'INSERT OR IGNORE INTO tech_unlocks (tech_id, entity_id) VALUES (?, ?)'
         );
         const insertPromotionPrerequisite = database.prepare(
             'INSERT INTO promotion_prerequisites (promotion_id, prerequisite_id) VALUES (?, ?)'
@@ -440,15 +441,25 @@ export function transformStagedResources(
         const insertResourceTech = database.prepare(
             'INSERT INTO resource_revealing_techs (resource_id, tech_id) VALUES (?, ?)'
         );
-        const targetId = (value: ApiValue, source: string): number => {
+        const targetId = (value: ApiValue, source: string): number | null => {
             if (typeof value !== 'object' || value === null || Array.isArray(value))
                 throw new Error(`Missing relation object for ${source}`);
             const url = (value as ApiDocument).url;
             if (typeof url !== 'string') throw new Error(`Missing relation URL for ${source}`);
             const target = resolveRelationTarget(canonicalResourceKey(url), entityCodes);
+            if (target === null) return null;
             const id = entityIds.get(target);
             if (id === undefined) throw new Error(`Missing relation entity: ${target}`);
             return id;
+        };
+        const link = (
+            insert: { run: (left: number, right: number) => unknown },
+            sourceId: number,
+            value: ApiValue,
+            source: string
+        ): void => {
+            const id = targetId(value, source);
+            if (id !== null) insert.run(sourceId, id);
         };
         for (const rows of groups.values()) {
             const canonical = rows.find(row => row.language === 'en') ?? rows[0];
@@ -457,68 +468,66 @@ export function transformStagedResources(
                 throw new Error(`Missing source entity: ${canonical.resourceKey}`);
             if (canonical.kind === 'units' && Array.isArray(canonical.payload.free_promotions))
                 for (const value of canonical.payload.free_promotions)
-                    insertUnitPromotion.run(sourceId, targetId(value, canonical.resourceKey));
+                    link(insertUnitPromotion, sourceId, value, canonical.resourceKey);
             if (canonical.kind === 'policies' && Array.isArray(canonical.payload.required_policies))
                 for (const value of canonical.payload.required_policies)
-                    insertPolicyPrerequisite.run(sourceId, targetId(value, canonical.resourceKey));
+                    link(insertPolicyPrerequisite, sourceId, value, canonical.resourceKey);
             if (canonical.kind === 'tech') {
                 for (const field of ['unit_unlocks', 'building_unlocks'] as const)
                     if (Array.isArray(canonical.payload[field]))
                         for (const value of canonical.payload[field])
-                            insertTechUnlock.run(sourceId, targetId(value, canonical.resourceKey));
+                            link(insertTechUnlock, sourceId, value, canonical.resourceKey);
             }
             if (
                 canonical.kind === 'promotions' &&
                 Array.isArray(canonical.payload.prereq_promotions)
             )
                 for (const value of canonical.payload.prereq_promotions)
-                    insertPromotionPrerequisite.run(
-                        sourceId,
-                        targetId(value, canonical.resourceKey)
-                    );
+                    link(insertPromotionPrerequisite, sourceId, value, canonical.resourceKey);
             if (canonical.kind === 'terrains' && Array.isArray(canonical.payload.features))
                 for (const value of canonical.payload.features)
-                    insertTerrainFeature.run(sourceId, targetId(value, canonical.resourceKey));
+                    link(insertTerrainFeature, sourceId, value, canonical.resourceKey);
             if (canonical.kind === 'terrains' && Array.isArray(canonical.payload.resources))
                 for (const value of canonical.payload.resources)
-                    insertTerrainResource.run(sourceId, targetId(value, canonical.resourceKey));
+                    link(insertTerrainResource, sourceId, value, canonical.resourceKey);
             if (canonical.kind === 'features' && Array.isArray(canonical.payload.resources))
                 for (const value of canonical.payload.resources)
-                    insertFeatureResource.run(sourceId, targetId(value, canonical.resourceKey));
+                    link(insertFeatureResource, sourceId, value, canonical.resourceKey);
             if (
                 canonical.kind === 'improvements' &&
                 Array.isArray(canonical.payload.can_be_built_on)
             )
                 for (const value of canonical.payload.can_be_built_on)
-                    insertImprovementTerrain.run(sourceId, targetId(value, canonical.resourceKey));
+                    link(insertImprovementTerrain, sourceId, value, canonical.resourceKey);
             if (
                 canonical.kind === 'improvements' &&
                 Array.isArray(canonical.payload.improves_resources)
             )
                 for (const value of canonical.payload.improves_resources)
-                    insertImprovementResource.run(sourceId, targetId(value, canonical.resourceKey));
+                    link(insertImprovementResource, sourceId, value, canonical.resourceKey);
             if (canonical.kind === 'civilizations' && Array.isArray(canonical.payload.unique_units))
                 for (const value of canonical.payload.unique_units)
-                    insertCivilizationUnit.run(sourceId, targetId(value, canonical.resourceKey));
+                    link(insertCivilizationUnit, sourceId, value, canonical.resourceKey);
             if (
                 canonical.kind === 'civilizations' &&
                 Array.isArray(canonical.payload.unique_buildings)
             )
                 for (const value of canonical.payload.unique_buildings)
-                    insertCivilizationBuilding.run(
-                        sourceId,
-                        targetId(value, canonical.resourceKey)
-                    );
+                    link(insertCivilizationBuilding, sourceId, value, canonical.resourceKey);
             if (
                 ['units', 'buildings', 'wonders', 'improvements', 'resources'].includes(
                     canonical.kind
                 )
             ) {
-                const prerequisite = canonical.payload.prereq_tech ?? canonical.payload.tech_prereq;
-                if (prerequisite !== undefined) {
+                const prerequisite =
+                    canonical.payload.prereq_tech ?? canonical.payload.tech_prereq ?? null;
+                if (prerequisite !== null) {
                     const techId = targetId(prerequisite, canonical.resourceKey);
-                    insertTechUnlock.run(techId, sourceId);
-                    if (canonical.kind === 'resources') insertResourceTech.run(sourceId, techId);
+                    if (techId !== null) {
+                        insertTechUnlock.run(techId, sourceId);
+                        if (canonical.kind === 'resources')
+                            insertResourceTech.run(sourceId, techId);
+                    }
                 }
             }
         }
