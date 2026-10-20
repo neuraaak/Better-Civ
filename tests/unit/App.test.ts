@@ -80,5 +80,17 @@ describe('App.vue', () => {
         expect(fetchMock.mock.calls[1][0]).toContain('/v1/en/civilizations/');
         expect(cardNames(wrapper)).toEqual(['France (EN)']);
         expect(wrapper.find('.hero h1').text()).toBe('Which civilization should you play?');
+        expect(document.documentElement.lang).toBe('en');
+    });
+
+    it('exposes the BCP 47 tag of the selected language on <html>', async () => {
+        fetchMock.mockImplementation(() => jsonResponse([]));
+        await mountApp();
+        expect(document.documentElement.lang).toBe('fr');
+
+        useAppStore().setLanguage('jp');
+        await flushPromises();
+
+        expect(document.documentElement.lang).toBe('ja');
     });
 });

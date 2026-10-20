@@ -25,6 +25,7 @@ describe('CivCardComponent', () => {
         expect(card.attributes('tabindex')).toBe('0');
         expect(wrapper.find('.card-visual').attributes('src')).toBe('/img/card-cover.webp');
         expect(wrapper.find('h2').text()).toBe('France');
+        expect(card.attributes('aria-label')).toBe('Ouvrir les détails de France');
         expect(wrapper.findComponent({ name: 'CivTierComponent' }).exists()).toBe(true);
         expect(wrapper.findAllComponents({ name: 'CivTagComponent' })).toHaveLength(2);
     });

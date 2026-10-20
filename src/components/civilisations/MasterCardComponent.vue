@@ -39,7 +39,7 @@
 
                 <div class="panel-identity">
                     <div class="civilization-icon">
-                        <img v-if="civ_icon" :src="civ_icon" alt="" />
+                        <img v-if="civ.icon" :src="civ.icon" alt="" />
                     </div>
                     <h1 class="panel-name">{{ displayName }}</h1>
                     <div class="tier-summary">
@@ -47,7 +47,7 @@
                             <span>TIER {{ badge.letter }}</span>
                             <strong :style="{ color: badge.label }">{{ badge.rank }}</strong>
                         </div>
-                        <CivTierComponent :tier_id="tier_id" :size="52" />
+                        <CivTierComponent :tier_id="civ.tier_id" :size="52" />
                     </div>
                 </div>
             </header>
@@ -55,39 +55,41 @@
             <div class="meander panel-rule" aria-hidden="true"></div>
 
             <div class="panel-content">
-                <div v-if="tags_id?.length" class="panel-tags">
+                <div v-if="civ.tags_id?.length" class="panel-tags">
                     <CivTagComponent
-                        v-for="tag_id in tags_id"
+                        v-for="tag_id in civ.tags_id"
                         :key="tag_id"
                         :tag_id="tag_id"
                         variant="panel"
                     />
                 </div>
 
-                <section v-if="civ_leader_effect" class="panel-section">
+                <section v-if="bonus?.effect" class="panel-section">
                     <span class="section-label section-label-accent">
                         <PhIcon name="star-four" />{{ ui.bonus }}
                     </span>
                     <div class="bonus-block">
-                        <strong v-if="civ_trait_name">{{ cleanName(civ_trait_name) }}</strong>
-                        <p>{{ civ_leader_effect }}</p>
+                        <strong v-if="bonus.name">{{ cleanName(bonus.name) }}</strong>
+                        <p>{{ bonus.effect }}</p>
                     </div>
                 </section>
 
-                <section v-if="civ_leader" class="panel-section">
+                <section v-if="leader?.name" class="panel-section">
                     <span class="section-label">
                         <PhIcon name="crown-simple" />{{ ui.leader }}
                     </span>
                     <div class="leader-block">
                         <div class="leader-portrait">
-                            <img v-if="civ_leader_icon" :src="civ_leader_icon" alt="" />
+                            <img v-if="leader.icon" :src="leader.icon" alt="" />
                         </div>
                         <div class="leader-text">
-                            <h2 class="leader-name">{{ cleanName(civ_leader) }}</h2>
-                            <span v-if="civ_leader_subtitle" class="leader-subtitle">{{
-                                civ_leader_subtitle
+                            <h2 class="leader-name">{{ cleanName(leader.name) }}</h2>
+                            <span v-if="leader.subtitle" class="leader-subtitle">{{
+                                leader.subtitle
                             }}</span>
-                            <p v-if="civ_leader_text">{{ civ_leader_text }}</p>
+                            <p v-if="leader.historical_info?.[0]?.text">
+                                {{ leader.historical_info[0].text }}
+                            </p>
                         </div>
                     </div>
                 </section>
@@ -117,11 +119,11 @@
                     </section>
                 </div>
 
-                <section v-if="desc" class="panel-section">
+                <section v-if="history" class="panel-section">
                     <span class="section-label">
                         <PhIcon name="book-open-text" />{{ ui.history }}
                     </span>
-                    <p class="civilization-description">{{ desc }}</p>
+                    <p class="civilization-description">{{ history }}</p>
                 </section>
             </div>
         </div>
@@ -148,9 +150,10 @@
 <script setup lang="ts">
     import { computed } from 'vue';
     import type { UniqueItemDto } from '../../api/civApi';
-    import type { TagId, TierId } from '../../data/taxonomy';
     import { useMessages } from '../../i18n/useMessages';
     import { useAppStore } from '../../stores/app';
+    import type { Civilization } from '../../types';
+    import { cleanName } from '../../utils/civName';
     import PhIcon from '../icons/PhIcon.vue';
     import CivTagComponent from './subcomponents/CivTagComponent.vue';
     import CivTierComponent from './subcomponents/CivTierComponent.vue';
@@ -158,41 +161,13 @@
 
     const props = withDefaults(
         defineProps<{
-            id: number;
-            name: string;
-            desc?: string;
-            tags_id?: TagId[];
-            tier_id?: TierId;
-            civ_icon?: string;
-            civ_trait_name?: string;
-            civ_leader?: string;
-            civ_leader_icon?: string;
-            civ_leader_subtitle?: string;
-            civ_leader_text?: string;
-            civ_leader_effect?: string;
-            civ_units?: UniqueItemDto[];
-            civ_building?: UniqueItemDto[];
+            civ: Civilization;
+            /** "III / XII" position of the civilization in the visible list. */
             position?: string;
             previous_name?: string;
             next_name?: string;
         }>(),
-        {
-            desc: '',
-            tags_id: () => [],
-            tier_id: undefined,
-            civ_icon: undefined,
-            civ_trait_name: undefined,
-            civ_leader: undefined,
-            civ_leader_icon: undefined,
-            civ_leader_subtitle: undefined,
-            civ_leader_text: undefined,
-            civ_leader_effect: undefined,
-            civ_units: () => [],
-            civ_building: () => [],
-            position: '',
-            previous_name: undefined,
-            next_name: undefined,
-        }
+        { position: '', previous_name: undefined, next_name: undefined }
     );
 
     defineEmits<{ close: []; previous: []; next: [] }>();
@@ -200,16 +175,15 @@
     const store = useAppStore();
     const t = useMessages();
     const ui = computed(() => t.value.ui);
-    const badge = computed(() => tierBadge(props.tier_id, store.lang));
-    const displayName = computed(() => cleanName(props.name));
+    const badge = computed(() => tierBadge(props.civ.tier_id, store.lang));
+    const displayName = computed(() => cleanName(props.civ.name));
+    const leader = computed(() => props.civ.leader);
+    const bonus = computed(() => leader.value?.trait);
+    const history = computed(() => props.civ.historical_info?.[0]?.text ?? '');
     const civBackground = computed(() => '/img/card-cover.webp');
-    const units = computed(() => props.civ_units.map(normalizeItem));
-    const buildings = computed(() => props.civ_building.map(normalizeItem));
+    const units = computed(() => (props.civ.unique_units ?? []).map(normalizeItem));
+    const buildings = computed(() => (props.civ.unique_buildings ?? []).map(normalizeItem));
 
-    /** API names carry singular|plural forms ("Minuteman|Minutemen"). */
-    function cleanName(value: string | undefined): string {
-        return value?.split('|')[0] ?? '';
-    }
     function normalizeItem(item: UniqueItemDto): { name: string; icon: string } {
         if (typeof item === 'string') return { name: cleanName(item), icon: '' };
         return { name: cleanName(item.name), icon: item.icon || '' };

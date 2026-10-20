@@ -5,7 +5,7 @@
         role="button"
         tabindex="0"
         :style="tierPalette"
-        :aria-label="`Ouvrir les détails de ${displayName}`"
+        :aria-label="t.ui.openDetails.replace('{name}', displayName)"
         :aria-pressed="selected"
         @click="openDetails"
         @keydown.enter.prevent="openDetails"
@@ -31,7 +31,9 @@
 <script setup lang="ts">
     import { computed } from 'vue';
     import type { TagId, TierId } from '../../data/taxonomy';
+    import { useMessages } from '../../i18n/useMessages';
     import { useAppStore } from '../../stores/app';
+    import { cleanName } from '../../utils/civName';
     import CivTagComponent from './subcomponents/CivTagComponent.vue';
     import CivTierComponent from './subcomponents/CivTierComponent.vue';
     import { tierBadge } from './tierDesign';
@@ -48,7 +50,8 @@
     );
 
     const store = useAppStore();
-    const displayName = computed(() => props.name.split('|')[0]);
+    const t = useMessages();
+    const displayName = computed(() => cleanName(props.name));
     const imagePath = computed(() => '/img/card-cover.webp');
     const tierPalette = computed(() => {
         const badge = tierBadge(props.tier_id);

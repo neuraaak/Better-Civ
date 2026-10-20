@@ -52,10 +52,12 @@ pnpm check
 
 - `pnpm lint` checks JavaScript, TypeScript, Vue, test, and configuration files.
 - `pnpm lint:fix` applies automatic lint fixes where possible.
-- `pnpm type-check` runs TypeScript without emitting files.
+- `pnpm type-check` runs `vue-tsc` on the sources and the tests without emitting files.
 - `pnpm format` rewrites supported files with Prettier; use `pnpm format:check` in CI or before committing.
 - `pnpm validate:quick` runs linting and type checking.
 - `pnpm check` runs formatting checks, linting, type checking, tests, and a production build.
+
+`pnpm install` enables the Husky Git hooks (`prepare` script). The pre-commit hook runs lint-staged, which formats staged files with Prettier and fixes them with ESLint.
 
 For dependency and workspace upkeep:
 

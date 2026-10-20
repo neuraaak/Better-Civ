@@ -6,6 +6,7 @@ import globals from 'globals';
 import vueParser from 'vue-eslint-parser';
 
 export default [
+    { ignores: ['dist/', '_temp/', 'coverage/'] },
     js.configs.recommended,
     {
         files: ['**/*.vue'],

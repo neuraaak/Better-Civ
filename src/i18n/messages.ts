@@ -27,6 +27,14 @@ export interface UiMessages {
     loading: string;
     loadError: string;
     retry: string;
+    /** Subtitle of the brand in the header. */
+    tagline: string;
+    /** Accessible name of the language selector. */
+    language: string;
+    /** Accessible name of the tier filter group. */
+    tiers: string;
+    /** Accessible name of a civilization card; `{name}` is replaced by the civilization. */
+    openDetails: string;
 }
 
 export interface TierMessages {
@@ -76,6 +84,10 @@ export const MESSAGES: Record<Lang, Messages> = {
             loading: 'Loading civilizations…',
             loadError: 'Could not load civilizations.',
             retry: 'Retry',
+            tagline: 'Civilizations · Current meta',
+            language: 'Language',
+            tiers: 'Tiers',
+            openDetails: 'Open details for {name}',
         },
         tags: ['Versatile', 'Culture', 'Faith', 'Science', 'Military', 'Trade', 'Production'],
         tiers: [
@@ -116,6 +128,10 @@ export const MESSAGES: Record<Lang, Messages> = {
             loading: 'Zivilisationen werden geladen…',
             loadError: 'Zivilisationen konnten nicht geladen werden.',
             retry: 'Erneut versuchen',
+            tagline: 'Zivilisationen · Aktuelle Meta',
+            language: 'Sprache',
+            tiers: 'Stufen',
+            openDetails: 'Details zu {name} öffnen',
         },
         tags: ['Vielseitig', 'Kultur', 'Glaube', 'Wissenschaft', 'Militär', 'Handel', 'Produktion'],
         tiers: [
@@ -152,6 +168,10 @@ export const MESSAGES: Record<Lang, Messages> = {
             loading: 'Cargando civilizaciones…',
             loadError: 'No se pudieron cargar las civilizaciones.',
             retry: 'Reintentar',
+            tagline: 'Civilizaciones · Meta actual',
+            language: 'Idioma',
+            tiers: 'Niveles',
+            openDetails: 'Abrir los detalles de {name}',
         },
         tags: ['Versátil', 'Cultura', 'Fe', 'Ciencia', 'Militar', 'Comercio', 'Producción'],
         tiers: [
@@ -196,6 +216,10 @@ export const MESSAGES: Record<Lang, Messages> = {
             loading: 'Chargement des civilisations…',
             loadError: 'Impossible de charger les civilisations.',
             retry: 'Réessayer',
+            tagline: 'Civilisations · Méta actuelle',
+            language: 'Langue',
+            tiers: 'Tiers',
+            openDetails: 'Ouvrir les détails de {name}',
         },
         tags: ['Polyvalent', 'Culture', 'Foi', 'Science', 'Militaire', 'Commerce', 'Production'],
         tiers: [
@@ -240,6 +264,10 @@ export const MESSAGES: Record<Lang, Messages> = {
             loading: 'Caricamento delle civiltà…',
             loadError: 'Impossibile caricare le civiltà.',
             retry: 'Riprova',
+            tagline: 'Civiltà · Meta attuale',
+            language: 'Lingua',
+            tiers: 'Livelli',
+            openDetails: 'Apri i dettagli di {name}',
         },
         tags: ['Versatile', 'Cultura', 'Fede', 'Scienza', 'Militare', 'Commercio', 'Produzione'],
         tiers: [
@@ -276,6 +304,10 @@ export const MESSAGES: Record<Lang, Messages> = {
             loading: '文明を読み込み中…',
             loadError: '文明を読み込めませんでした。',
             retry: '再試行',
+            tagline: '文明 · 現在のメタ',
+            language: '言語',
+            tiers: 'ティア',
+            openDetails: '{name}の詳細を開く',
         },
         tags: ['多用途', '文化', '信仰', '科学', '軍事', '貿易', '生産'],
         tiers: [
@@ -312,6 +344,10 @@ export const MESSAGES: Record<Lang, Messages> = {
             loading: '문명을 불러오는 중…',
             loadError: '문명을 불러올 수 없습니다.',
             retry: '다시 시도',
+            tagline: '문명 · 현재 메타',
+            language: '언어',
+            tiers: '티어',
+            openDetails: '{name} 상세 정보 열기',
         },
         tags: ['변하기 쉬운', '문화', '신앙', '과학', '군사', '무역', '생산'],
         tiers: [
@@ -348,6 +384,10 @@ export const MESSAGES: Record<Lang, Messages> = {
             loading: 'Wczytywanie cywilizacji…',
             loadError: 'Nie udało się wczytać cywilizacji.',
             retry: 'Spróbuj ponownie',
+            tagline: 'Cywilizacje · Aktualna meta',
+            language: 'Język',
+            tiers: 'Poziomy',
+            openDetails: 'Otwórz szczegóły: {name}',
         },
         tags: ['Wszechstronny', 'Kultura', 'Wiara', 'Nauka', 'Wojskowy', 'Handel', 'Produkcja'],
         tiers: [
@@ -388,6 +428,10 @@ export const MESSAGES: Record<Lang, Messages> = {
             loading: 'Загрузка цивилизаций…',
             loadError: 'Не удалось загрузить цивилизации.',
             retry: 'Повторить',
+            tagline: 'Цивилизации · Текущая мета',
+            language: 'Язык',
+            tiers: 'Уровни',
+            openDetails: 'Открыть сведения: {name}',
         },
         tags: ['Универсальный', 'Культура', 'Вера', 'Наука', 'Военный', 'Торговля', 'Производство'],
         tiers: [
@@ -432,6 +476,10 @@ export const MESSAGES: Record<Lang, Messages> = {
             loading: '正在加载文明…',
             loadError: '无法加载文明。',
             retry: '重试',
+            tagline: '文明 · 当前版本',
+            language: '语言',
+            tiers: '等级',
+            openDetails: '打开{name}的详情',
         },
         tags: ['多才多艺的', '文化', '信仰', '科学', '军事', '贸易', '生产'],
         tiers: [

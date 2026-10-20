@@ -1,5 +1,5 @@
 import { afterEach, describe, it, expect, beforeEach } from 'vitest';
-import { enableAutoUnmount, mount, type VueWrapper } from '@vue/test-utils';
+import { enableAutoUnmount, flushPromises, mount, type VueWrapper } from '@vue/test-utils';
 import { createPinia, setActivePinia } from 'pinia';
 import ContentComponent from '@/components/layout/ContentComponent.vue';
 import type { LoadStatus } from '@/composables/useCivilizations';
@@ -190,9 +190,7 @@ describe('ContentComponent', () => {
 
             expect(wrapper.find('.detail-panel').classes()).toContain('open');
             const panel = wrapper.findComponent({ name: 'MasterCardComponent' });
-            expect(panel.props('name')).toBe('France');
-            expect(panel.props('civ_trait_name')).toBe('Ancien Régime');
-            expect(panel.props('civ_leader_subtitle')).toBe('Empereur des Français');
+            expect(panel.props('civ')).toMatchObject({ id: 1, name: 'France' });
             expect(panel.props('position')).toBe('III / III');
 
             const selected = wrapper
@@ -238,6 +236,20 @@ describe('ContentComponent', () => {
             panel.vm.$emit('next');
             await wrapper.vm.$nextTick();
             expect(useAppStore().selectedCivId).toBe(3);
+        });
+
+        it('focuses the close button on open and gives focus back to the card on close', async () => {
+            const wrapper = mountContent();
+            const card = wrapper.find<HTMLElement>('.portrait-card');
+            card.element.focus();
+
+            await card.trigger('click');
+            await flushPromises();
+            expect(document.activeElement?.classList.contains('panel-close')).toBe(true);
+
+            window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
+            await flushPromises();
+            expect(document.activeElement).toBe(card.element);
         });
 
         it('ignores keys when the panel is closed or the list is empty', () => {

@@ -13,8 +13,9 @@
 <script setup lang="ts">
     // IMPORT
     // ##############
-    import { defineAsyncComponent, onMounted } from 'vue';
+    import { defineAsyncComponent, onMounted, watchEffect } from 'vue';
     import { useCivilizations } from './composables/useCivilizations';
+    import { htmlLang } from './i18n/languages';
     import { useAppStore } from './stores/app';
 
     // Lazy loading des composants lourds
@@ -34,7 +35,10 @@
     // ##############
     onMounted(() => {
         document.title = 'Better Civ5';
-        document.documentElement.lang = 'fr';
+    });
+    // Screen readers and hyphenation follow the language picked in the selector
+    watchEffect(() => {
+        document.documentElement.lang = htmlLang(store.lang);
     });
 </script>
 

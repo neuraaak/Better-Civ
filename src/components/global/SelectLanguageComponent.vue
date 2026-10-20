@@ -3,7 +3,7 @@
         <PhIcon name="globe-simple" />
         <span class="language-current">{{ currentLabel }}</span>
         <PhIcon name="caret-down" class="language-caret" />
-        <select :value="store.lang" aria-label="Langue" @change="updateLanguage">
+        <select :value="store.lang" :aria-label="t.ui.language" @change="updateLanguage">
             <option v-for="option in options" :key="option.code" :value="option.code">
                 {{ option.label }} {{ option.flag }}
             </option>
@@ -21,12 +21,14 @@
     // ##############
     import { computed } from 'vue';
     import { isLang, LANGUAGES } from '../../i18n/languages';
+    import { useMessages } from '../../i18n/useMessages';
     import { useAppStore } from '../../stores/app';
     import PhIcon from '../icons/PhIcon.vue';
 
     // VARIABLES
     // ##############
     const store = useAppStore();
+    const t = useMessages();
     const options = LANGUAGES;
 
     // COMPUTED

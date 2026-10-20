@@ -12,7 +12,7 @@
             </div>
             <div class="brand-text">
                 <p class="brand-title">Tier List</p>
-                <p class="brand-subtitle">Civilisations · Méta actuelle</p>
+                <p class="brand-subtitle">{{ t.ui.tagline }}</p>
             </div>
         </div>
         <SelectLanguageComponent class="language-selector" />
@@ -26,7 +26,10 @@
      */
     // IMPORT
     // ##############
+    import { useMessages } from '../../i18n/useMessages';
     import SelectLanguageComponent from '../global/SelectLanguageComponent.vue';
+
+    const t = useMessages();
 </script>
 
 <style scoped>
