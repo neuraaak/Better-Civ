@@ -40,4 +40,21 @@ describe('Civ V importer constants', () => {
             ])
         ).toEqual([{ resourceKey: 'policies/universal_healthcare', id: 85 }]);
     });
+
+    it('keeps nested resource paths in canonical keys', () => {
+        expect(
+            canonicalResourceKey(
+                'https://eyefyre.github.io/civvapi/v1/en/promotions/bonus_vs_aircraft/helicopters_(150)_at.json'
+            )
+        ).toBe('promotions/bonus_vs_aircraft/helicopters_(150)_at');
+    });
+
+    it('uses the stable wonder id when civvapi omits its resource URL', () => {
+        expect(normalizeResource('wonders', 'fr', { id: 48, name: 'Cirque Maxime' })).toMatchObject(
+            {
+                resourceKey: 'wonders/id-48',
+                sourceUrl: 'https://eyefyre.github.io/civvapi/v1/fr/wonders/id-48.json',
+            }
+        );
+    });
 });

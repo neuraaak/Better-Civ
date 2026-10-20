@@ -9,7 +9,8 @@ export function canonicalResourceKey(sourceUrl: string): string {
         throw new TypeError(`Expected a civvapi HTTPS URL, got ${sourceUrl}`);
     }
 
-    const [, apiName, version, language, kind, fileName] = url.pathname.split('/');
+    const [, apiName, version, language, kind, ...resourcePath] = url.pathname.split('/');
+    const fileName = resourcePath[resourcePath.length - 1];
     if (
         apiName !== 'civvapi' ||
         version !== 'v1' ||
@@ -20,7 +21,7 @@ export function canonicalResourceKey(sourceUrl: string): string {
         throw new TypeError(`Expected a civvapi resource URL, got ${sourceUrl}`);
     }
 
-    return `${kind}/${fileName.slice(0, -'.json'.length)}`;
+    return `${kind}/${resourcePath.join('/').slice(0, -'.json'.length)}`;
 }
 
 export function deduplicateResources<T extends { resourceKey: string }>(
@@ -52,19 +53,28 @@ export function normalizeResource(
     language: Language,
     document: ApiDocument
 ): NormalizedResource {
-    if (typeof document.url !== 'string') {
+    const fallbackWonderId =
+        kind === 'wonders' && Number.isInteger(document.id) ? document.id : null;
+    if (typeof document.url !== 'string' && fallbackWonderId === null) {
         throw new TypeError(`Missing URL for ${kind} resource in ${language}`);
     }
-    const resourceKey = canonicalResourceKey(document.url);
+    const sourceUrl =
+        typeof document.url === 'string'
+            ? document.url
+            : `${CIV5_API_ROOT}/v1/${language}/wonders/id-${fallbackWonderId}.json`;
+    const resourceKey =
+        fallbackWonderId === null
+            ? canonicalResourceKey(sourceUrl)
+            : `wonders/id-${fallbackWonderId}`;
     if (!resourceKey.startsWith(`${kind}/`)) {
-        throw new TypeError(`Unexpected resource kind in ${document.url}`);
+        throw new TypeError(`Unexpected resource kind in ${sourceUrl}`);
     }
 
     return {
         kind,
         language,
         resourceKey,
-        sourceUrl: document.url,
+        sourceUrl,
         name: typeof document.name === 'string' ? document.name : null,
         payload: document,
     };
