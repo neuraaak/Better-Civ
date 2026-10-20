@@ -36,7 +36,6 @@ export default defineConfig({
                 '.vscode/',
                 '.cursor/',
                 'public/',
-                'utils/',
             ],
         },
     },
