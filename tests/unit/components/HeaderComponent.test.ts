@@ -21,7 +21,7 @@ describe('HeaderComponent', () => {
         const wrapper = mount(HeaderComponent);
         const logo = wrapper.find('img.logo');
 
-        expect(logo.attributes('src')).toBe('/img/logo.png');
+        expect(logo.attributes('src')).toBe('/img/logo.webp');
         expect(logo.attributes('alt')).toBe('Logo Better-Civ');
     });
 

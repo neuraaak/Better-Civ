@@ -1,22 +1,13 @@
 /* src/main.css */
 @import 'tailwindcss';
 
-/* BabelStone Flags Font */
-@font-face {
-    font-family: 'BabelStone Flags';
-    src: url('/fonts/BabelStoneFlags.woff2') format('woff2');
-    font-weight: normal;
-    font-style: normal;
-    font-display: swap;
-}
-
-/* Flag styles */
-.flag-icon {
-    font-family:
-        'BabelStone Flags', 'Segoe UI Emoji', 'Apple Color Emoji', 'Noto Color Emoji', sans-serif;
-    font-size: 1.2em;
-    line-height: 1;
-    vertical-align: middle;
+/* Phosphor icons rendered as inline SVG (see components/icons/PhIcon.vue) */
+.ph {
+    display: inline-block;
+    flex-shrink: 0;
+    width: 1em;
+    height: 1em;
+    vertical-align: -0.125em;
 }
 
 /* Nocturne design-system tokens (handoff `styles.css`) */
@@ -49,8 +40,8 @@
 
     --color-section: #262a60;
 
-    --font-heading: 'Inter', system-ui, sans-serif;
-    --font-body: 'Inter', system-ui, sans-serif;
+    --font-heading: 'Inter Variable', 'Inter', system-ui, sans-serif;
+    --font-body: 'Inter Variable', 'Inter', system-ui, sans-serif;
     --font-mono: 'JetBrains Mono', ui-monospace, monospace;
 
     --radius-sm: 4px;

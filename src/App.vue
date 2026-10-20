@@ -5,17 +5,18 @@
 
         <div class="page-inner">
             <HeaderComponent />
-            <ContentComponent :civilisations="civ_data" />
+            <ContentComponent :civilisations="civilizations" :status="status" @retry="retry" />
         </div>
     </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
     // IMPORT
     // ##############
-    import { ref, watch, computed, onMounted } from 'vue';
-    import { translationStore } from './stores/index';
-    import { defineAsyncComponent } from 'vue';
+    import { defineAsyncComponent, onMounted, watchEffect } from 'vue';
+    import { useCivilizations } from './composables/useCivilizations';
+    import { htmlLang } from './i18n/languages';
+    import { useAppStore } from './stores/app';
 
     // Lazy loading des composants lourds
     const HeaderComponent = defineAsyncComponent(
@@ -27,115 +28,18 @@
 
     // VARIABLES
     // ##############
-    const store = translationStore();
-
-    // Afficher la démonstration du lazy loading
-    //
-    const civ_data = ref([]);
-    const civ_tiers_and_tags = ref([
-        { id: 1, tags_id: [5, 6], tier_id: 3 }, // 'America'
-        { id: 2, tags_id: [5, 2], tier_id: 1 }, // 'Arabia'
-        { id: 3, tags_id: [6, 1], tier_id: 1 }, // 'Aztecs'
-        { id: 4, tags_id: [6], tier_id: 2 }, // 'China'
-        { id: 5, tags_id: [4], tier_id: 1 }, // 'Egypt'
-        { id: 6, tags_id: [6], tier_id: 1 }, // 'England'
-        { id: 7, tags_id: [1], tier_id: 4 }, // 'France'
-        { id: 8, tags_id: [6, 5], tier_id: 3 }, // 'Germany'
-        { id: 9, tags_id: [0], tier_id: 2 }, // 'Greece'
-        { id: 10, tags_id: [0], tier_id: 2 }, // 'India'
-        { id: 11, tags_id: [0], tier_id: 4 }, // 'Iroquois'
-        { id: 12, tags_id: [6, 1], tier_id: 4 }, // 'Japan'
-        { id: 13, tags_id: [6], tier_id: 4 }, // 'Ottomans'
-        { id: 14, tags_id: [0], tier_id: 1 }, // 'Persia'
-        { id: 15, tags_id: [4], tier_id: 2 }, // 'Rome'
-        { id: 16, tags_id: [4], tier_id: 2 }, // 'Russia'
-        { id: 17, tags_id: [0], tier_id: 2 }, // 'Siam'
-        { id: 18, tags_id: [6], tier_id: 3 }, // 'Songhai'
-        { id: 19, tags_id: [6], tier_id: 3 }, // 'Mongolia'
-        { id: 20, tags_id: [0], tier_id: 0 }, // 'Incas'
-        { id: 21, tags_id: [1], tier_id: 2 }, // 'Spain'
-        { id: 22, tags_id: [6], tier_id: 3 }, // 'Polynesia'
-        { id: 23, tags_id: [6], tier_id: 3 }, // 'Denmark'
-        { id: 24, tags_id: [3], tier_id: 0 }, // 'Korea'
-        { id: 25, tags_id: [3], tier_id: 0 }, // 'Babylon'
-        { id: 26, tags_id: [0], tier_id: 2 }, // 'Austria'
-        { id: 27, tags_id: [2], tier_id: 4 }, // 'Byzantium'
-        { id: 28, tags_id: [0], tier_id: 3 }, // 'Carthage'
-        { id: 29, tags_id: [2], tier_id: 2 }, // 'Celts'
-        { id: 30, tags_id: [6], tier_id: 1 }, // 'Ethiopia'
-        { id: 31, tags_id: [6, 4], tier_id: 1 }, // 'Huns'
-        { id: 32, tags_id: [0], tier_id: 1 }, // 'Mayans'
-        { id: 33, tags_id: [0], tier_id: 3 }, // 'Netherlands'
-        { id: 34, tags_id: [0], tier_id: 3 }, // 'Sweden'
-        { id: 35, tags_id: [3], tier_id: 4 }, // 'Assyria'
-        { id: 36, tags_id: [1], tier_id: 4 }, // 'Brazil'
-        { id: 37, tags_id: [0], tier_id: 3 }, // 'Indonesia'
-        { id: 38, tags_id: [5, 1], tier_id: 3 }, // 'Morocco'
-        { id: 39, tags_id: [0], tier_id: 0 }, // 'Poland'
-        { id: 40, tags_id: [5], tier_id: 3 }, // 'Portugal'
-        { id: 41, tags_id: [0], tier_id: 1 }, // 'Shoshone'
-        { id: 42, tags_id: [5], tier_id: 4 }, // 'Venice'
-        { id: 43, tags_id: [6], tier_id: 2 }, // 'Zulus'
-    ]);
-
-    // COMPUTED
-    // ##############
-    const fetchUrl = computed(
-        () =>
-            `https://eyefyre.github.io/civvapi/v1/${store.getLanguage}/civilizations/civilizations.json`
-    );
-
-    // WATCHER
-    // ##############
-    watch(
-        () => store.getLanguage,
-        () => {
-            // Calls fetchCivilizations every time the language changes
-            fetchCivilizations();
-        },
-        { immediate: true }
-    ); // { immediate: true } ensures that fetchCivilizations is called when the component mounts
+    const store = useAppStore();
+    const { civilizations, status, retry } = useCivilizations(() => store.lang);
 
     // HOOKS
     // ##############
     onMounted(() => {
         document.title = 'Better Civ5';
-        document.documentElement.lang = 'fr';
-        fetchCivilizations();
     });
-
-    // FUNCTIONS
-    // ##############
-    async function fetchCivilizations() {
-        try {
-            const response = await fetch(fetchUrl.value);
-            if (!response.ok) throw new Error('Network response was not ok');
-            let data = await response.json();
-            civ_data.value = mergeCivilizationData(data);
-            // console.log(civ_data.value)
-        } catch (error) {
-            console.error('There has been a problem with your fetch operation:', error);
-        }
-    }
-
-    function mergeCivilizationData(civilizations) {
-        return civilizations.map(civ => {
-            // Finds the corresponding object in additionalData
-            let additionalInfo = civ_tiers_and_tags.value.find(addCiv => addCiv.id === civ.id);
-
-            // If found, adds the new properties to the civ object
-            if (additionalInfo) {
-                return {
-                    ...civ,
-                    tags_id: additionalInfo.tags_id,
-                    tier_id: additionalInfo.tier_id,
-                };
-            }
-
-            // If not found, returns the civ object without modifications
-            return civ;
-        });
-    }
+    // Screen readers and hyphenation follow the language picked in the selector
+    watchEffect(() => {
+        document.documentElement.lang = htmlLang(store.lang);
+    });
 </script>
 
 <style scoped>

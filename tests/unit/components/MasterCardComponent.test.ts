@@ -2,27 +2,30 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import { mount } from '@vue/test-utils';
 import { createPinia, setActivePinia } from 'pinia';
 import MasterCardComponent from '@/components/civilisations/MasterCardComponent.vue';
+import type { Civilization } from '@/types';
 
 describe('MasterCardComponent', () => {
-    const props = {
+    const civ: Civilization = {
         id: 1,
         name: 'France|La France',
-        desc: 'Une civilisation culturelle.',
+        icon: '/img/france.png',
         tags_id: [1, 2],
         tier_id: 4,
-        civ_icon: '/img/france.png',
-        civ_trait_name: 'Grand Tour',
-        civ_leader: 'Catherine de Médicis',
-        civ_leader_subtitle: 'Reine de France',
-        civ_leader_text: 'Fille de Laurent II de Médicis.',
-        civ_leader_icon: '/img/catherine.png',
-        civ_leader_effect: 'Obtient un niveau de visibilité diplomatique.',
-        civ_units: [{ name: 'Garde impériale', icon: '/img/unit.png' }],
-        civ_building: [{ name: 'Château', icon: '/img/building.png' }],
-        position: 'I / II',
-        previous_name: 'Allemagne',
-        next_name: 'Grèce',
+        historical_info: [{ text: 'Une civilisation culturelle.' }],
+        leader: {
+            name: 'Catherine de Médicis',
+            subtitle: 'Reine de France',
+            icon: '/img/catherine.png',
+            trait: {
+                name: 'Grand Tour',
+                effect: 'Obtient un niveau de visibilité diplomatique.',
+            },
+            historical_info: [{ text: 'Fille de Laurent II de Médicis.' }],
+        },
+        unique_units: [{ name: 'Garde impériale', icon: '/img/unit.png' }],
+        unique_buildings: [{ name: 'Château', icon: '/img/building.png' }],
     };
+    const props = { civ, position: 'I / II', previous_name: 'Allemagne', next_name: 'Grèce' };
 
     beforeEach(() => {
         setActivePinia(createPinia());
@@ -36,8 +39,10 @@ describe('MasterCardComponent', () => {
         expect(wrapper.find('.panel-hero').exists()).toBe(true);
         expect(wrapper.find('.panel-name').text()).toBe('France');
         expect(wrapper.find('.tier-meta').text()).toContain('TIER D');
-        expect(wrapper.find('.civilization-description').text()).toBe(props.desc);
-        expect(wrapper.find('.leader-name').text()).toBe(props.civ_leader);
+        expect(wrapper.find('.civilization-description').text()).toBe(
+            'Une civilisation culturelle.'
+        );
+        expect(wrapper.find('.leader-name').text()).toBe('Catherine de Médicis');
         expect(wrapper.findAll('.unique-item')).toHaveLength(2);
         expect(wrapper.find('.panel-position').text()).toBe(props.position);
     });
@@ -54,8 +59,11 @@ describe('MasterCardComponent', () => {
             'Histoire',
         ]);
         expect(wrapper.find('.bonus-block strong').text()).toBe('Grand Tour');
-        expect(wrapper.find('.bonus-block p').text()).toBe(props.civ_leader_effect);
+        expect(wrapper.find('.bonus-block p').text()).toBe(
+            'Obtient un niveau de visibilité diplomatique.'
+        );
         expect(wrapper.find('.leader-subtitle').text()).toBe('Reine de France');
+        expect(wrapper.find('.leader-text p').text()).toBe('Fille de Laurent II de Médicis.');
         expect(wrapper.find('.panel-rule.meander').exists()).toBe(true);
     });
 
@@ -71,10 +79,20 @@ describe('MasterCardComponent', () => {
 
     it('drops the plural form of API names', () => {
         const wrapper = mount(MasterCardComponent, {
-            props: { ...props, civ_units: [{ name: 'Minuteman|Minutemen' }] },
+            props: { ...props, civ: { ...civ, unique_units: [{ name: 'Minuteman|Minutemen' }] } },
         });
 
         expect(wrapper.findAll('.unique-item')[0].text()).toBe('Minuteman');
+    });
+
+    it('hides the sections a civilization has no data for', () => {
+        const wrapper = mount(MasterCardComponent, {
+            props: { civ: { id: 2, name: 'Mod civ' } },
+        });
+
+        expect(wrapper.findAll('.section-label')).toHaveLength(0);
+        expect(wrapper.find('.panel-tags').exists()).toBe(false);
+        expect(wrapper.find('.panel-name').text()).toBe('Mod civ');
     });
 
     it('emits close and navigation events from panel controls', async () => {

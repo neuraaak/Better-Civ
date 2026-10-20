@@ -16,7 +16,16 @@ export default defineConfig({
         coverage: {
             provider: 'v8',
             reporter: ['text', 'json', 'html'],
+            include: ['src/**/*.{ts,vue}'],
+            // Fail `test:coverage` if coverage regresses below these floors
+            thresholds: {
+                lines: 90,
+                functions: 80,
+                branches: 80,
+                statements: 90,
+            },
             exclude: [
+                'src/main.ts',
                 'node_modules/',
                 'dist/',
                 'tests/',

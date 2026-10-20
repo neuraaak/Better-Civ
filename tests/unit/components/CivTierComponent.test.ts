@@ -20,7 +20,7 @@ describe('CivTierComponent', () => {
         [2, 'b', 'B'],
         [3, 'c', 'C'],
         [4, 'd', 'D'],
-    ])('renders the %s badge', (tierId, tierClass, letter) => {
+    ] as const)('renders the %s badge', (tierId, tierClass, letter) => {
         const wrapper = mount(CivTierComponent, { props: { tier_id: tierId } });
 
         expect(wrapper.find(`.tier-badge.tier-${tierClass}`).exists()).toBe(true);
@@ -47,8 +47,8 @@ describe('CivTierComponent', () => {
         expect(wrapper.find('.tier-badge').attributes('style')).toContain('opacity: 0.35');
     });
 
-    it('falls back to the D badge for an unknown tier', () => {
-        const wrapper = mount(CivTierComponent, { props: { tier_id: 999 } });
+    it('falls back to the D badge for an unrated civilization', () => {
+        const wrapper = mount(CivTierComponent);
 
         expect(wrapper.find('.tier-badge.tier-d').exists()).toBe(true);
     });

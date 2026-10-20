@@ -5,13 +5,13 @@
         role="button"
         tabindex="0"
         :style="tierPalette"
-        :aria-label="`Ouvrir les détails de ${displayName}`"
+        :aria-label="t.ui.openDetails.replace('{name}', displayName)"
         :aria-pressed="selected"
         @click="openDetails"
         @keydown.enter.prevent="openDetails"
         @keydown.space.prevent="openDetails"
     >
-        <img class="card-visual" alt="" :src="imagePath" />
+        <img class="card-visual" alt="" :src="imagePath" loading="lazy" decoding="async" />
         <div class="card-hatch"></div>
         <div class="card-gradient"></div>
         <div class="tier-frame"></div>
@@ -28,39 +28,38 @@
     </article>
 </template>
 
-<script setup>
-    import { computed, ref } from 'vue';
-    import { translationStore } from '../../stores/index';
+<script setup lang="ts">
+    import { computed } from 'vue';
+    import type { TagId, TierId } from '../../data/taxonomy';
+    import { useMessages } from '../../i18n/useMessages';
+    import { useAppStore } from '../../stores/app';
+    import { cleanName } from '../../utils/civName';
     import CivTagComponent from './subcomponents/CivTagComponent.vue';
     import CivTierComponent from './subcomponents/CivTierComponent.vue';
     import { tierBadge } from './tierDesign';
 
-    const props = defineProps({
-        id: Number,
-        name: String,
-        desc: String,
-        tags_id: Array,
-        tier_id: Number,
-        civ_leader_effect: String,
-        selected: { type: Boolean, default: false },
-    });
+    const props = withDefaults(
+        defineProps<{
+            id: number;
+            name: string;
+            tags_id?: TagId[];
+            tier_id?: TierId;
+            selected?: boolean;
+        }>(),
+        { tags_id: () => [], tier_id: undefined, selected: false }
+    );
 
-    const store = translationStore();
-    const selectedState = ref(false);
-    const selectedCard = ref(null);
-
-    const displayName = computed(() => props.name?.split('|')[0] ?? '');
-    const imagePath = computed(() => '/img/card-cover2.jpg');
+    const store = useAppStore();
+    const t = useMessages();
+    const displayName = computed(() => cleanName(props.name));
+    const imagePath = computed(() => '/img/card-cover.webp');
     const tierPalette = computed(() => {
         const badge = tierBadge(props.tier_id);
         return { '--tier-line': badge.line, '--tier-frame': badge.frame };
     });
 
     function openDetails() {
-        selectedCard.value = props.id;
-        selectedState.value = true;
-        store.setSelectedCard(selectedCard.value);
-        store.setSelectedState(true);
+        store.openDetail(props.id);
     }
 </script>
 

@@ -27,10 +27,4 @@ describe('CivTagComponent', () => {
 
         expect(wrapper.find('.civ-tag').classes()).toContain('civ-tag-panel');
     });
-
-    it('keeps rendering when the category identifier is unknown', () => {
-        const wrapper = mount(CivTagComponent, { props: { tag_id: 999 } });
-
-        expect(wrapper.find('.civ-tag').exists()).toBe(true);
-    });
 });

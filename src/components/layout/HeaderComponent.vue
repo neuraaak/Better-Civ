@@ -2,11 +2,17 @@
     <header class="header">
         <div class="brand">
             <div class="brand-mark">
-                <img src="/img/logo.png" alt="Logo Better-Civ" class="logo" />
+                <img
+                    src="/img/logo.webp"
+                    alt="Logo Better-Civ"
+                    class="logo"
+                    width="32"
+                    height="32"
+                />
             </div>
             <div class="brand-text">
                 <p class="brand-title">Tier List</p>
-                <p class="brand-subtitle">Civilisations · Méta actuelle</p>
+                <p class="brand-subtitle">{{ t.ui.tagline }}</p>
             </div>
         </div>
         <SelectLanguageComponent class="language-selector" />
@@ -14,13 +20,16 @@
     <div class="meander header-rule" aria-hidden="true"></div>
 </template>
 
-<script setup>
+<script setup lang="ts">
     /**
      * Header Component - Brand bar with logo and language selector
      */
     // IMPORT
     // ##############
+    import { useMessages } from '../../i18n/useMessages';
     import SelectLanguageComponent from '../global/SelectLanguageComponent.vue';
+
+    const t = useMessages();
 </script>
 
 <style scoped>

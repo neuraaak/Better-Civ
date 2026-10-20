@@ -12,24 +12,28 @@
     </span>
 </template>
 
-<script setup>
+<script setup lang="ts">
     import { computed } from 'vue';
-    import { translationStore } from '../../../stores/index';
+    import type { TierId } from '../../../data/taxonomy';
+    import { useAppStore } from '../../../stores/app';
     import { tierBadge } from '../tierDesign';
 
-    const props = defineProps({
-        tier_id: Number,
-        /** Badge edge in px — the design uses 24, 32, 40, 52 and 58. */
-        size: { type: Number, default: 40 },
-        /** Dims the badge (tier filter chips that are not selected). */
-        dimmed: { type: Boolean, default: false },
-    });
+    const props = withDefaults(
+        defineProps<{
+            tier_id?: TierId;
+            /** Badge edge in px — the design uses 24, 32, 40, 52 and 58. */
+            size?: number;
+            /** Dims the badge (tier filter chips that are not selected). */
+            dimmed?: boolean;
+        }>(),
+        { tier_id: undefined, size: 40, dimmed: false }
+    );
 
     // Letter sizes taken from the handoff for each badge size it uses.
-    const LETTER_SIZES = { 24: 11, 32: 13, 40: 16, 52: 20, 58: 24 };
-    const store = translationStore();
+    const LETTER_SIZES: Record<number, number> = { 24: 11, 32: 13, 40: 16, 52: 20, 58: 24 };
 
-    const badge = computed(() => tierBadge(props.tier_id, store.getLanguage));
+    const store = useAppStore();
+    const badge = computed(() => tierBadge(props.tier_id, store.lang));
     const label = computed(() => `Tier ${badge.value.letter} · ${badge.value.rank}`);
     const badgeStyle = computed(() => ({
         '--tier-size': `${props.size}px`,

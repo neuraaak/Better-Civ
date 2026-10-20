@@ -15,7 +15,7 @@
                         :aria-label="ui.previous"
                         @click="$emit('previous')"
                     >
-                        <i class="ph ph-caret-left" aria-hidden="true"></i>
+                        <PhIcon name="caret-left" />
                     </button>
                     <button
                         type="button"
@@ -23,7 +23,7 @@
                         :aria-label="ui.next"
                         @click="$emit('next')"
                     >
-                        <i class="ph ph-caret-right" aria-hidden="true"></i>
+                        <PhIcon name="caret-right" />
                     </button>
                     <span v-if="position" class="panel-position">{{ position }}</span>
                     <button
@@ -33,13 +33,13 @@
                         :aria-label="ui.close"
                         @click="$emit('close')"
                     >
-                        <i class="ph ph-x" aria-hidden="true"></i>
+                        <PhIcon name="x" />
                     </button>
                 </div>
 
                 <div class="panel-identity">
                     <div class="civilization-icon">
-                        <img v-if="civ_icon" :src="civ_icon" alt="" />
+                        <img v-if="civ.icon" :src="civ.icon" alt="" />
                     </div>
                     <h1 class="panel-name">{{ displayName }}</h1>
                     <div class="tier-summary">
@@ -47,7 +47,7 @@
                             <span>TIER {{ badge.letter }}</span>
                             <strong :style="{ color: badge.label }">{{ badge.rank }}</strong>
                         </div>
-                        <CivTierComponent :tier_id="tier_id" :size="52" />
+                        <CivTierComponent :tier_id="civ.tier_id" :size="52" />
                     </div>
                 </div>
             </header>
@@ -55,39 +55,41 @@
             <div class="meander panel-rule" aria-hidden="true"></div>
 
             <div class="panel-content">
-                <div v-if="tags_id?.length" class="panel-tags">
+                <div v-if="civ.tags_id?.length" class="panel-tags">
                     <CivTagComponent
-                        v-for="tag_id in tags_id"
+                        v-for="tag_id in civ.tags_id"
                         :key="tag_id"
                         :tag_id="tag_id"
                         variant="panel"
                     />
                 </div>
 
-                <section v-if="civ_leader_effect" class="panel-section">
+                <section v-if="bonus?.effect" class="panel-section">
                     <span class="section-label section-label-accent">
-                        <i class="ph ph-star-four" aria-hidden="true"></i>{{ ui.bonus }}
+                        <PhIcon name="star-four" />{{ ui.bonus }}
                     </span>
                     <div class="bonus-block">
-                        <strong v-if="civ_trait_name">{{ cleanName(civ_trait_name) }}</strong>
-                        <p>{{ civ_leader_effect }}</p>
+                        <strong v-if="bonus.name">{{ cleanName(bonus.name) }}</strong>
+                        <p>{{ bonus.effect }}</p>
                     </div>
                 </section>
 
-                <section v-if="civ_leader" class="panel-section">
+                <section v-if="leader?.name" class="panel-section">
                     <span class="section-label">
-                        <i class="ph ph-crown-simple" aria-hidden="true"></i>{{ ui.leader }}
+                        <PhIcon name="crown-simple" />{{ ui.leader }}
                     </span>
                     <div class="leader-block">
                         <div class="leader-portrait">
-                            <img v-if="civ_leader_icon" :src="civ_leader_icon" alt="" />
+                            <img v-if="leader.icon" :src="leader.icon" alt="" />
                         </div>
                         <div class="leader-text">
-                            <h2 class="leader-name">{{ cleanName(civ_leader) }}</h2>
-                            <span v-if="civ_leader_subtitle" class="leader-subtitle">{{
-                                civ_leader_subtitle
+                            <h2 class="leader-name">{{ cleanName(leader.name) }}</h2>
+                            <span v-if="leader.subtitle" class="leader-subtitle">{{
+                                leader.subtitle
                             }}</span>
-                            <p v-if="civ_leader_text">{{ civ_leader_text }}</p>
+                            <p v-if="leader.historical_info?.[0]?.text">
+                                {{ leader.historical_info[0].text }}
+                            </p>
                         </div>
                     </div>
                 </section>
@@ -95,7 +97,7 @@
                 <div v-if="units.length || buildings.length" class="unique-columns">
                     <section class="panel-section">
                         <span class="section-label">
-                            <i class="ph ph-sword" aria-hidden="true"></i>{{ ui.uniqueUnits }}
+                            <PhIcon name="sword" />{{ ui.uniqueUnits }}
                         </span>
                         <div v-for="item in units" :key="item.name" class="unique-item">
                             <span class="unique-icon">
@@ -106,8 +108,7 @@
                     </section>
                     <section class="panel-section">
                         <span class="section-label">
-                            <i class="ph ph-castle-turret" aria-hidden="true"></i
-                            >{{ ui.uniqueBuildings }}
+                            <PhIcon name="castle-turret" />{{ ui.uniqueBuildings }}
                         </span>
                         <div v-for="item in buildings" :key="item.name" class="unique-item">
                             <span class="unique-icon">
@@ -118,18 +119,18 @@
                     </section>
                 </div>
 
-                <section v-if="desc" class="panel-section">
+                <section v-if="history" class="panel-section">
                     <span class="section-label">
-                        <i class="ph ph-book-open-text" aria-hidden="true"></i>{{ ui.history }}
+                        <PhIcon name="book-open-text" />{{ ui.history }}
                     </span>
-                    <p class="civilization-description">{{ desc }}</p>
+                    <p class="civilization-description">{{ history }}</p>
                 </section>
             </div>
         </div>
 
         <footer class="panel-navigation">
             <button class="panel-previous" type="button" @click="$emit('previous')">
-                <i class="ph ph-arrow-left" aria-hidden="true"></i>
+                <PhIcon name="arrow-left" />
                 <span class="nav-text">
                     <small>{{ ui.previous }}</small>
                     <strong>{{ cleanName(previous_name) || displayName }}</strong>
@@ -140,57 +141,52 @@
                     <small>{{ ui.next }}</small>
                     <strong>{{ cleanName(next_name) || displayName }}</strong>
                 </span>
-                <i class="ph ph-arrow-right" aria-hidden="true"></i>
+                <PhIcon name="arrow-right" />
             </button>
         </footer>
     </article>
 </template>
 
-<script setup>
+<script setup lang="ts">
     import { computed } from 'vue';
-    import { translationStore } from '../../stores/index';
-    import { uiCopy } from '../uiCopy';
+    import type { UniqueItemDto } from '../../api/civApi';
+    import { useMessages } from '../../i18n/useMessages';
+    import { useAppStore } from '../../stores/app';
+    import type { Civilization } from '../../types';
+    import { cleanName } from '../../utils/civName';
+    import PhIcon from '../icons/PhIcon.vue';
     import CivTagComponent from './subcomponents/CivTagComponent.vue';
     import CivTierComponent from './subcomponents/CivTierComponent.vue';
     import { tierBadge } from './tierDesign';
 
-    const props = defineProps({
-        id: Number,
-        name: String,
-        desc: String,
-        tags_id: Array,
-        tier_id: Number,
-        civ_icon: String,
-        civ_trait_name: String,
-        civ_leader: String,
-        civ_leader_icon: String,
-        civ_leader_subtitle: String,
-        civ_leader_text: String,
-        civ_leader_effect: String,
-        civ_units: Array,
-        civ_building: Array,
-        position: String,
-        previous_name: String,
-        next_name: String,
-    });
+    const props = withDefaults(
+        defineProps<{
+            civ: Civilization;
+            /** "III / XII" position of the civilization in the visible list. */
+            position?: string;
+            previous_name?: string;
+            next_name?: string;
+        }>(),
+        { position: '', previous_name: undefined, next_name: undefined }
+    );
 
-    defineEmits(['close', 'previous', 'next']);
+    defineEmits<{ close: []; previous: []; next: [] }>();
 
-    const store = translationStore();
-    const badge = computed(() => tierBadge(props.tier_id, store.getLanguage));
-    const ui = computed(() => uiCopy(store.getLanguage));
-    const displayName = computed(() => cleanName(props.name));
-    const civBackground = computed(() => '/img/card-cover2.jpg');
-    const units = computed(() => (props.civ_units || []).map(normalizeItem));
-    const buildings = computed(() => (props.civ_building || []).map(normalizeItem));
+    const store = useAppStore();
+    const t = useMessages();
+    const ui = computed(() => t.value.ui);
+    const badge = computed(() => tierBadge(props.civ.tier_id, store.lang));
+    const displayName = computed(() => cleanName(props.civ.name));
+    const leader = computed(() => props.civ.leader);
+    const bonus = computed(() => leader.value?.trait);
+    const history = computed(() => props.civ.historical_info?.[0]?.text ?? '');
+    const civBackground = computed(() => '/img/card-cover.webp');
+    const units = computed(() => (props.civ.unique_units ?? []).map(normalizeItem));
+    const buildings = computed(() => (props.civ.unique_buildings ?? []).map(normalizeItem));
 
-    /** API names carry singular|plural forms ("Minuteman|Minutemen"). */
-    function cleanName(value) {
-        return value?.split('|')[0] ?? '';
-    }
-    function normalizeItem(item) {
+    function normalizeItem(item: UniqueItemDto): { name: string; icon: string } {
         if (typeof item === 'string') return { name: cleanName(item), icon: '' };
-        return { name: cleanName(item?.name), icon: item?.icon || '' };
+        return { name: cleanName(item.name), icon: item.icon || '' };
     }
 </script>
 

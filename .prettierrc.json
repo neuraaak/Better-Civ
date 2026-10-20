@@ -1,29 +1,14 @@
 {
-    "singleQuote": true,
+    "tabWidth": 4,
+    "useTabs": false,
     "semi": true,
-    "tabWidth": 2,
+    "singleQuote": true,
     "trailingComma": "es5",
-    "printWidth": 100,
     "bracketSpacing": true,
-    "arrowParens": "always",
-    "overrides": [
-        {
-            "files": "*.md",
-            "options": {
-                "tabWidth": 2
-            }
-        },
-        {
-            "files": "*.json",
-            "options": {
-                "tabWidth": 2
-            }
-        },
-        {
-            "files": "pnpm-lock.yaml",
-            "options": {
-                "requirePragma": true
-            }
-        }
-    ]
+    "arrowParens": "avoid",
+    "printWidth": 100,
+    "endOfLine": "lf",
+    "vueIndentScriptAndStyle": true,
+    "htmlWhitespaceSensitivity": "css",
+    "embeddedLanguageFormatting": "auto"
 }
