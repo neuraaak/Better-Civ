@@ -36,21 +36,86 @@ describe('useCivFilters', () => {
         expect(groups.value[0].tierId).toBeNull();
     });
 
-    it('combines search, category and tier filters', () => {
-        const { filtered, searchedText, selectedTagId, toggleTier } = setup();
+    it('starts on the requested grouping', () => {
+        const { groupMode } = useCivFilters(ref(civilizations), ref<Lang>('fr'), 'alpha');
+
+        expect(groupMode.value).toBe('alpha');
+    });
+
+    it('searches on the name', () => {
+        const { filtered, searchedText } = setup();
 
         searchedText.value = 'EGY';
+
         expect(ids(filtered.value)).toEqual([2]);
+    });
 
-        searchedText.value = '';
-        selectedTagId.value = 2;
+    it('keeps civilizations with at least one included category', () => {
+        const { filtered, toggleInclude } = setup();
+
+        toggleInclude(6);
+        toggleInclude(2);
+        expect(ids(filtered.value)).toEqual([3, 1]);
+
+        toggleInclude(6);
         expect(ids(filtered.value)).toEqual([3]);
+    });
 
-        selectedTagId.value = null;
+    it('drops civilizations with an excluded category, unrated ones included', () => {
+        const { filtered, toggleExclude } = setup();
+
+        toggleExclude(5);
+
+        expect(ids(filtered.value)).toEqual([2, 1, 4]);
+    });
+
+    it('never includes and excludes the same category', () => {
+        const { includedTagIds, excludedTagIds, toggleInclude, toggleExclude } = setup();
+
+        toggleInclude(4);
+        toggleExclude(4);
+        expect(includedTagIds.value).toEqual([]);
+        expect(excludedTagIds.value).toEqual([4]);
+
+        toggleInclude(4);
+        expect(includedTagIds.value).toEqual([4]);
+        expect(excludedTagIds.value).toEqual([]);
+    });
+
+    it('combines included and excluded categories', () => {
+        const { filtered, toggleInclude, toggleExclude } = setup();
+
+        toggleInclude(2);
+        toggleInclude(4);
+        toggleExclude(5);
+
+        expect(ids(filtered.value)).toEqual([2]);
+    });
+
+    it('keeps every selected tier and drops unrated civilizations', () => {
+        const { filtered, selectedTierIds, toggleTier } = setup();
+
         toggleTier(2);
+        toggleTier(1);
+        expect(selectedTierIds.value).toEqual([2, 1]);
+        expect(ids(filtered.value)).toEqual([3, 2, 1]);
+
+        toggleTier(1);
         expect(ids(filtered.value)).toEqual([1]);
         toggleTier(2);
         expect(filtered.value).toHaveLength(4);
+    });
+
+    it('counts the category and tier filters in use, not the search', () => {
+        const { activeCount, searchedText, toggleInclude, toggleExclude, toggleTier } = setup();
+
+        searchedText.value = 'a';
+        toggleInclude(1);
+        toggleExclude(2);
+        toggleTier(0);
+        toggleTier(3);
+
+        expect(activeCount.value).toBe(4);
     });
 
     it('does not match the plural part of a name', () => {
@@ -61,15 +126,30 @@ describe('useCivFilters', () => {
         expect(filtered.value).toHaveLength(0);
     });
 
+    it('clears the category and tier filters but keeps the search', () => {
+        const { filtered, searchedText, activeCount, toggleInclude, toggleTier, clearFilters } =
+            setup();
+        searchedText.value = 'egy';
+        toggleInclude(6);
+        toggleTier(2);
+        expect(filtered.value).toHaveLength(0);
+
+        clearFilters();
+
+        expect(activeCount.value).toBe(0);
+        expect(ids(filtered.value)).toEqual([2]);
+    });
+
     it('resets every filter', () => {
-        const { filtered, groups, searchedText, selectedTagId, selectedTierId, reset } = setup();
+        const { filtered, groups, searchedText, toggleExclude, toggleTier, reset } = setup();
         searchedText.value = 'zzz';
-        selectedTagId.value = 1;
-        selectedTierId.value = 0;
+        toggleExclude(1);
+        toggleTier(0);
         expect(groups.value).toEqual([]);
 
         reset();
 
+        expect(searchedText.value).toBe('');
         expect(filtered.value).toHaveLength(4);
     });
 });

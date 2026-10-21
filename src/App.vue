@@ -1,6 +1,6 @@
 <template>
     <div class="page">
-        <div class="ambient-glow" aria-hidden="true"></div>
+        <div v-if="DISPLAY_OPTIONS.ambientGlow" class="ambient-glow" aria-hidden="true"></div>
         <div class="ambient-dots" aria-hidden="true"></div>
 
         <div class="page-inner">
@@ -15,6 +15,7 @@
     // ##############
     import { defineAsyncComponent, onMounted, watchEffect } from 'vue';
     import { useCivilizations } from './composables/useCivilizations';
+    import { DISPLAY_OPTIONS } from './data/displayOptions';
     import { htmlLang } from './i18n/languages';
     import { useAppStore } from './stores/app';
 

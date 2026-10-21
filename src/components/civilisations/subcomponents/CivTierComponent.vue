@@ -21,16 +21,24 @@
     const props = withDefaults(
         defineProps<{
             tier_id?: TierId;
-            /** Badge edge in px — the design uses 24, 32, 40, 52 and 58. */
+            /** Badge edge in px — the design uses 18, 32, 34, 40, 52 and 58. */
             size?: number;
-            /** Dims the badge (tier filter chips that are not selected). */
+            /** Dims the badge (tier filter tiles that are not selected). */
             dimmed?: boolean;
         }>(),
         { tier_id: undefined, size: 40, dimmed: false }
     );
 
     // Letter sizes taken from the handoff for each badge size it uses.
-    const LETTER_SIZES: Record<number, number> = { 24: 11, 32: 13, 40: 16, 52: 20, 58: 24 };
+    const LETTER_SIZES: Record<number, number> = {
+        18: 9,
+        24: 11,
+        32: 13,
+        34: 14,
+        40: 16,
+        52: 20,
+        58: 24,
+    };
 
     const store = useAppStore();
     const badge = computed(() => tierBadge(props.tier_id, store.lang));
@@ -47,7 +55,7 @@
         '--tier-fg': badge.value.fg,
         '--tier-glow': badge.value.glow,
         '--tier-anim': badge.value.anim,
-        opacity: props.dimmed ? 0.35 : 1,
+        opacity: props.dimmed ? 0.4 : 1,
     }));
 </script>
 

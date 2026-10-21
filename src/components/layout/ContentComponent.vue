@@ -8,91 +8,91 @@
             <h1>{{ ui.heroTitle }}</h1>
         </section>
 
+        <div v-if="filtersOpen" class="filters-backdrop" @click="closeFilters"></div>
         <section class="controls" :aria-label="ui.filters">
-            <label class="search-control">
-                <PhIcon name="magnifying-glass" />
-                <input
-                    v-model="searchedText"
-                    type="search"
-                    :placeholder="ui.search"
-                    :aria-label="ui.search"
-                />
-                <button
-                    v-if="searchedText"
-                    type="button"
-                    class="search-clear"
-                    :aria-label="ui.reset"
-                    @click="searchedText = ''"
-                >
-                    <PhIcon name="x" />
-                </button>
-            </label>
-
-            <div class="chip-group category-filter" role="group" :aria-label="ui.categories">
-                <button
-                    type="button"
-                    class="category-chip"
-                    :class="{ active: selectedTagId === null }"
-                    :aria-pressed="selectedTagId === null"
-                    @click="selectedTagId = null"
-                >
-                    <span class="dot" :style="{ background: 'var(--color-neutral-600)' }"></span
-                    >{{ ui.all }}
-                </button>
-                <button
-                    v-for="tagId in TAG_IDS"
-                    :key="tagId"
-                    type="button"
-                    class="category-chip"
-                    :class="{ active: selectedTagId === tagId }"
-                    :aria-pressed="selectedTagId === tagId"
-                    @click="selectedTagId = tagId"
-                >
-                    <span class="dot" :style="{ background: categoryColor(tagId) }"></span
-                    >{{ t.tags[tagId] }}
-                </button>
-            </div>
-
-            <div class="chip-group tier-filter" role="group" :aria-label="ui.tiers">
-                <button
-                    v-for="tierId in TIER_IDS"
-                    :key="tierId"
-                    type="button"
-                    class="tier-chip"
-                    :class="{ active: selectedTierId === tierId }"
-                    :aria-pressed="selectedTierId === tierId"
-                    :title="`${tierLabel(tierId)} · ${badge(tierId).rank}`"
-                    @click="toggleTier(tierId)"
-                >
-                    <CivTierComponent
-                        :tier_id="tierId"
-                        :size="24"
-                        :dimmed="selectedTierId !== null && selectedTierId !== tierId"
+            <div class="controls-row">
+                <label class="search-control">
+                    <PhIcon name="magnifying-glass" />
+                    <input
+                        v-model="searchedText"
+                        type="search"
+                        :placeholder="ui.search"
+                        :aria-label="ui.search"
                     />
-                </button>
-            </div>
+                    <button
+                        v-if="searchedText"
+                        type="button"
+                        class="search-clear"
+                        :aria-label="ui.reset"
+                        @click="searchedText = ''"
+                    >
+                        <PhIcon name="x" />
+                    </button>
+                </label>
 
-            <div class="result-actions">
-                <span class="result-count">{{ filtered.length }} {{ ui.results }}</span>
-                <div class="sort-toggle" role="group" :aria-label="ui.filters">
-                    <button
-                        type="button"
-                        :class="{ active: groupMode === 'tier' }"
-                        :aria-pressed="groupMode === 'tier'"
-                        @click="groupMode = 'tier'"
-                    >
-                        <PhIcon name="ranking" />{{ ui.byTier }}
-                    </button>
-                    <button
-                        type="button"
-                        :class="{ active: groupMode === 'alpha' }"
-                        :aria-pressed="groupMode === 'alpha'"
-                        @click="groupMode = 'alpha'"
-                    >
-                        <PhIcon name="sort-ascending" />{{ ui.alphabetical }}
-                    </button>
+                <button
+                    ref="filtersToggle"
+                    type="button"
+                    class="filters-toggle"
+                    :class="{ open: filtersOpen, active: activeCount > 0 }"
+                    aria-controls="filter-panel"
+                    :aria-expanded="filtersOpen"
+                    @click="filtersOpen = !filtersOpen"
+                >
+                    <PhIcon name="sliders-horizontal" />{{ ui.filtersButton }}
+                    <span v-if="activeCount" class="filters-count">{{ activeCount }}</span>
+                    <PhIcon name="caret-down" class="filters-caret" />
+                </button>
+                <FilterPanelComponent
+                    id="filter-panel"
+                    ref="filterPanel"
+                    :open="filtersOpen"
+                    :civilisations="civilisations"
+                    :included-tag-ids="includedTagIds"
+                    :excluded-tag-ids="excludedTagIds"
+                    :selected-tier-ids="selectedTierIds"
+                    :result-label="resultLabel"
+                    @toggle-include="toggleInclude"
+                    @toggle-exclude="toggleExclude"
+                    @toggle-tier="toggleTier"
+                    @clear="clearFilters"
+                    @close="closeFilters"
+                />
+
+                <div class="result-actions">
+                    <span class="result-count">{{ resultLabel }}</span>
+                    <div class="sort-toggle" role="group" :aria-label="ui.filters">
+                        <button
+                            type="button"
+                            :class="{ active: groupMode === 'tier' }"
+                            :aria-pressed="groupMode === 'tier'"
+                            @click="groupMode = 'tier'"
+                        >
+                            <PhIcon name="ranking" />{{ ui.byTier }}
+                        </button>
+                        <button
+                            type="button"
+                            :class="{ active: groupMode === 'alpha' }"
+                            :aria-pressed="groupMode === 'alpha'"
+                            :title="ui.alphabetical"
+                            @click="groupMode = 'alpha'"
+                        >
+                            <PhIcon name="sort-ascending" />{{ ui.alphabeticalShort }}
+                        </button>
+                    </div>
                 </div>
             </div>
+
+            <ActiveFiltersComponent
+                v-if="activeCount"
+                :included-tag-ids="includedTagIds"
+                :excluded-tag-ids="excludedTagIds"
+                :selected-tier-ids="selectedTierIds"
+                @toggle-include="toggleInclude"
+                @toggle-exclude="toggleExclude"
+                @toggle-tier="toggleTier"
+                @clear="clearFilters"
+            />
         </section>
 
         <section v-if="groups.length" class="tier-list">
@@ -125,6 +125,7 @@
                         :tags_id="civ.tags_id"
                         :tier_id="civ.tier_id"
                         :selected="detailOpen && selectedCivId === civ.id"
+                        :variant="cardStyle"
                     />
                 </div>
             </section>
@@ -173,19 +174,33 @@
     import { useCardNavigation } from '../../composables/useCardNavigation';
     import { useCivFilters } from '../../composables/useCivFilters';
     import type { LoadStatus } from '../../composables/useCivilizations';
-    import { TAG_IDS, TIER_IDS, type TierId } from '../../data/taxonomy';
+    import { DISPLAY_OPTIONS, type CardStyle, type GroupMode } from '../../data/displayOptions';
+    import { TIER_IDS, type TierId } from '../../data/taxonomy';
     import { useMessages } from '../../i18n/useMessages';
     import { useAppStore } from '../../stores/app';
     import type { Civilization } from '../../types';
     import CivCardComponent from '../civilisations/CivCardComponent.vue';
     import MasterCardComponent from '../civilisations/MasterCardComponent.vue';
     import CivTierComponent from '../civilisations/subcomponents/CivTierComponent.vue';
-    import { categoryColor, tierBadge, toRoman } from '../civilisations/tierDesign';
+    import { tierBadge, toRoman } from '../civilisations/tierDesign';
+    import ActiveFiltersComponent from '../filters/ActiveFiltersComponent.vue';
+    import FilterPanelComponent from '../filters/FilterPanelComponent.vue';
     import PhIcon from '../icons/PhIcon.vue';
 
     const props = withDefaults(
-        defineProps<{ civilisations: Civilization[]; status?: LoadStatus }>(),
-        { status: 'ready' }
+        defineProps<{
+            civilisations: Civilization[];
+            status?: LoadStatus;
+            /** Card layout, see data/displayOptions.ts. */
+            cardStyle?: CardStyle;
+            /** Grouping shown on load. */
+            defaultGroupMode?: GroupMode;
+        }>(),
+        {
+            status: 'ready',
+            cardStyle: DISPLAY_OPTIONS.cardStyle,
+            defaultGroupMode: DISPLAY_OPTIONS.defaultGroupMode,
+        }
     );
     defineEmits<{ retry: [] }>();
 
@@ -196,16 +211,22 @@
 
     const {
         searchedText,
-        selectedTagId,
-        selectedTierId,
+        includedTagIds,
+        excludedTagIds,
+        selectedTierIds,
         groupMode,
         filtered,
         groups,
+        activeCount,
+        toggleInclude,
+        toggleExclude,
         toggleTier,
+        clearFilters,
         reset,
     } = useCivFilters(
         () => props.civilisations,
-        () => store.lang
+        () => store.lang,
+        props.defaultGroupMode
     );
     const {
         index: selectedIndex,
@@ -219,6 +240,10 @@
     const selectedCardPosition = computed(() => {
         if (selectedIndex.value < 0) return '';
         return `${toRoman(selectedIndex.value + 1)} / ${toRoman(filtered.value.length)}`;
+    });
+    const resultLabel = computed(() => {
+        const count = filtered.value.length;
+        return `${count} ${count === 1 ? ui.value.result : ui.value.results}`;
     });
     const badges = computed(
         () => new Map(TIER_IDS.map(tierId => [tierId, tierBadge(tierId, store.lang)]))
@@ -239,8 +264,19 @@
         }
     });
 
-    onMounted(() => window.addEventListener('keydown', navigateCards));
-    onUnmounted(() => window.removeEventListener('keydown', navigateCards));
+    // The filter panel closes on Escape, on a click beside it and from its own button
+    const filtersOpen = ref(false);
+    const filtersToggle = ref<HTMLButtonElement | null>(null);
+    const filterPanel = ref<InstanceType<typeof FilterPanelComponent> | null>(null);
+    function closeFilters() {
+        const panel = filterPanel.value?.$el as HTMLElement | undefined;
+        // The closed panel is inert: hand the focus back to its button rather than to <body>
+        if (panel?.contains(document.activeElement)) filtersToggle.value?.focus();
+        filtersOpen.value = false;
+    }
+
+    onMounted(() => window.addEventListener('keydown', onKeydown));
+    onUnmounted(() => window.removeEventListener('keydown', onKeydown));
 
     function tierLabel(tierId: TierId): string {
         return t.value.tiers[tierId].label;
@@ -251,7 +287,11 @@
     function closeOverlay() {
         store.closeDetail();
     }
-    function navigateCards(event: KeyboardEvent) {
+    function onKeydown(event: KeyboardEvent) {
+        if (event.key === 'Escape' && filtersOpen.value) {
+            closeFilters();
+            return;
+        }
         if (!detailOpen.value) return;
         if (event.key === 'Escape') {
             closeOverlay();
@@ -301,19 +341,30 @@
     }
 
     /* — sticky filter bar — */
+    .filters-backdrop {
+        position: fixed;
+        inset: 0;
+        z-index: 5;
+    }
     .controls {
         position: sticky;
         top: 0;
-        z-index: 5;
+        z-index: 6;
         display: flex;
-        flex-wrap: wrap;
-        align-items: center;
-        gap: 12px;
+        flex-direction: column;
+        gap: 10px;
         margin: 0 -40px;
         padding: 12px 40px;
         background: color-mix(in srgb, var(--color-bg) 82%, transparent);
         -webkit-backdrop-filter: blur(12px);
         backdrop-filter: blur(12px);
+    }
+    .controls-row {
+        position: relative;
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 8px;
     }
     button {
         border: 0;
@@ -325,10 +376,10 @@
     }
     .search-control {
         display: flex;
+        flex: 1 1 240px;
         align-items: center;
         gap: 8px;
-        width: 280px;
-        max-width: 100%;
+        max-width: 420px;
         height: 38px;
         padding: 0 12px;
         border-radius: var(--radius-md);
@@ -363,55 +414,51 @@
     .search-clear:hover {
         color: var(--color-text);
     }
-    .chip-group {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 4px;
-        padding: 3px;
-        border-radius: var(--radius-md);
-        box-shadow: var(--shadow-sm);
-    }
-    .category-chip {
+    .filters-toggle {
         display: flex;
         align-items: center;
-        gap: 7px;
-        height: 30px;
-        padding: 0 11px;
-        border-radius: 6px;
-        color: var(--color-neutral-400);
+        gap: 8px;
+        height: 38px;
+        padding: 0 12px 0 13px;
+        border-radius: var(--radius-md);
+        color: var(--color-neutral-300);
+        box-shadow: var(--shadow-sm);
         font-size: 13px;
         font-weight: 500;
         white-space: nowrap;
     }
-    .category-chip:hover {
-        color: var(--color-text);
+    .filters-toggle > .ph {
+        font-size: 16px;
     }
-    .category-chip.active {
-        color: var(--color-text);
-        background: var(--color-neutral-800);
+    .filters-toggle.open,
+    .filters-toggle.active {
+        color: var(--color-accent-200);
+        box-shadow: inset 0 0 0 1px var(--color-accent);
     }
-    .dot {
-        width: 7px;
-        height: 7px;
-        flex: none;
-        border-radius: 50%;
+    .filters-toggle.open,
+    .filters-toggle:hover {
+        background: color-mix(in srgb, var(--color-accent) 10%, transparent);
     }
-    .tier-filter {
-        flex-wrap: nowrap;
-    }
-    .tier-chip {
+    .filters-count {
         display: flex;
+        min-width: 18px;
+        height: 18px;
         align-items: center;
         justify-content: center;
-        width: 34px;
-        height: 30px;
-        border-radius: 6px;
+        padding: 0 5px;
+        border-radius: 9px;
+        color: var(--color-accent-100);
+        background: var(--color-accent-700);
+        box-shadow: 0 0 10px color-mix(in srgb, var(--color-accent) 50%, transparent);
+        font: 600 11px/1 var(--font-body);
     }
-    .tier-chip:hover {
-        background: var(--color-neutral-900);
+    .filters-toggle .filters-caret {
+        font-size: 12px;
+        color: var(--color-neutral-500);
+        transition: transform 0.2s;
     }
-    .tier-chip.active {
-        background: var(--color-neutral-800);
+    .filters-toggle.open .filters-caret {
+        transform: rotate(180deg);
     }
     .result-actions {
         display: flex;
@@ -586,17 +633,12 @@
             padding: 12px 16px;
         }
         .search-control {
-            width: 100%;
-        }
-        .chip-group {
-            flex-wrap: nowrap;
-            max-width: 100%;
-            overflow-x: auto;
+            flex-basis: 100%;
+            max-width: none;
         }
         .result-actions {
-            width: 100%;
-            margin-left: 0;
-            justify-content: space-between;
+            flex: 1;
+            justify-content: flex-end;
         }
         .tier-heading p {
             display: none;

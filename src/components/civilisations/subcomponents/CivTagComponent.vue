@@ -1,6 +1,6 @@
 <template>
     <span class="civ-tag" :class="`civ-tag-${variant}`" :style="{ '--tag-color': color }">
-        <span class="category-dot"></span>
+        <PhIcon :name="icon" class="category-icon" />
         {{ label }}
     </span>
 </template>
@@ -9,13 +9,17 @@
     import { computed } from 'vue';
     import type { TagId } from '../../../data/taxonomy';
     import { useMessages } from '../../../i18n/useMessages';
-    import { categoryColor } from '../tierDesign';
+    import PhIcon from '../../icons/PhIcon.vue';
+    import { categoryColor, categoryIcon } from '../tierDesign';
 
     const props = withDefaults(
         defineProps<{
             tag_id: TagId;
-            /** `card` sits over the portrait visual, `panel` is the larger detail-panel tag. */
-            variant?: 'card' | 'panel';
+            /**
+             * `card` sits over the portrait visual, `classic` on the classic card body,
+             * `panel` is the larger detail-panel tag.
+             */
+            variant?: 'card' | 'classic' | 'panel';
         }>(),
         { variant: 'card' }
     );
@@ -23,6 +27,7 @@
     const t = useMessages();
     const label = computed(() => t.value.tags[props.tag_id]);
     const color = computed(() => categoryColor(props.tag_id));
+    const icon = computed(() => categoryIcon(props.tag_id));
 </script>
 
 <style scoped>
@@ -42,6 +47,9 @@
         background: color-mix(in srgb, var(--color-neutral-900) 80%, transparent);
         box-shadow: inset 0 0 0 1px var(--color-neutral-800);
     }
+    .civ-tag-classic {
+        background: var(--color-neutral-900);
+    }
     .civ-tag-panel {
         gap: 7px;
         height: 26px;
@@ -50,15 +58,11 @@
         color: var(--color-neutral-200);
         font-size: 12px;
     }
-    .category-dot {
-        width: 6px;
-        height: 6px;
-        flex: none;
-        border-radius: 50%;
-        background: var(--tag-color);
+    .category-icon {
+        font-size: 13px;
+        color: var(--tag-color);
     }
-    .civ-tag-panel .category-dot {
-        width: 7px;
-        height: 7px;
+    .civ-tag-panel .category-icon {
+        font-size: 15px;
     }
 </style>

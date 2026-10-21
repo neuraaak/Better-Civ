@@ -1,7 +1,7 @@
 <template>
     <article
-        class="portrait-card"
-        :class="{ selected }"
+        class="civ-card"
+        :class="[`${variant}-card`, { selected }]"
         role="button"
         tabindex="0"
         :style="tierPalette"
@@ -11,25 +11,49 @@
         @keydown.enter.prevent="openDetails"
         @keydown.space.prevent="openDetails"
     >
-        <img class="card-visual" alt="" :src="imagePath" loading="lazy" decoding="async" />
-        <div class="card-hatch"></div>
-        <div class="card-gradient"></div>
-        <div class="tier-frame"></div>
-        <div class="tier-accent"></div>
+        <template v-if="variant === 'portrait'">
+            <img class="card-visual" alt="" :src="imagePath" loading="lazy" decoding="async" />
+            <div class="card-hatch"></div>
+            <div class="card-gradient"></div>
+            <div class="tier-frame"></div>
+            <div class="tier-accent"></div>
 
-        <CivTierComponent :tier_id="tier_id" :size="40" class="card-tier-badge" />
+            <CivTierComponent :tier_id="tier_id" :size="40" class="card-tier-badge" />
 
-        <div class="card-footer">
-            <h2>{{ displayName }}</h2>
-            <div v-if="tags_id?.length" class="card-tags">
-                <CivTagComponent v-for="tag_id in tags_id" :key="tag_id" :tag_id="tag_id" />
+            <div class="card-footer">
+                <h2>{{ displayName }}</h2>
+                <div v-if="tags_id?.length" class="card-tags">
+                    <CivTagComponent v-for="tag_id in tags_id" :key="tag_id" :tag_id="tag_id" />
+                </div>
             </div>
-        </div>
+        </template>
+
+        <template v-else>
+            <div class="classic-media">
+                <img class="card-visual" alt="" :src="imagePath" loading="lazy" decoding="async" />
+                <div class="card-hatch"></div>
+            </div>
+            <div class="classic-body">
+                <div class="classic-title">
+                    <h2>{{ displayName }}</h2>
+                    <CivTierComponent :tier_id="tier_id" :size="32" />
+                </div>
+                <div v-if="tags_id?.length" class="card-tags">
+                    <CivTagComponent
+                        v-for="tag_id in tags_id"
+                        :key="tag_id"
+                        :tag_id="tag_id"
+                        variant="classic"
+                    />
+                </div>
+            </div>
+        </template>
     </article>
 </template>
 
 <script setup lang="ts">
     import { computed } from 'vue';
+    import type { CardStyle } from '../../data/displayOptions';
     import type { TagId, TierId } from '../../data/taxonomy';
     import { useMessages } from '../../i18n/useMessages';
     import { useAppStore } from '../../stores/app';
@@ -45,8 +69,10 @@
             tags_id?: TagId[];
             tier_id?: TierId;
             selected?: boolean;
+            /** Card layout, see data/displayOptions.ts. */
+            variant?: CardStyle;
         }>(),
-        { tags_id: () => [], tier_id: undefined, selected: false }
+        { tags_id: () => [], tier_id: undefined, selected: false, variant: 'portrait' }
     );
 
     const store = useAppStore();
@@ -64,9 +90,8 @@
 </script>
 
 <style scoped>
-    .portrait-card {
+    .civ-card {
         position: relative;
-        aspect-ratio: 3 / 4;
         isolation: isolate;
         overflow: hidden;
         border-radius: var(--radius-lg);
@@ -77,12 +102,12 @@
             transform 0.2s ease,
             box-shadow 0.2s ease;
     }
-    .portrait-card.selected {
+    .civ-card.selected {
         box-shadow:
             0 0 0 1.5px var(--color-accent),
             0 0 30px color-mix(in srgb, var(--color-accent) 35%, transparent);
     }
-    .portrait-card:hover {
+    .civ-card:hover {
         transform: translateY(-4px);
         box-shadow:
             0 0 0 1px var(--color-accent),
@@ -115,6 +140,21 @@
             color-mix(in srgb, var(--color-text) 4%, transparent) 0 8px,
             transparent 8px 16px
         );
+    }
+    h2 {
+        margin: 0;
+        color: var(--color-text);
+        font-weight: 500;
+    }
+    .card-tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+    }
+
+    /* — portrait — */
+    .portrait-card {
+        aspect-ratio: 3 / 4;
     }
     .card-gradient {
         inset: auto 0 0 0;
@@ -154,17 +194,40 @@
         flex-direction: column;
         gap: 10px;
     }
-    h2 {
-        margin: 0;
-        color: var(--color-text);
+    .portrait-card h2 {
         font-size: 21px;
-        font-weight: 500;
         letter-spacing: -0.015em;
         line-height: 1.1;
     }
-    .card-tags {
+
+    /* — classic — */
+    .classic-card {
         display: flex;
-        flex-wrap: wrap;
-        gap: 6px;
+        flex-direction: column;
+    }
+    .classic-media {
+        position: relative;
+        z-index: 0;
+        aspect-ratio: 16 / 10;
+        overflow: hidden;
+        background: var(--color-neutral-900);
+    }
+    .classic-body {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        padding: 14px 14px 16px;
+    }
+    .classic-title {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    .classic-card h2 {
+        flex: 1;
+        min-width: 0;
+        font-size: 17px;
+        letter-spacing: -0.01em;
+        line-height: 1.2;
     }
 </style>
