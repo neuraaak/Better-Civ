@@ -1,6 +1,6 @@
 <template>
     <header class="header">
-        <a class="brand" href="/" aria-label="Better-Civ">
+        <RouterLink class="brand" to="/" aria-label="Better-Civ">
             <!-- Hexagon of the B badge, holding a meander-shaped "B" -->
             <svg
                 class="brand-mark"
@@ -45,7 +45,7 @@
                 </span>
                 <span class="brand-subtitle">{{ t.ui.tagline }}</span>
             </span>
-        </a>
+        </RouterLink>
 
         <div ref="gameMenu" class="game-menu" :class="{ open: menuOpen }">
             <!-- Mobile only: the game tabs fold into a dropdown behind this button -->
@@ -60,21 +60,24 @@
                 <PhIcon :name="menuOpen ? 'x' : 'list'" />
             </button>
             <nav id="game-nav" class="game-nav" :aria-label="t.ui.games">
-                <a
-                    v-for="game in GAMES"
-                    :key="game.numeral"
-                    class="game-link"
-                    :href="game.available ? '/' : undefined"
-                    :aria-current="game.available ? 'page' : undefined"
-                    :aria-disabled="game.available ? undefined : 'true'"
-                    :title="game.available ? undefined : t.ui.comingSoon"
-                    @click="menuOpen = false"
-                >
-                    <span class="game-numeral">{{ game.numeral }}</span
-                    >{{ game.name }}
-                    <PhIcon v-if="!game.available" name="lock-simple" class="game-lock" />
-                    <span v-else class="game-underline" aria-hidden="true"></span>
-                </a>
+                <template v-for="game in GAMES" :key="game.numeral">
+                    <!-- RouterLink sets aria-current="page" on the game being viewed -->
+                    <RouterLink
+                        v-if="game.available"
+                        class="game-link"
+                        :to="game.path"
+                        @click="menuOpen = false"
+                    >
+                        <span class="game-numeral">{{ game.numeral }}</span
+                        >{{ game.name }}
+                        <span class="game-underline" aria-hidden="true"></span>
+                    </RouterLink>
+                    <a v-else class="game-link" aria-disabled="true" :title="t.ui.comingSoon">
+                        <span class="game-numeral">{{ game.numeral }}</span
+                        >{{ game.name }}
+                        <PhIcon name="lock-simple" class="game-lock" />
+                    </a>
+                </template>
             </nav>
         </div>
 
@@ -91,18 +94,10 @@
     // ##############
     import { onClickOutside, onKeyStroke } from '@vueuse/core';
     import { ref } from 'vue';
+    import { GAMES } from '../../data/games';
     import { useMessages } from '../../i18n/useMessages';
     import SelectLanguageComponent from '../global/SelectLanguageComponent.vue';
     import PhIcon from '../icons/PhIcon.vue';
-
-    // CONSTANTS
-    // ##############
-    /** Only Civilization V is ranked for now; the other games show as locked tabs. */
-    const GAMES = [
-        { numeral: 'V', name: 'Civilization V', available: true },
-        { numeral: 'VI', name: 'Civilization VI', available: false },
-        { numeral: 'VII', name: 'Civilization VII', available: false },
-    ] as const;
 
     // VARIABLES
     // ##############
@@ -203,6 +198,9 @@
     }
     .game-link[aria-current='page'] {
         background: color-mix(in srgb, var(--color-accent) 12%, transparent);
+    }
+    .game-link:not([aria-current='page']) .game-underline {
+        display: none;
     }
     .game-link[aria-current='page'] .game-numeral {
         color: var(--color-accent-300);

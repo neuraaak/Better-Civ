@@ -2,16 +2,20 @@ import { afterEach, describe, expect, it, beforeEach } from 'vitest';
 import { enableAutoUnmount, mount } from '@vue/test-utils';
 import { createPinia, setActivePinia } from 'pinia';
 import HeaderComponent from '@/components/layout/HeaderComponent.vue';
+import { createTestRouter } from '../../utils/router';
 
 enableAutoUnmount(afterEach);
 
 describe('HeaderComponent', () => {
-    beforeEach(() => {
+    let router: Awaited<ReturnType<typeof createTestRouter>>;
+
+    beforeEach(async () => {
         setActivePinia(createPinia());
+        router = await createTestRouter('/civilization-5');
     });
 
     it('renders the Better-Civ brand and language selector', () => {
-        const wrapper = mount(HeaderComponent);
+        const wrapper = mount(HeaderComponent, { global: { plugins: [router] } });
 
         expect(wrapper.find('header.header').exists()).toBe(true);
         expect(wrapper.find('.brand-title').text()).toBe('Better-Civ');
@@ -21,15 +25,16 @@ describe('HeaderComponent', () => {
     });
 
     it('draws the hexagon logo inline with an accessible brand link', () => {
-        const wrapper = mount(HeaderComponent);
+        const wrapper = mount(HeaderComponent, { global: { plugins: [router] } });
 
         expect(wrapper.find('a.brand').attributes('aria-label')).toBe('Better-Civ');
+        expect(wrapper.find('a.brand').attributes('href')).toBe('/');
         expect(wrapper.find('svg.brand-mark').attributes('aria-hidden')).toBe('true');
         expect(wrapper.findAll('svg.brand-mark path')).toHaveLength(3);
     });
 
     it('marks Civilization V as the current game and locks the other two', () => {
-        const wrapper = mount(HeaderComponent);
+        const wrapper = mount(HeaderComponent, { global: { plugins: [router] } });
         const links = wrapper.findAll('.game-nav .game-link');
 
         expect(wrapper.find('.game-nav').attributes('aria-label')).toBe('Jeux');
@@ -39,7 +44,7 @@ describe('HeaderComponent', () => {
             'VIICivilization VII',
         ]);
         expect(links[0].attributes('aria-current')).toBe('page');
-        expect(links[0].attributes('href')).toBe('/');
+        expect(links[0].attributes('href')).toBe('/civilization-5');
         expect(links[0].find('.game-underline').exists()).toBe(true);
         links.slice(1).forEach(link => {
             expect(link.attributes('aria-disabled')).toBe('true');
@@ -50,7 +55,7 @@ describe('HeaderComponent', () => {
     });
 
     it('renders the language selector and the meander rule below', () => {
-        const wrapper = mount(HeaderComponent);
+        const wrapper = mount(HeaderComponent, { global: { plugins: [router] } });
 
         expect(wrapper.find('.language-selector').exists()).toBe(true);
         expect(wrapper.find('.header-rule.meander').exists()).toBe(true);
@@ -58,7 +63,7 @@ describe('HeaderComponent', () => {
 
     describe('mobile game menu', () => {
         it('opens and closes the game dropdown from its button', async () => {
-            const wrapper = mount(HeaderComponent);
+            const wrapper = mount(HeaderComponent, { global: { plugins: [router] } });
             const toggle = wrapper.find('.game-menu-toggle');
 
             expect(toggle.attributes('aria-controls')).toBe('game-nav');
@@ -76,7 +81,10 @@ describe('HeaderComponent', () => {
         });
 
         it('closes on Escape, on a click outside and after picking a game', async () => {
-            const wrapper = mount(HeaderComponent, { attachTo: document.body });
+            const wrapper = mount(HeaderComponent, {
+                attachTo: document.body,
+                global: { plugins: [router] },
+            });
             const menu = () => wrapper.find('.game-menu').classes();
             const open = () => wrapper.find('.game-menu-toggle').trigger('click');
 
