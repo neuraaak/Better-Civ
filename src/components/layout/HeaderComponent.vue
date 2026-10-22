@@ -1,6 +1,6 @@
 <template>
     <header class="header">
-        <a class="brand" href="/" aria-label="Better-Civ">
+        <RouterLink class="brand" to="/" aria-label="Better-Civ">
             <!-- Hexagon of the B badge, holding a meander-shaped "B" -->
             <svg
                 class="brand-mark"
@@ -45,24 +45,41 @@
                 </span>
                 <span class="brand-subtitle">{{ t.ui.tagline }}</span>
             </span>
-        </a>
+        </RouterLink>
 
-        <nav class="game-nav" :aria-label="t.ui.games">
-            <a
-                v-for="game in GAMES"
-                :key="game.numeral"
-                class="game-link"
-                :href="game.available ? '/' : undefined"
-                :aria-current="game.available ? 'page' : undefined"
-                :aria-disabled="game.available ? undefined : 'true'"
-                :title="game.available ? undefined : t.ui.comingSoon"
+        <div ref="gameMenu" class="game-menu" :class="{ open: menuOpen }">
+            <!-- Mobile only: the game tabs fold into a dropdown behind this button -->
+            <button
+                type="button"
+                class="game-menu-toggle"
+                aria-controls="game-nav"
+                :aria-expanded="menuOpen"
+                :aria-label="t.ui.games"
+                @click="menuOpen = !menuOpen"
             >
-                <span class="game-numeral">{{ game.numeral }}</span
-                >{{ game.name }}
-                <PhIcon v-if="!game.available" name="lock-simple" class="game-lock" />
-                <span v-else class="game-underline" aria-hidden="true"></span>
-            </a>
-        </nav>
+                <PhIcon :name="menuOpen ? 'x' : 'list'" />
+            </button>
+            <nav id="game-nav" class="game-nav" :aria-label="t.ui.games">
+                <template v-for="game in GAMES" :key="game.numeral">
+                    <!-- RouterLink sets aria-current="page" on the game being viewed -->
+                    <RouterLink
+                        v-if="game.available"
+                        class="game-link"
+                        :to="game.path"
+                        @click="menuOpen = false"
+                    >
+                        <span class="game-numeral">{{ game.numeral }}</span
+                        >{{ game.name }}
+                        <span class="game-underline" aria-hidden="true"></span>
+                    </RouterLink>
+                    <a v-else class="game-link" aria-disabled="true" :title="t.ui.comingSoon">
+                        <span class="game-numeral">{{ game.numeral }}</span
+                        >{{ game.name }}
+                        <PhIcon name="lock-simple" class="game-lock" />
+                    </a>
+                </template>
+            </nav>
+        </div>
 
         <SelectLanguageComponent class="language-selector" />
     </header>
@@ -75,22 +92,24 @@
      */
     // IMPORT
     // ##############
+    import { onClickOutside, onKeyStroke } from '@vueuse/core';
+    import { ref } from 'vue';
+    import { GAMES } from '../../data/games';
     import { useMessages } from '../../i18n/useMessages';
     import SelectLanguageComponent from '../global/SelectLanguageComponent.vue';
     import PhIcon from '../icons/PhIcon.vue';
 
-    // CONSTANTS
-    // ##############
-    /** Only Civilization V is ranked for now; the other games show as locked tabs. */
-    const GAMES = [
-        { numeral: 'V', name: 'Civilization V', available: true },
-        { numeral: 'VI', name: 'Civilization VI', available: false },
-        { numeral: 'VII', name: 'Civilization VII', available: false },
-    ] as const;
-
     // VARIABLES
     // ##############
     const t = useMessages();
+    /** Dropdown holding the game tabs on mobile; ignored by the desktop layout. */
+    const menuOpen = ref(false);
+    const gameMenu = ref<HTMLElement | null>(null);
+
+    // HOOKS
+    // ##############
+    onClickOutside(gameMenu, () => (menuOpen.value = false));
+    onKeyStroke('Escape', () => (menuOpen.value = false));
 </script>
 
 <style scoped>
@@ -152,11 +171,17 @@
     }
 
     /* — game navigation — */
+    .game-menu {
+        position: relative;
+        margin-left: 32px;
+    }
+    .game-menu-toggle {
+        display: none;
+    }
     .game-nav {
         display: flex;
         align-items: center;
         gap: 4px;
-        margin-left: 32px;
     }
     .game-link {
         position: relative;
@@ -173,6 +198,9 @@
     }
     .game-link[aria-current='page'] {
         background: color-mix(in srgb, var(--color-accent) 12%, transparent);
+    }
+    .game-link:not([aria-current='page']) .game-underline {
+        display: none;
     }
     .game-link[aria-current='page'] .game-numeral {
         color: var(--color-accent-300);
@@ -204,7 +232,64 @@
     }
 
     @media (max-width: 800px) {
+        .game-menu {
+            order: 1;
+            margin-left: 0;
+        }
+        .game-menu-toggle {
+            display: flex;
+            width: 38px;
+            height: 38px;
+            align-items: center;
+            justify-content: center;
+            padding: 0;
+            border: 0;
+            border-radius: var(--radius-md);
+            color: var(--color-neutral-300);
+            background: transparent;
+            box-shadow: var(--shadow-sm);
+            font-size: 18px;
+            cursor: pointer;
+        }
+        .game-menu.open .game-menu-toggle {
+            color: var(--color-accent-200);
+            background: color-mix(in srgb, var(--color-accent) 10%, transparent);
+            box-shadow: inset 0 0 0 1px var(--color-accent);
+        }
         .game-nav {
+            position: absolute;
+            top: calc(100% + 8px);
+            right: 0;
+            z-index: 30;
+            flex-direction: column;
+            align-items: stretch;
+            min-width: 220px;
+            padding: 6px;
+            border-radius: var(--radius-lg);
+            background: var(--color-surface);
+            box-shadow:
+                var(--shadow-lg),
+                0 0 40px color-mix(in srgb, var(--color-accent) 12%, transparent);
+            visibility: hidden;
+            opacity: 0;
+            transform: translateY(-6px);
+            transition:
+                opacity 0.18s,
+                transform 0.18s,
+                visibility 0.18s;
+        }
+        .game-menu.open .game-nav {
+            visibility: visible;
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .game-link {
+            height: 44px;
+        }
+        .game-lock {
+            margin-left: auto;
+        }
+        .game-underline {
             display: none;
         }
     }

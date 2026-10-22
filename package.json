@@ -1,7 +1,7 @@
 {
     "name": "better-civ",
     "description": "Une application web moderne pour explorer et comparer les civilisations de Civilization V",
-    "version": "2.1.0",
+    "version": "2.2.0",
     "private": true,
     "type": "module",
     "keywords": [
@@ -58,7 +58,8 @@
         "@fontsource/jetbrains-mono": "^5.3.0",
         "@vueuse/core": "^13.6.0",
         "pinia": "^3.0.3",
-        "vue": "^3.5.18"
+        "vue": "^3.5.18",
+        "vue-router": "^5.4.0"
     },
     "devDependencies": {
         "@eslint/js": "^9.32.0",

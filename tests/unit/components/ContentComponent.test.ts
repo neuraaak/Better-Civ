@@ -1,4 +1,4 @@
-import { afterEach, describe, it, expect, beforeEach } from 'vitest';
+import { afterEach, describe, it, expect, beforeEach, vi } from 'vitest';
 import { enableAutoUnmount, flushPromises, mount, type VueWrapper } from '@vue/test-utils';
 import { createPinia, setActivePinia } from 'pinia';
 import ContentComponent from '@/components/layout/ContentComponent.vue';
@@ -447,6 +447,95 @@ describe('ContentComponent', () => {
             );
             await wrapper.find('.empty-state button').trigger('click');
             expect(wrapper.emitted('retry')).toHaveLength(1);
+        });
+    });
+
+    describe('Page scroll lock', () => {
+        it('locks the page while the detail panel is open', async () => {
+            const wrapper = mountContent();
+
+            useAppStore().openDetail(1);
+            await wrapper.vm.$nextTick();
+            expect(document.body.style.overflow).toBe('hidden');
+
+            useAppStore().closeDetail();
+            await wrapper.vm.$nextTick();
+            expect(document.body.style.overflow).toBe('');
+        });
+
+        it('leaves the page scrollable under the desktop filter dropdown', async () => {
+            const wrapper = mountContent();
+
+            await wrapper.find('.filters-toggle').trigger('click');
+            expect(document.body.style.overflow).toBe('');
+        });
+    });
+
+    describe('Phone layout', () => {
+        beforeEach(() => {
+            vi.stubGlobal(
+                'matchMedia',
+                (query: string) =>
+                    ({
+                        matches: query === '(max-width: 800px)',
+                        media: query,
+                        addEventListener: () => {},
+                        removeEventListener: () => {},
+                    }) as unknown as MediaQueryList
+            );
+        });
+        afterEach(() => {
+            vi.unstubAllGlobals();
+            Object.defineProperty(window, 'scrollY', { value: 0, configurable: true });
+        });
+
+        const scrollTo = async (wrapper: VueWrapper, y: number) => {
+            Object.defineProperty(window, 'scrollY', { value: y, configurable: true });
+            window.dispatchEvent(new Event('scroll'));
+            await wrapper.vm.$nextTick();
+        };
+
+        it('moves the filter panel to <body> as a sheet and locks the page under it', async () => {
+            const wrapper = mountContent();
+            await wrapper.vm.$nextTick();
+
+            expect(document.getElementById('filter-panel')?.parentElement).toBe(document.body);
+            await wrapper.find('.filters-toggle').trigger('click');
+            expect(document.body.style.overflow).toBe('hidden');
+        });
+
+        it('draws smaller tier badges in the headings', async () => {
+            const wrapper = mountContent();
+            await wrapper.vm.$nextTick();
+
+            const heading = wrapper.find('.tier-heading .tier-badge');
+            expect(heading.attributes('style')).toContain('--tier-size: 40px');
+        });
+
+        it('slides the filter bar away on the way down and back on the way up', async () => {
+            const wrapper = mountContent();
+            await wrapper.vm.$nextTick();
+            const controls = () => wrapper.find('.controls').classes();
+
+            await scrollTo(wrapper, 400);
+            expect(controls()).toContain('bar-hidden');
+            await scrollTo(wrapper, 300);
+            expect(controls()).not.toContain('bar-hidden');
+        });
+
+        it('keeps the filter bar while searching or filtering', async () => {
+            const wrapper = mountContent();
+            await wrapper.vm.$nextTick();
+            const controls = () => wrapper.find('.controls').classes();
+
+            await wrapper.find('.search-control input').trigger('focus');
+            await scrollTo(wrapper, 400);
+            expect(controls()).not.toContain('bar-hidden');
+
+            await wrapper.find('.search-control input').trigger('blur');
+            await wrapper.find('.filters-toggle').trigger('click');
+            await scrollTo(wrapper, 800);
+            expect(controls()).not.toContain('bar-hidden');
         });
     });
 });

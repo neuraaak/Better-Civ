@@ -4,16 +4,18 @@ import { createPinia, setActivePinia } from 'pinia';
 import App from '@/App.vue';
 import { clearCivilizationsCache } from '@/composables/useCivilizations';
 import { useAppStore } from '@/stores/app';
+import { createTestRouter } from '../utils/router';
 
 const jsonResponse = (body: unknown, status = 200) =>
     Promise.resolve(new Response(JSON.stringify(body), { status }));
 
-// Header and Content are async components: wait for their dynamic imports to resolve
-const mountApp = async () => {
-    const wrapper = mount(App);
+// The header and the game view are lazy-loaded: wait for their dynamic imports to resolve
+const mountApp = async (path = '/') => {
+    const router = await createTestRouter(path);
+    const wrapper = mount(App, { global: { plugins: [router] } });
     await vi.dynamicImportSettled();
     await flushPromises();
-    return wrapper;
+    return Object.assign(wrapper, { router });
 };
 
 const cardNames = (wrapper: Awaited<ReturnType<typeof mountApp>>) =>
@@ -92,5 +94,34 @@ describe('App.vue', () => {
         await flushPromises();
 
         expect(document.documentElement.lang).toBe('ja');
+    });
+
+    describe('routes', () => {
+        it('redirects / to the Civilization V tier list', async () => {
+            fetchMock.mockImplementation(() => jsonResponse([{ id: 21, name: 'Espagne' }]));
+            const wrapper = await mountApp('/');
+
+            expect(wrapper.router.currentRoute.value.path).toBe('/civilization-5');
+            expect(cardNames(wrapper)).toEqual(['Espagne']);
+            expect(document.title).toBe('Better Civ5');
+        });
+
+        it('serves the tier list on /civilization-5', async () => {
+            fetchMock.mockImplementation(() => jsonResponse([{ id: 21, name: 'Espagne' }]));
+            const wrapper = await mountApp('/civilization-5');
+
+            expect(wrapper.router.currentRoute.value.name).toBe('civilization-5');
+            expect(cardNames(wrapper)).toEqual(['Espagne']);
+        });
+
+        it('sends the unreleased games and unknown paths back to Civilization V', async () => {
+            fetchMock.mockImplementation(() => jsonResponse([]));
+
+            for (const path of ['/civilization-6', '/civilization-7', '/nope/deep']) {
+                const wrapper = await mountApp(path);
+                expect(wrapper.router.currentRoute.value.path).toBe('/civilization-5');
+                wrapper.unmount();
+            }
+        });
     });
 });

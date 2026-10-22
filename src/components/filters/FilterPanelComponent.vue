@@ -7,86 +7,88 @@
         :aria-hidden="!open"
         :inert="!open"
     >
-        <section class="filter-group">
-            <header class="filter-group-heading">
-                <h2>{{ ui.category }}</h2>
-                <p>{{ ui.categoryHint }}</p>
-            </header>
-            <div class="category-tiles">
-                <div
-                    v-for="tile in categoryTiles"
-                    :key="tile.tagId"
-                    data-testid="category-tile"
-                    class="category-tile"
-                    :class="{ included: tile.included, excluded: tile.excluded }"
-                    :style="{ '--tag-color': tile.color }"
-                >
-                    <!-- Pointer shortcut for "+": keyboard users reach the same action on it -->
-                    <button
-                        type="button"
-                        class="category-tile-main"
-                        tabindex="-1"
-                        @click="$emit('toggle-include', tile.tagId)"
+        <div class="filter-panel-body">
+            <section class="filter-group">
+                <header class="filter-group-heading">
+                    <h2>{{ ui.category }}</h2>
+                    <p>{{ ui.categoryHint }}</p>
+                </header>
+                <div class="category-tiles">
+                    <div
+                        v-for="tile in categoryTiles"
+                        :key="tile.tagId"
+                        data-testid="category-tile"
+                        class="category-tile"
+                        :class="{ included: tile.included, excluded: tile.excluded }"
+                        :style="{ '--tag-color': tile.color }"
                     >
-                        <span class="category-tile-icon"><PhIcon :name="tile.icon" /></span>
-                        <span class="category-tile-text">
-                            <span class="category-tile-label">{{ tile.label }}</span>
-                            <span class="filter-count">{{ tile.count }}</span>
-                        </span>
-                    </button>
-                    <span class="category-tile-actions">
+                        <!-- Pointer shortcut for "+": keyboard users reach the same action on it -->
                         <button
                             type="button"
-                            class="include-button"
-                            :title="ui.include"
-                            :aria-label="`${ui.include} · ${tile.label}`"
-                            :aria-pressed="tile.included"
+                            class="category-tile-main"
+                            tabindex="-1"
                             @click="$emit('toggle-include', tile.tagId)"
                         >
-                            <PhIcon name="plus" />
+                            <span class="category-tile-icon"><PhIcon :name="tile.icon" /></span>
+                            <span class="category-tile-text">
+                                <span class="category-tile-label">{{ tile.label }}</span>
+                                <span class="filter-count">{{ tile.count }}</span>
+                            </span>
                         </button>
-                        <button
-                            type="button"
-                            class="exclude-button"
-                            :title="ui.exclude"
-                            :aria-label="`${ui.exclude} · ${tile.label}`"
-                            :aria-pressed="tile.excluded"
-                            @click="$emit('toggle-exclude', tile.tagId)"
-                        >
-                            <PhIcon name="minus" />
-                        </button>
-                    </span>
+                        <span class="category-tile-actions">
+                            <button
+                                type="button"
+                                class="include-button"
+                                :title="ui.include"
+                                :aria-label="`${ui.include} · ${tile.label}`"
+                                :aria-pressed="tile.included"
+                                @click="$emit('toggle-include', tile.tagId)"
+                            >
+                                <PhIcon name="plus" />
+                            </button>
+                            <button
+                                type="button"
+                                class="exclude-button"
+                                :title="ui.exclude"
+                                :aria-label="`${ui.exclude} · ${tile.label}`"
+                                :aria-pressed="tile.excluded"
+                                @click="$emit('toggle-exclude', tile.tagId)"
+                            >
+                                <PhIcon name="minus" />
+                            </button>
+                        </span>
+                    </div>
                 </div>
-            </div>
-        </section>
+            </section>
 
-        <section class="filter-group">
-            <header class="filter-group-heading">
-                <h2>{{ ui.tier }}</h2>
-                <p>{{ ui.tierHint }}</p>
-            </header>
-            <div class="tier-tiles">
-                <button
-                    v-for="tile in tierTiles"
-                    :key="tile.tierId"
-                    type="button"
-                    data-testid="tier-tile"
-                    class="tier-tile"
-                    :class="{ selected: tile.selected }"
-                    :aria-pressed="tile.selected"
-                    @click="$emit('toggle-tier', tile.tierId)"
-                >
-                    <CivTierComponent :tier_id="tile.tierId" :size="34" :dimmed="tile.dimmed" />
-                    <span v-if="tile.selected" class="tier-check" aria-hidden="true">
-                        <PhIcon name="check" />
-                    </span>
-                    <span class="tier-tile-rank" :style="{ color: tile.labelColor }">{{
-                        tile.rank
-                    }}</span>
-                    <span class="filter-count">{{ tile.count }}</span>
-                </button>
-            </div>
-        </section>
+            <section class="filter-group">
+                <header class="filter-group-heading">
+                    <h2>{{ ui.tier }}</h2>
+                    <p>{{ ui.tierHint }}</p>
+                </header>
+                <div class="tier-tiles">
+                    <button
+                        v-for="tile in tierTiles"
+                        :key="tile.tierId"
+                        type="button"
+                        data-testid="tier-tile"
+                        class="tier-tile"
+                        :class="{ selected: tile.selected }"
+                        :aria-pressed="tile.selected"
+                        @click="$emit('toggle-tier', tile.tierId)"
+                    >
+                        <CivTierComponent :tier_id="tile.tierId" :size="34" :dimmed="tile.dimmed" />
+                        <span v-if="tile.selected" class="tier-check" aria-hidden="true">
+                            <PhIcon name="check" />
+                        </span>
+                        <span class="tier-tile-rank" :style="{ color: tile.labelColor }">{{
+                            tile.rank
+                        }}</span>
+                        <span class="filter-count">{{ tile.count }}</span>
+                    </button>
+                </div>
+            </section>
+        </div>
 
         <footer class="filter-panel-footer">
             <button type="button" class="filter-reset" @click="$emit('clear')">
@@ -198,6 +200,10 @@
         opacity: 1;
         pointer-events: auto;
         transform: translateY(0);
+    }
+    .filter-panel-body {
+        display: flex;
+        flex-direction: column;
     }
     button {
         border: 0;
@@ -434,5 +440,78 @@
     }
     .filter-apply:hover {
         background: color-mix(in srgb, var(--color-accent) 14%, transparent);
+    }
+
+    /* — mobile bottom sheet (teleported to <body> by ContentComponent) — */
+    @media (max-width: 800px) {
+        .filter-panel {
+            position: fixed;
+            top: auto;
+            right: 0;
+            bottom: 0;
+            left: 0;
+            z-index: 25;
+            width: 100%;
+            max-height: 85dvh;
+            border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+            box-shadow:
+                0 -1px 0 var(--color-neutral-700),
+                0 -16px 40px rgba(0, 0, 0, 0.65);
+            opacity: 1;
+            transform: translateY(100%);
+            transition: transform 0.28s cubic-bezier(0.2, 0.8, 0.2, 1);
+        }
+        /* Grab handle */
+        .filter-panel::before {
+            content: '';
+            align-self: center;
+            flex: none;
+            width: 36px;
+            height: 4px;
+            margin-top: 8px;
+            border-radius: 2px;
+            background: var(--color-neutral-700);
+        }
+        .filter-panel-body {
+            min-height: 0;
+            overflow-y: auto;
+            overscroll-behavior: contain;
+        }
+        .filter-group {
+            padding-inline: max(16px, env(safe-area-inset-left));
+        }
+        .category-tiles {
+            grid-template-columns: minmax(0, 1fr);
+            gap: 4px;
+        }
+        .category-tile {
+            padding-block: 6px;
+        }
+        .category-tile-main {
+            margin-block: -6px;
+            padding-block: 6px;
+        }
+        .category-tile-actions {
+            flex-direction: row;
+            gap: 8px;
+        }
+        .include-button,
+        .exclude-button {
+            width: 40px;
+            height: 40px;
+            border-radius: var(--radius-md);
+            font-size: 16px;
+        }
+        .filter-panel-footer {
+            padding-bottom: calc(12px + env(safe-area-inset-bottom));
+        }
+        .filter-reset,
+        .filter-apply {
+            height: 44px;
+        }
+        .filter-apply {
+            flex: 1;
+            justify-content: center;
+        }
     }
 </style>

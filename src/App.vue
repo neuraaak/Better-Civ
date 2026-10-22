@@ -5,7 +5,7 @@
 
         <div class="page-inner">
             <HeaderComponent />
-            <ContentComponent :civilisations="civilizations" :status="status" @retry="retry" />
+            <RouterView />
         </div>
     </div>
 </template>
@@ -13,29 +13,28 @@
 <script setup lang="ts">
     // IMPORT
     // ##############
-    import { defineAsyncComponent, onMounted, watchEffect } from 'vue';
-    import { useCivilizations } from './composables/useCivilizations';
+    import { defineAsyncComponent, watchEffect } from 'vue';
+    import { useRoute } from 'vue-router';
     import { DISPLAY_OPTIONS } from './data/displayOptions';
     import { htmlLang } from './i18n/languages';
     import { useAppStore } from './stores/app';
 
-    // Lazy loading des composants lourds
+    // Lazy loading des composants lourds (each game view is lazy-loaded by the router)
     const HeaderComponent = defineAsyncComponent(
         () => import('./components/layout/HeaderComponent.vue')
-    );
-    const ContentComponent = defineAsyncComponent(
-        () => import('./components/layout/ContentComponent.vue')
     );
 
     // VARIABLES
     // ##############
     const store = useAppStore();
-    const { civilizations, status, retry } = useCivilizations(() => store.lang);
+    const route = useRoute();
 
     // HOOKS
     // ##############
-    onMounted(() => {
-        document.title = 'Better Civ5';
+    watchEffect(() => {
+        // `meta.title` of the current route, see router/index.ts
+        const { title } = route.meta;
+        document.title = typeof title === 'string' ? title : 'Better Civ';
     });
     // Screen readers and hyphenation follow the language picked in the selector
     watchEffect(() => {
@@ -47,6 +46,7 @@
     .page {
         position: relative;
         min-height: 100vh;
+        min-height: 100dvh;
         overflow-x: clip;
         color: var(--color-text);
         background: var(--color-bg);
@@ -87,8 +87,11 @@
         padding: 0 40px 80px;
     }
     @media (max-width: 800px) {
+        /* Clears the notch and the home indicator of edge-to-edge phones */
         .page-inner {
-            padding-inline: 16px;
+            padding-right: max(16px, env(safe-area-inset-right));
+            padding-bottom: calc(48px + env(safe-area-inset-bottom));
+            padding-left: max(16px, env(safe-area-inset-left));
         }
     }
 </style>
