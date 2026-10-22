@@ -13,8 +13,9 @@ Items deferred from the October 2026 code review. Each one keeps its review ID.
 
 - [x] **01-CONF-009 — Move `vercel.json` off the legacy `builds` / `routes` format.** Done:
       `framework: "vite"`, `installCommand` with `--frozen-lockfile`, `buildCommand`,
-      `outputDirectory`; `functions` and `env` dropped. No SPA `rewrites`: the app has no
-      router, so unknown paths answer a real 404.
+      `outputDirectory`; `functions` and `env` dropped. Only the game routes are rewritten
+      to `index.html` (`/civilization-5`, and `/` redirects to it): unknown paths still answer a
+      real 404. Add `/civilization-6` and `/civilization-7` there when their tier lists ship.
 - [x] **01-PERF-004 — Cache hashed assets.** Done: `/assets/*` served with
       `Cache-Control: public, max-age=31536000, immutable`. With no fallback, an asset request
       can never receive `index.html`.
