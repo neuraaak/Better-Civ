@@ -1,4 +1,5 @@
 import { DatabaseSync } from 'node:sqlite';
+import sharp from 'sharp';
 import { mkdir, rename, rm, writeFile } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
 import { dirname, join } from 'node:path';
@@ -35,6 +36,7 @@ const IMAGE_COLUMNS: readonly (readonly [string, string])[] = [
 
 // Upstream names collide across folders (wonder_icons/alhambra.png vs
 // wonder_backgrounds/alhambra.png), so the CivVAPI layout is mirrored as-is.
+// Only the extension changes: PNG sources are stored as WebP, a fifth of the size.
 // Apostrophes appear in a handful of upstream names (satrap's_court.png).
 const IMAGE_URL =
     /^https:\/\/eyefyre\.github\.io\/civvapi\/images\/([a-z0-9_]+)\/([a-z0-9_.'-]+\.png)$/;
@@ -47,16 +49,20 @@ const UPSTREAM_TYPOS: Readonly<Record<string, string>> = {
     'wonder_backgrounds/alhambra.png': 'wonder_backgrounds/alahambra.png',
 };
 
+function upstreamPathFor(url: string): string {
+    const match = IMAGE_URL.exec(url);
+    if (!match) throw new Error(`Unexpected CivVAPI image URL: ${url}`);
+    return `${match[1]}/${match[2]}`;
+}
+
 export function sourceUrlFor(url: string): string {
-    const path = imagePathFor(url);
+    const path = upstreamPathFor(url);
     const actual = UPSTREAM_TYPOS[path];
     return actual === undefined ? url : url.replace(path, actual);
 }
 
 export function imagePathFor(url: string): string {
-    const match = IMAGE_URL.exec(url);
-    if (!match) throw new Error(`Unexpected CivVAPI image URL: ${url}`);
-    return `${match[1]}/${match[2]}`;
+    return upstreamPathFor(url).replace(/\.png$/, '.webp');
 }
 
 export function collectImageUrls(database: DatabaseSync): string[] {
@@ -81,10 +87,12 @@ async function writeImage(
     const contents = await fetchBinary(url, controller.signal);
     if (contents === null) return false;
     if (contents.length === 0) throw new Error(`CivVAPI returned an empty image for ${url}`);
+    // Quality 90 is visually indistinguishable on this painted artwork and cuts ~80%.
+    const webp = await sharp(contents).webp({ quality: 90, effort: 6 }).toBuffer();
     await mkdir(dirname(target), { recursive: true });
     const staged = `${target}.tmp`;
     try {
-        await writeFile(staged, contents);
+        await writeFile(staged, webp);
         await rename(staged, target);
     } catch (error) {
         await rm(staged, { force: true });

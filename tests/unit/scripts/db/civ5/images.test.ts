@@ -10,7 +10,8 @@ import {
 } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeAll, describe, expect, it } from 'vitest';
+import sharp from 'sharp';
 import { createFinalDatabase } from '../../../../../.scripts/db/civ5/database';
 import {
     collectImageUrls,
@@ -46,12 +47,14 @@ function populate(databasePath: string): void {
 
 describe('imagePathFor', () => {
     it('mirrors the upstream folder so same-named assets never collide', () => {
-        expect(imagePathFor(`${ROOT}/wonder_icons/alhambra.png`)).toBe('wonder_icons/alhambra.png');
+        expect(imagePathFor(`${ROOT}/wonder_icons/alhambra.png`)).toBe(
+            'wonder_icons/alhambra.webp'
+        );
         expect(imagePathFor(`${ROOT}/wonder_backgrounds/alhambra.png`)).toBe(
-            'wonder_backgrounds/alhambra.png'
+            'wonder_backgrounds/alhambra.webp'
         );
         expect(imagePathFor(`${ROOT}/building_icons/satrap's_court.png`)).toBe(
-            "building_icons/satrap's_court.png"
+            "building_icons/satrap's_court.webp"
         );
     });
 
@@ -96,13 +99,28 @@ describe('collectImageUrls', () => {
 });
 
 describe('downloadCiv5Images', () => {
+    let png: Uint8Array;
+
+    beforeAll(async () => {
+        png = await sharp({
+            create: {
+                width: 4,
+                height: 4,
+                channels: 4,
+                background: { r: 1, g: 2, b: 3, alpha: 1 },
+            },
+        })
+            .png()
+            .toBuffer();
+    });
+
     it('writes new images, skips present ones and reports upstream gaps', async () => {
         const workspace = directory();
         const databasePath = join(workspace, 'final.sqlite');
         const outputDirectory = join(workspace, 'images');
         populate(databasePath);
         mkdirSync(join(outputDirectory, 'unit_icons'), { recursive: true });
-        writeFileSync(join(outputDirectory, 'unit_icons', 'warrior.png'), 'kept');
+        writeFileSync(join(outputDirectory, 'unit_icons', 'warrior.webp'), 'kept');
         const requested: string[] = [];
 
         const summary = await downloadCiv5Images({
@@ -112,7 +130,7 @@ describe('downloadCiv5Images', () => {
             fetchBinary: async url => {
                 requested.push(url);
                 if (url.includes('wonder_backgrounds')) return null;
-                return new Uint8Array([1, 2, 3]);
+                return png;
             },
         });
 
@@ -123,13 +141,12 @@ describe('downloadCiv5Images', () => {
             missing: [`${ROOT}/wonder_backgrounds/alhambra.png`],
         });
         expect(requested).not.toContain(`${ROOT}/unit_icons/warrior.png`);
-        expect(readFileSync(join(outputDirectory, 'unit_icons', 'warrior.png'), 'utf8')).toBe(
+        expect(readFileSync(join(outputDirectory, 'unit_icons', 'warrior.webp'), 'utf8')).toBe(
             'kept'
         );
-        expect([...readFileSync(join(outputDirectory, 'wonder_icons', 'alhambra.png'))]).toEqual([
-            1, 2, 3,
-        ]);
-        expect(readdirSync(join(outputDirectory, 'wonder_icons'))).toEqual(['alhambra.png']);
+        const written = readFileSync(join(outputDirectory, 'wonder_icons', 'alhambra.webp'));
+        expect(written.subarray(8, 12).toString('latin1')).toBe('WEBP');
+        expect(readdirSync(join(outputDirectory, 'wonder_icons'))).toEqual(['alhambra.webp']);
     });
 
     it('leaves no partial file behind when a download fails', async () => {
