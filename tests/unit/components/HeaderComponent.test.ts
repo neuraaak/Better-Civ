@@ -1,7 +1,9 @@
-import { describe, expect, it, beforeEach } from 'vitest';
-import { mount } from '@vue/test-utils';
+import { afterEach, describe, expect, it, beforeEach } from 'vitest';
+import { enableAutoUnmount, mount } from '@vue/test-utils';
 import { createPinia, setActivePinia } from 'pinia';
 import HeaderComponent from '@/components/layout/HeaderComponent.vue';
+
+enableAutoUnmount(afterEach);
 
 describe('HeaderComponent', () => {
     beforeEach(() => {
@@ -52,5 +54,48 @@ describe('HeaderComponent', () => {
 
         expect(wrapper.find('.language-selector').exists()).toBe(true);
         expect(wrapper.find('.header-rule.meander').exists()).toBe(true);
+    });
+
+    describe('mobile game menu', () => {
+        it('opens and closes the game dropdown from its button', async () => {
+            const wrapper = mount(HeaderComponent);
+            const toggle = wrapper.find('.game-menu-toggle');
+
+            expect(toggle.attributes('aria-controls')).toBe('game-nav');
+            expect(toggle.attributes('aria-label')).toBe('Jeux');
+            expect(toggle.attributes('aria-expanded')).toBe('false');
+
+            await toggle.trigger('click');
+            expect(wrapper.find('.game-menu').classes()).toContain('open');
+            expect(toggle.attributes('aria-expanded')).toBe('true');
+            expect(toggle.find('.ph-x').exists()).toBe(true);
+
+            await toggle.trigger('click');
+            expect(wrapper.find('.game-menu').classes()).not.toContain('open');
+            expect(toggle.find('.ph-list').exists()).toBe(true);
+        });
+
+        it('closes on Escape, on a click outside and after picking a game', async () => {
+            const wrapper = mount(HeaderComponent, { attachTo: document.body });
+            const menu = () => wrapper.find('.game-menu').classes();
+            const open = () => wrapper.find('.game-menu-toggle').trigger('click');
+
+            await open();
+            window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
+            await wrapper.vm.$nextTick();
+            expect(menu()).not.toContain('open');
+
+            await open();
+            // onClickOutside skips clicks in the same tick as the opening one
+            await new Promise(resolve => setTimeout(resolve));
+            document.body.dispatchEvent(new MouseEvent('pointerdown', { bubbles: true }));
+            document.body.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+            await wrapper.vm.$nextTick();
+            expect(menu()).not.toContain('open');
+
+            await open();
+            await wrapper.find('.game-link').trigger('click');
+            expect(menu()).not.toContain('open');
+        });
     });
 });
