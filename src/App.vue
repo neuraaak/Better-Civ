@@ -47,6 +47,7 @@
     .page {
         position: relative;
         min-height: 100vh;
+        min-height: 100dvh;
         overflow-x: clip;
         color: var(--color-text);
         background: var(--color-bg);
@@ -87,8 +88,11 @@
         padding: 0 40px 80px;
     }
     @media (max-width: 800px) {
+        /* Clears the notch and the home indicator of edge-to-edge phones */
         .page-inner {
-            padding-inline: 16px;
+            padding-right: max(16px, env(safe-area-inset-right));
+            padding-bottom: calc(48px + env(safe-area-inset-bottom));
+            padding-left: max(16px, env(safe-area-inset-left));
         }
     }
 </style>

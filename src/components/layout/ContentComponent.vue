@@ -17,7 +17,7 @@
             :aria-label="ui.close"
             @click="closeFilters"
         ></button>
-        <section class="controls" :aria-label="ui.filters">
+        <section class="controls" :class="{ 'bar-hidden': barHidden }" :aria-label="ui.filters">
             <div class="controls-row">
                 <label class="search-control">
                     <PhIcon name="magnifying-glass" />
@@ -26,6 +26,8 @@
                         type="search"
                         :placeholder="ui.search"
                         :aria-label="ui.search"
+                        @focus="searchFocused = true"
+                        @blur="searchFocused = false"
                     />
                     <button
                         v-if="searchedText"
@@ -51,21 +53,25 @@
                     <span v-if="activeCount" class="filters-count">{{ activeCount }}</span>
                     <PhIcon name="caret-down" class="filters-caret" />
                 </button>
-                <FilterPanelComponent
-                    id="filter-panel"
-                    ref="filterPanel"
-                    :open="filtersOpen"
-                    :civilisations="civilisations"
-                    :included-tag-ids="includedTagIds"
-                    :excluded-tag-ids="excludedTagIds"
-                    :selected-tier-ids="selectedTierIds"
-                    :result-label="resultLabel"
-                    @toggle-include="toggleInclude"
-                    @toggle-exclude="toggleExclude"
-                    @toggle-tier="toggleTier"
-                    @clear="clearFilters"
-                    @close="closeFilters"
-                />
+                <!-- On mobile the panel is a bottom sheet: out of the sticky bar, whose
+                     blur and slide would otherwise anchor its fixed position -->
+                <Teleport to="body" :disabled="!isMobile">
+                    <FilterPanelComponent
+                        id="filter-panel"
+                        ref="filterPanel"
+                        :open="filtersOpen"
+                        :civilisations="civilisations"
+                        :included-tag-ids="includedTagIds"
+                        :excluded-tag-ids="excludedTagIds"
+                        :selected-tier-ids="selectedTierIds"
+                        :result-label="resultLabel"
+                        @toggle-include="toggleInclude"
+                        @toggle-exclude="toggleExclude"
+                        @toggle-tier="toggleTier"
+                        @clear="clearFilters"
+                        @close="closeFilters"
+                    />
+                </Teleport>
 
                 <div class="result-actions">
                     <span class="result-count">{{ resultLabel }}</span>
@@ -74,9 +80,10 @@
                             type="button"
                             :class="{ active: groupMode === 'tier' }"
                             :aria-pressed="groupMode === 'tier'"
+                            :title="ui.byTier"
                             @click="groupMode = 'tier'"
                         >
-                            <PhIcon name="ranking" />{{ ui.byTier }}
+                            <PhIcon name="ranking" /><span class="sort-label">{{ ui.byTier }}</span>
                         </button>
                         <button
                             type="button"
@@ -85,7 +92,9 @@
                             :title="ui.alphabetical"
                             @click="groupMode = 'alpha'"
                         >
-                            <PhIcon name="sort-ascending" />{{ ui.alphabeticalShort }}
+                            <PhIcon name="sort-ascending" /><span class="sort-label">{{
+                                ui.alphabeticalShort
+                            }}</span>
                         </button>
                     </div>
                 </div>
@@ -111,7 +120,7 @@
                 class="tier-section"
             >
                 <header v-if="group.tierId !== null" class="tier-heading">
-                    <CivTierComponent :tier_id="group.tierId" :size="58" />
+                    <CivTierComponent :tier_id="group.tierId" :size="isMobile ? 40 : 58" />
                     <div class="tier-heading-text">
                         <div class="tier-heading-title">
                             <h2>{{ tierLabel(group.tierId) }}</h2>
@@ -177,10 +186,12 @@
 </template>
 
 <script setup lang="ts">
+    import { useMediaQuery, useScrollLock } from '@vueuse/core';
     import { storeToRefs } from 'pinia';
-    import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue';
+    import { computed, nextTick, onMounted, onUnmounted, ref, watch, watchEffect } from 'vue';
     import { useCardNavigation } from '../../composables/useCardNavigation';
     import { useCivFilters } from '../../composables/useCivFilters';
+    import { useHideOnScroll } from '../../composables/useHideOnScroll';
     import type { LoadStatus } from '../../composables/useCivilizations';
     import { DISPLAY_OPTIONS, type CardStyle, type GroupMode } from '../../data/displayOptions';
     import { TIER_IDS, type TierId } from '../../data/taxonomy';
@@ -283,6 +294,18 @@
         filtersOpen.value = false;
     }
 
+    // Phone layout: bottom-sheet filters, two-row bar that hides on the way down
+    const isMobile = useMediaQuery('(max-width: 800px)');
+    const searchFocused = ref(false);
+    const { hidden: barHidden } = useHideOnScroll(
+        () => isMobile.value && !filtersOpen.value && !searchFocused.value
+    );
+    // The page stays put behind the detail panel and the filter sheet
+    const scrollLocked = useScrollLock(typeof document === 'undefined' ? null : document.body);
+    watchEffect(() => {
+        scrollLocked.value = detailOpen.value || (filtersOpen.value && isMobile.value);
+    });
+
     onMounted(() => window.addEventListener('keydown', onKeydown));
     onUnmounted(() => window.removeEventListener('keydown', onKeydown));
 
@@ -367,6 +390,11 @@
         background: color-mix(in srgb, var(--color-bg) 82%, transparent);
         -webkit-backdrop-filter: blur(12px);
         backdrop-filter: blur(12px);
+        transition: transform 0.25s ease;
+    }
+    /* Slid out while scrolling down on mobile; keyboard focus brings it back */
+    .controls.bar-hidden:not(:focus-within) {
+        transform: translateY(calc(-100% - 1px));
     }
     .controls-row {
         position: relative;
@@ -637,9 +665,15 @@
         h1 {
             font-size: 34px;
         }
+        .filters-backdrop {
+            z-index: 24;
+            background: color-mix(in srgb, var(--color-neutral-900) 55%, transparent);
+        }
         .controls {
-            margin: 0 -16px;
-            padding: 12px 16px;
+            margin-inline: calc(-1 * max(16px, env(safe-area-inset-left)))
+                calc(-1 * max(16px, env(safe-area-inset-right)));
+            padding: 10px max(16px, env(safe-area-inset-right)) 10px
+                max(16px, env(safe-area-inset-left));
         }
         .search-control {
             flex-basis: 100%;
@@ -649,12 +683,54 @@
             flex: 1;
             justify-content: flex-end;
         }
+        /* Icon-only sort buttons: the label stays for screen readers */
+        .sort-label {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            overflow: hidden;
+            clip-path: inset(50%);
+            white-space: nowrap;
+        }
+        .sort-toggle button {
+            width: 40px;
+            height: 38px;
+            justify-content: center;
+            padding: 0;
+        }
+        .sort-toggle .ph {
+            font-size: 17px;
+        }
+        .tier-heading {
+            gap: 12px;
+        }
         .tier-heading p {
             display: none;
         }
         .grid-container {
             grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
             gap: 12px;
+        }
+    }
+    @media (max-width: 640px) {
+        /* Cards turn into compact rows, see CivCardComponent */
+        .tier-list {
+            gap: 28px;
+        }
+        .tier-section {
+            gap: 12px;
+        }
+        .grid-container {
+            grid-template-columns: minmax(0, 1fr);
+            gap: 8px;
+        }
+        /* Full-screen panel, swipeable (see MasterCardComponent) */
+        .detail-panel {
+            inset: 0;
+            width: 100%;
+            max-width: none;
+            border-radius: 0;
+            transform: translateX(100%);
         }
     }
 </style>

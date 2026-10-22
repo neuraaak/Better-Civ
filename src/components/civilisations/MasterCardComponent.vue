@@ -1,8 +1,8 @@
 <template>
-    <article class="civilization-panel">
+    <article ref="panel" class="civilization-panel">
         <div class="panel-accent" :style="{ background: badge.line }"></div>
 
-        <div class="panel-scroll">
+        <div ref="scroller" class="panel-scroll">
             <header class="panel-hero">
                 <img class="hero-visual" alt="" :src="civBackground" />
                 <div class="hero-hatch"></div>
@@ -148,7 +148,8 @@
 </template>
 
 <script setup lang="ts">
-    import { computed } from 'vue';
+    import { useSwipe } from '@vueuse/core';
+    import { computed, ref } from 'vue';
     import type { UniqueItemDto } from '../../api/civApi';
     import { useMessages } from '../../i18n/useMessages';
     import { useAppStore } from '../../stores/app';
@@ -170,7 +171,7 @@
         { position: '', previous_name: undefined, next_name: undefined }
     );
 
-    defineEmits<{ close: []; previous: []; next: [] }>();
+    const emit = defineEmits<{ close: []; previous: []; next: [] }>();
 
     const store = useAppStore();
     const t = useMessages();
@@ -183,6 +184,22 @@
     const civBackground = computed(() => '/img/card-cover.webp');
     const units = computed(() => (props.civ.unique_units ?? []).map(normalizeItem));
     const buildings = computed(() => (props.civ.unique_buildings ?? []).map(normalizeItem));
+
+    // Touch: swipe sideways between civilizations, down from the top to close
+    const panel = ref<HTMLElement | null>(null);
+    const scroller = ref<HTMLElement | null>(null);
+    let startedAtTop = false;
+    useSwipe(panel, {
+        threshold: 60,
+        onSwipeStart() {
+            startedAtTop = (scroller.value?.scrollTop ?? 0) <= 0;
+        },
+        onSwipeEnd(_event, direction) {
+            if (direction === 'left') emit('next');
+            else if (direction === 'right') emit('previous');
+            else if (direction === 'down' && startedAtTop) emit('close');
+        },
+    });
 
     function normalizeItem(item: UniqueItemDto): { name: string; icon: string } {
         if (typeof item === 'string') return { name: cleanName(item), icon: '' };
@@ -247,7 +264,7 @@
     }
     .panel-controls {
         position: absolute;
-        top: 12px;
+        top: max(12px, env(safe-area-inset-top));
         right: 12px;
         left: 12px;
         display: flex;
@@ -516,7 +533,7 @@
         align-items: center;
         gap: 12px;
         min-width: 0;
-        padding: 14px 24px;
+        padding: 14px 24px calc(14px + env(safe-area-inset-bottom));
         border: 0;
         color: var(--color-text);
         background: transparent;
@@ -554,6 +571,17 @@
         box-shadow: -1px 0 0 var(--color-neutral-800);
     }
 
+    /* Full-screen panel on phones (see ContentComponent) */
+    @media (max-width: 640px) {
+        .panel-hero {
+            height: calc(180px + env(safe-area-inset-top));
+        }
+        .panel-controls button {
+            width: 40px;
+            height: 40px;
+            font-size: 17px;
+        }
+    }
     @media (max-width: 420px) {
         .panel-identity {
             right: 16px;
@@ -574,6 +602,10 @@
         }
         .panel-navigation button {
             padding-inline: 16px;
+        }
+        .civilization-icon {
+            width: 44px;
+            height: 44px;
         }
     }
 </style>

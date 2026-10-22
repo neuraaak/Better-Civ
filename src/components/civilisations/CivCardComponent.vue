@@ -107,12 +107,15 @@
             0 0 0 1.5px var(--color-accent),
             0 0 30px color-mix(in srgb, var(--color-accent) 35%, transparent);
     }
-    .civ-card:hover {
-        transform: translateY(-4px);
-        box-shadow:
-            0 0 0 1px var(--color-accent),
-            0 14px 36px rgba(0, 0, 0, 0.55),
-            0 0 32px color-mix(in srgb, var(--color-accent) 28%, transparent);
+    /* Mouse only: on touch screens the lift would stick after the tap */
+    @media (hover: hover) {
+        .civ-card:hover {
+            transform: translateY(-4px);
+            box-shadow:
+                0 0 0 1px var(--color-accent),
+                0 14px 36px rgba(0, 0, 0, 0.55),
+                0 0 32px color-mix(in srgb, var(--color-accent) 28%, transparent);
+        }
     }
 
     .card-visual,
@@ -229,5 +232,55 @@
         font-size: 17px;
         letter-spacing: -0.01em;
         line-height: 1.2;
+    }
+
+    /* — phone: the portrait card becomes a compact row — */
+    @media (max-width: 640px) {
+        .portrait-card {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            min-height: 84px;
+            padding: 12px 14px;
+            aspect-ratio: auto;
+        }
+        .portrait-card .card-gradient {
+            inset: 0;
+            height: auto;
+            background: linear-gradient(
+                to right,
+                var(--color-bg) 30%,
+                color-mix(in srgb, var(--color-bg) 55%, transparent)
+            );
+        }
+        .portrait-card .tier-frame {
+            inset: 5px;
+            border-radius: 11px;
+        }
+        .portrait-card .tier-accent {
+            top: 50%;
+            left: 5px;
+            width: 2px;
+            height: 44%;
+            transform: translateY(-50%);
+        }
+        /* In the flow, but still painted above the absolute visual layers */
+        .portrait-card .card-tier-badge {
+            position: relative;
+            inset: auto;
+        }
+        .portrait-card .card-footer {
+            position: relative;
+            inset: auto;
+            flex: 1;
+            min-width: 0;
+            gap: 6px;
+        }
+        .portrait-card h2 {
+            font-size: 17px;
+        }
+        .portrait-card .card-tags {
+            gap: 4px;
+        }
     }
 </style>

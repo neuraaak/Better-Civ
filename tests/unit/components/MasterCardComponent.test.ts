@@ -106,4 +106,56 @@ describe('MasterCardComponent', () => {
         expect(wrapper.emitted('previous')).toHaveLength(1);
         expect(wrapper.emitted('next')).toHaveLength(1);
     });
+
+    describe('touch gestures', () => {
+        function swipe(element: Element, from: [number, number], to: [number, number]) {
+            const touchEvent = (type: string, [clientX, clientY]: [number, number]) => {
+                const event = new Event(type);
+                Object.defineProperty(event, 'touches', { value: [{ clientX, clientY }] });
+                element.dispatchEvent(event);
+            };
+            touchEvent('touchstart', from);
+            touchEvent('touchmove', to);
+            element.dispatchEvent(new Event('touchend'));
+        }
+
+        // The touch listeners attach once the panel element is rendered
+        async function mountPanel() {
+            const wrapper = mount(MasterCardComponent, { props });
+            await wrapper.vm.$nextTick();
+            return wrapper;
+        }
+
+        it('steps to the next and previous civilizations on a sideways swipe', async () => {
+            const wrapper = await mountPanel();
+
+            swipe(wrapper.element, [300, 200], [150, 210]);
+            expect(wrapper.emitted('next')).toHaveLength(1);
+            swipe(wrapper.element, [100, 200], [260, 190]);
+            expect(wrapper.emitted('previous')).toHaveLength(1);
+        });
+
+        it('closes on a swipe down from the top only', async () => {
+            const wrapper = await mountPanel();
+            const scroller = wrapper.find('.panel-scroll').element;
+
+            scroller.scrollTop = 120;
+            swipe(wrapper.element, [200, 100], [200, 300]);
+            expect(wrapper.emitted('close')).toBeUndefined();
+
+            scroller.scrollTop = 0;
+            swipe(wrapper.element, [200, 100], [200, 300]);
+            expect(wrapper.emitted('close')).toHaveLength(1);
+        });
+
+        it('ignores short moves and swipes up', async () => {
+            const wrapper = await mountPanel();
+
+            swipe(wrapper.element, [200, 200], [170, 200]);
+            swipe(wrapper.element, [200, 300], [200, 100]);
+            expect(wrapper.emitted('next')).toBeUndefined();
+            expect(wrapper.emitted('previous')).toBeUndefined();
+            expect(wrapper.emitted('close')).toBeUndefined();
+        });
+    });
 });
