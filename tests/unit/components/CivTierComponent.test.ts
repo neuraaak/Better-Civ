@@ -44,7 +44,7 @@ describe('CivTierComponent', () => {
     it('dims the badge on request', () => {
         const wrapper = mount(CivTierComponent, { props: { tier_id: 2, dimmed: true } });
 
-        expect(wrapper.find('.tier-badge').attributes('style')).toContain('opacity: 0.35');
+        expect(wrapper.find('.tier-badge').attributes('style')).toContain('opacity: 0.4');
     });
 
     it('falls back to the D badge for an unrated civilization', () => {

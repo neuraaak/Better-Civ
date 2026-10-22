@@ -76,51 +76,214 @@ describe('ContentComponent', () => {
             expect(wrapper.find('.eyebrow').text()).toContain('Classement · III civilisations');
         });
 
-        it('renders search, category chips, tier chips and the grouping toggle', () => {
+        it('renders search, the filters button, the result count and the grouping toggle', () => {
             const wrapper = mountContent();
 
             expect(wrapper.find('.search-control input').attributes('placeholder')).toBe(
                 'Rechercher une civilisation'
             );
-            // "Toutes" + the 7 categories of the store
-            expect(wrapper.findAll('.category-chip')).toHaveLength(8);
-            expect(wrapper.findAll('.tier-chip')).toHaveLength(5);
-            expect(wrapper.findAll('.sort-toggle button')).toHaveLength(2);
+            expect(wrapper.find('.filters-toggle').text()).toBe('Filtres');
             expect(wrapper.find('.result-count').text()).toBe('3 résultats');
+            const toggle = wrapper.findAll('.sort-toggle button');
+            expect(toggle.map(button => button.text())).toEqual(['Par tier', 'A → Z']);
+            expect(toggle[1].attributes('title')).toBe('Alphabétique');
+            expect(wrapper.find('.active-filters').exists()).toBe(false);
         });
 
-        it('colours each category dot with its category colour', () => {
+        it('uses the singular for a single result', async () => {
             const wrapper = mountContent();
-            const dots = wrapper.findAll('.category-chip .dot');
 
-            expect(dots[0].attributes('style')).toContain('var(--color-neutral-600)');
-            expect(dots[2].attributes('style')).toContain('oklch(0.74 0.11 310)'); // Culture
+            await wrapper.find('.search-control input').setValue('egy');
+
+            expect(wrapper.find('.result-count').text()).toBe('1 résultat');
+        });
+
+        it('renders the cards in the requested style', () => {
+            const wrapper = mount(ContentComponent, {
+                props: { civilisations: mockCivilizations, cardStyle: 'classic' },
+            });
+
+            expect(wrapper.findAll('.classic-card')).toHaveLength(3);
+            expect(wrapper.find('.portrait-card').exists()).toBe(false);
+        });
+
+        it('starts on the requested grouping', () => {
+            const wrapper = mount(ContentComponent, {
+                props: { civilisations: mockCivilizations, defaultGroupMode: 'alpha' },
+            });
+
+            expect(wrapper.find('.tier-heading').exists()).toBe(false);
+            expect(visibleIds(wrapper)).toEqual([3, 1, 2]);
+        });
+    });
+
+    describe('Filter panel', () => {
+        const openFilters = async (wrapper: VueWrapper) => {
+            await wrapper.find('.filters-toggle').trigger('click');
+        };
+        const tile = (wrapper: VueWrapper, index: number) =>
+            wrapper.findAll('[data-testid="category-tile"]')[index];
+
+        it('opens from the filters button and closes from it again', async () => {
+            const wrapper = mountContent();
+            const button = wrapper.find('.filters-toggle');
+            expect(button.attributes('aria-expanded')).toBe('false');
+            expect(wrapper.find('.filter-panel').classes()).not.toContain('open');
+
+            await openFilters(wrapper);
+            expect(button.attributes('aria-expanded')).toBe('true');
+            expect(button.classes()).toContain('open');
+            expect(wrapper.find('.filter-panel').classes()).toContain('open');
+
+            await openFilters(wrapper);
+            expect(wrapper.find('.filter-panel').classes()).not.toContain('open');
+        });
+
+        it('closes on Escape, on a click beside it and from "Voir N résultats"', async () => {
+            const wrapper = mountContent();
+
+            await openFilters(wrapper);
+            window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
+            await wrapper.vm.$nextTick();
+            expect(wrapper.find('.filter-panel').classes()).not.toContain('open');
+
+            await openFilters(wrapper);
+            await wrapper.find('.filters-backdrop').trigger('click');
+            expect(wrapper.find('.filters-backdrop').exists()).toBe(false);
+
+            await openFilters(wrapper);
+            const apply = wrapper.find('.filter-apply');
+            expect(apply.text()).toBe('Voir 3 résultats');
+            await apply.trigger('click');
+            expect(wrapper.find('.filter-panel').classes()).not.toContain('open');
+        });
+
+        it('gives the focus back to the filters button when it closes from inside', async () => {
+            const wrapper = mountContent();
+            await openFilters(wrapper);
+            wrapper.find<HTMLElement>('.include-button').element.focus();
+
+            window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
+            await wrapper.vm.$nextTick();
+
+            expect(document.activeElement).toBe(wrapper.find('.filters-toggle').element);
+        });
+
+        it('closes the filter panel before the detail panel on Escape', async () => {
+            const wrapper = mountContent();
+            useAppStore().openDetail(1);
+            await openFilters(wrapper);
+
+            window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
+            await wrapper.vm.$nextTick();
+
+            expect(wrapper.find('.filter-panel').classes()).not.toContain('open');
+            expect(useAppStore().detailOpen).toBe(true);
+        });
+
+        it('includes a category from its tile and excludes another one', async () => {
+            const wrapper = mountContent();
+            await openFilters(wrapper);
+
+            await tile(wrapper, 4).find('.category-tile-main').trigger('click'); // Militaire
+            expect(visibleIds(wrapper)).toEqual([2, 3]);
+            expect(tile(wrapper, 4).classes()).toContain('included');
+
+            await tile(wrapper, 3).find('.exclude-button').trigger('click'); // Science
+            expect(visibleIds(wrapper)).toEqual([3]);
+            expect(tile(wrapper, 3).classes()).toContain('excluded');
+            expect(tile(wrapper, 3).find('.exclude-button').attributes('aria-pressed')).toBe(
+                'true'
+            );
+
+            expect(wrapper.find('.filters-count').text()).toBe('2');
+            expect(wrapper.find('.filters-toggle').classes()).toContain('active');
+        });
+
+        it('switches a category from included to excluded with its buttons', async () => {
+            const wrapper = mountContent();
+            await openFilters(wrapper);
+
+            await tile(wrapper, 4).find('.include-button').trigger('click');
+            await tile(wrapper, 4).find('.exclude-button').trigger('click');
+
+            expect(tile(wrapper, 4).classes()).toContain('excluded');
+            expect(tile(wrapper, 4).classes()).not.toContain('included');
+            expect(visibleIds(wrapper)).toEqual([1]);
+        });
+
+        it('picks several tiers and dims the others', async () => {
+            const wrapper = mountContent();
+            await openFilters(wrapper);
+            const tiers = () => wrapper.findAll('[data-testid="tier-tile"]');
+
+            await tiers()[1].trigger('click'); // Tier A
+            await tiers()[2].trigger('click'); // Tier B
+            expect(visibleIds(wrapper)).toEqual([2, 3, 1]);
+            expect(tiers()[1].find('.tier-check').exists()).toBe(true);
+            expect(tiers()[0].find('.tier-badge').attributes('style')).toContain('opacity: 0.4');
+
+            await tiers()[2].trigger('click');
+            expect(visibleIds(wrapper)).toEqual([2]);
+        });
+
+        it('shows roman counts over every civilization on the tiles', async () => {
+            const wrapper = mountContent();
+            await openFilters(wrapper);
+
+            expect(tile(wrapper, 4).find('.filter-count').text()).toBe('II');
+            expect(tile(wrapper, 0).find('.filter-count').text()).toBe('—');
+            const tierCounts = wrapper
+                .findAll('[data-testid="tier-tile"] .filter-count')
+                .map(count => count.text());
+            expect(tierCounts).toEqual(['—', 'I', 'II', '—', '—']);
+        });
+
+        it('resets the categories and tiers from the panel', async () => {
+            const wrapper = mountContent();
+            await openFilters(wrapper);
+            await tile(wrapper, 4).find('.category-tile-main').trigger('click');
+
+            await wrapper.find('.filter-reset').trigger('click');
+
+            expect(visibleIds(wrapper)).toHaveLength(3);
+            expect(wrapper.find('.filters-count').exists()).toBe(false);
+        });
+
+        it('lists the active filters as removable pills', async () => {
+            const wrapper = mountContent();
+            await openFilters(wrapper);
+            await tile(wrapper, 4).find('.category-tile-main').trigger('click');
+            await tile(wrapper, 3).find('.exclude-button').trigger('click');
+            await wrapper.findAll('[data-testid="tier-tile"]')[2].trigger('click');
+
+            const pills = () => wrapper.findAll('[data-testid="filter-pill"]');
+            expect(pills().map(pill => pill.text())).toEqual([
+                'InclureMilitaire',
+                'ExclureScience',
+                'TierBRoyaume', // kind, badge letter, rank
+            ]);
+            expect(pills()[2].findComponent({ name: 'CivTierComponent' }).props('size')).toBe(18);
+            expect(pills()[0].find('.pill-remove').attributes('aria-label')).toBe(
+                'Retirer Militaire'
+            );
+            expect(visibleIds(wrapper)).toEqual([3]);
+
+            await pills()[1].find('.pill-remove').trigger('click');
+            expect(visibleIds(wrapper)).toEqual([3]);
+            expect(pills()).toHaveLength(2);
+
+            await pills()[0].find('.pill-remove').trigger('click');
+            await pills()[0].find('.pill-remove').trigger('click');
+            expect(visibleIds(wrapper)).toHaveLength(3);
+
+            await tile(wrapper, 4).find('.category-tile-main').trigger('click');
+            await wrapper.find('.clear-all').trigger('click');
+            expect(wrapper.find('.active-filters').exists()).toBe(false);
         });
     });
 
     describe('Filtering', () => {
-        it('filters by category', async () => {
-            const wrapper = mountContent();
-
-            await wrapper.findAll('.category-chip')[5].trigger('click'); // Militaire (tag 4)
-
-            expect(visibleIds(wrapper)).toEqual([2, 3]);
-        });
-
-        it('filters by tier, dims the other tier chips and toggles back off', async () => {
-            const wrapper = mountContent();
-            const chip = wrapper.findAll('.tier-chip')[1]; // Tier A
-
-            await chip.trigger('click');
-            expect(visibleIds(wrapper)).toEqual([2]);
-            expect(
-                wrapper.findAll('.tier-chip')[0].find('.tier-badge').attributes('style')
-            ).toContain('opacity: 0.35');
-
-            await chip.trigger('click');
-            expect(visibleIds(wrapper)).toHaveLength(3);
-        });
-
         it('searches on the name, ignoring accents and case', async () => {
             const wrapper = mountContent();
 

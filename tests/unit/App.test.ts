@@ -47,7 +47,7 @@ describe('App.vue', () => {
 
         expect(fetchMock).toHaveBeenCalledTimes(1);
         expect(fetchMock.mock.calls[0][0]).toContain('/v1/fr/civilizations/');
-        expect(wrapper.find('.brand-title').text()).toBe('Tier List');
+        expect(wrapper.find('.brand-title').text()).toBe('Better-Civ');
         // Inca is tier S, Spain tier B
         expect(cardNames(wrapper)).toEqual(['Inca', 'Espagne']);
     });
