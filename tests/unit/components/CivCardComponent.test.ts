@@ -76,6 +76,35 @@ describe('CivCardComponent', () => {
         expect(useAppStore().detailOpen).toBe(true);
     });
 
+    it('renders the classic composition: visual on top, name, badge and tags below', () => {
+        const wrapper = mount(CivCardComponent, {
+            props: { ...mockCivilization, variant: 'classic' },
+        });
+
+        const card = wrapper.find('article.classic-card');
+        expect(card.exists()).toBe(true);
+        expect(wrapper.find('.portrait-card').exists()).toBe(false);
+        expect(card.find('.classic-media .card-visual').attributes('src')).toBe(
+            '/img/card-cover.webp'
+        );
+        expect(card.find('.classic-title h2').text()).toBe('France');
+        expect(
+            card.find('.classic-title').findComponent({ name: 'CivTierComponent' }).props('size')
+        ).toBe(32);
+        const tags = wrapper.findAllComponents({ name: 'CivTagComponent' });
+        expect(tags.map(tag => tag.props('variant'))).toEqual(['classic', 'classic']);
+    });
+
+    it('opens the details panel from a classic card', async () => {
+        const wrapper = mount(CivCardComponent, {
+            props: { ...mockCivilization, variant: 'classic' },
+        });
+
+        await wrapper.find('.classic-card').trigger('click');
+
+        expect(useAppStore().selectedCivId).toBe(1);
+    });
+
     it('supports a civilization without categories', () => {
         const wrapper = mount(CivCardComponent, {
             props: { ...mockCivilization, tags_id: [] },

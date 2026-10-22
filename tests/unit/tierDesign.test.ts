@@ -1,5 +1,20 @@
 import { describe, expect, it } from 'vitest';
-import { tierBadge } from '@/components/civilisations/tierDesign';
+import { categoryIcon, tierBadge } from '@/components/civilisations/tierDesign';
+
+describe('categoryIcon', () => {
+    it('gives each category its icon, with a compass for unknown ids', () => {
+        expect([0, 1, 2, 3, 4, 5, 6].map(categoryIcon)).toEqual([
+            'compass',
+            'mask-happy',
+            'hands-praying',
+            'flask',
+            'sword',
+            'coins',
+            'hammer',
+        ]);
+        expect(categoryIcon(99)).toBe('compass');
+    });
+});
 
 describe('tierBadge', () => {
     it('localizes tier copy for the active application language', () => {

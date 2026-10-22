@@ -8,23 +8,24 @@ describe('CivTagComponent', () => {
         setActivePinia(createPinia());
     });
 
-    it('renders a subdued dark tag with its category dot', () => {
+    it('renders a subdued dark tag with its category icon', () => {
         const wrapper = mount(CivTagComponent, { props: { tag_id: 1 } });
 
-        expect(wrapper.find('.civ-tag').exists()).toBe(true);
-        expect(wrapper.find('.category-dot').exists()).toBe(true);
-        expect(wrapper.find('.civ-tag').text()).not.toBe('');
+        expect(wrapper.find('.civ-tag').classes()).toContain('civ-tag-card');
+        expect(wrapper.find('.category-icon').classes()).toContain('ph-mask-happy');
+        expect(wrapper.find('.civ-tag').text()).toBe('Culture');
     });
 
-    it('colours the dot with its category colour', () => {
+    it('colours the icon with its category colour', () => {
         const wrapper = mount(CivTagComponent, { props: { tag_id: 4 } });
 
         expect(wrapper.find('.civ-tag').attributes('style')).toContain('oklch(0.70 0.13 25)');
+        expect(wrapper.find('.category-icon').classes()).toContain('ph-sword');
     });
 
-    it('offers the larger panel variant', () => {
-        const wrapper = mount(CivTagComponent, { props: { tag_id: 1, variant: 'panel' } });
+    it.each(['classic', 'panel'] as const)('offers the %s variant', variant => {
+        const wrapper = mount(CivTagComponent, { props: { tag_id: 1, variant } });
 
-        expect(wrapper.find('.civ-tag').classes()).toContain('civ-tag-panel');
+        expect(wrapper.find('.civ-tag').classes()).toContain(`civ-tag-${variant}`);
     });
 });

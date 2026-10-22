@@ -1,11 +1,12 @@
 /**
- * Visual vocabulary shared by the tier list (handoff "Tier List Civilisations v2"):
- * tier badges and category colours. Indexes follow data/taxonomy.ts:
+ * Visual vocabulary shared by the tier list (handoff "Tier List Civilisations v3"):
+ * tier badges, category colours and category icons. Indexes follow data/taxonomy.ts:
  * tier_id 0..4 → S..D, tag_id 0..6 → Polyvalent..Production. Tier copy comes from i18n.
  */
 
 import { DEFAULT_LANG, type Lang } from '../../i18n/languages';
 import { messages } from '../../i18n/messages';
+import type { PhosphorIconName } from '../icons/phosphorIcons';
 
 // TYPES
 // ##############
@@ -142,6 +143,16 @@ export const CATEGORY_COLORS: readonly string[] = [
     'oklch(0.74 0.11 55)', // Production
 ];
 
+export const CATEGORY_ICONS: readonly PhosphorIconName[] = [
+    'compass', // Polyvalent
+    'mask-happy', // Culture
+    'hands-praying', // Foi
+    'flask', // Science
+    'sword', // Militaire
+    'coins', // Commerce
+    'hammer', // Production
+];
+
 // FUNCTIONS
 // ##############
 /** Badge for a tier id, falling back to tier D for unknown ids. */
@@ -153,6 +164,10 @@ export function tierBadge(tierId: number | null | undefined, lang: Lang = DEFAUL
 
 export function categoryColor(tagId: number | null | undefined): string {
     return CATEGORY_COLORS[tagId ?? -1] ?? 'var(--color-neutral-600)';
+}
+
+export function categoryIcon(tagId: number): PhosphorIconName {
+    return CATEGORY_ICONS[tagId] ?? 'compass';
 }
 
 export function toRoman(value: number): string {
