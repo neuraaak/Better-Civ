@@ -181,6 +181,7 @@ logs/
 *.sqlite
 *.sqlite3
 bin/assets/db/*.manifest.json
+bin/assets/images/
 *.mdb
 *.accdb
 

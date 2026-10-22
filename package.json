@@ -49,6 +49,7 @@
         "test:coverage": "vitest run --coverage --config config/vitest.config.js",
         "test:watch": "vitest --watch --config config/vitest.config.js",
         "db:build:civ5": "tsx .scripts/db/civ5/import.ts",
+        "db:images:civ5": "tsx .scripts/db/civ5/images.ts",
         "type-check:scripts": "tsc --noEmit -p .scripts/tsconfig.json",
         "check": "pnpm format:check && pnpm lint && pnpm type-check && pnpm test:run && pnpm build",
         "prepare": "husky"
