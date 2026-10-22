@@ -1,7 +1,7 @@
 {
     "name": "better-civ",
     "description": "Une application web moderne pour explorer et comparer les civilisations de Civilization V",
-    "version": "2.1.0",
+    "version": "2.2.0",
     "private": true,
     "type": "module",
     "keywords": [
