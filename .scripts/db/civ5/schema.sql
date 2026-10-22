@@ -92,23 +92,6 @@ CREATE TABLE unit_promotions (
     promotion_id INTEGER NOT NULL REFERENCES promotions(entity_id),
     PRIMARY KEY (unit_id, promotion_id)
 );
-CREATE TABLE unit_required_resources (
-    unit_id INTEGER NOT NULL REFERENCES units(entity_id),
-    resource_id INTEGER NOT NULL REFERENCES resources(entity_id),
-    amount REAL,
-    PRIMARY KEY (unit_id, resource_id)
-);
-CREATE TABLE building_prerequisites (
-    building_id INTEGER NOT NULL REFERENCES buildings(entity_id),
-    prerequisite_id INTEGER NOT NULL REFERENCES buildings(entity_id),
-    PRIMARY KEY (building_id, prerequisite_id)
-);
-CREATE TABLE building_required_resources (
-    building_id INTEGER NOT NULL REFERENCES buildings(entity_id),
-    resource_id INTEGER NOT NULL REFERENCES resources(entity_id),
-    amount REAL,
-    PRIMARY KEY (building_id, resource_id)
-);
 CREATE TABLE tech_unlocks (
     tech_id INTEGER NOT NULL REFERENCES techs(entity_id),
     entity_id INTEGER NOT NULL REFERENCES entities(id),
@@ -160,9 +143,6 @@ CREATE INDEX civilization_unique_units_target ON civilization_unique_units (unit
 CREATE INDEX civilization_unique_buildings_target ON civilization_unique_buildings (building_id);
 CREATE INDEX policy_prerequisites_target ON policy_prerequisites (prerequisite_id);
 CREATE INDEX unit_promotions_target ON unit_promotions (promotion_id);
-CREATE INDEX unit_required_resources_target ON unit_required_resources (resource_id);
-CREATE INDEX building_prerequisites_target ON building_prerequisites (prerequisite_id);
-CREATE INDEX building_required_resources_target ON building_required_resources (resource_id);
 CREATE INDEX tech_unlocks_target ON tech_unlocks (entity_id);
 CREATE INDEX promotion_prerequisites_target ON promotion_prerequisites (prerequisite_id);
 CREATE INDEX resource_revealing_techs_target ON resource_revealing_techs (tech_id);

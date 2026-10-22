@@ -170,6 +170,12 @@ function number(value: ApiValue | undefined): number | null {
     return typeof value === 'number' ? value : null;
 }
 
+// CivVAPI wraps several scalars in an object (cost.production, branch.name, yields.gold).
+function field(value: ApiValue | undefined, key: string): ApiValue | undefined {
+    if (typeof value !== 'object' || value === null || Array.isArray(value)) return undefined;
+    return (value as ApiDocument)[key];
+}
+
 function insertDomain(database: DatabaseSync, id: number, resource: StagedResource): void {
     const payload = resource.payload;
     switch (resource.kind) {
@@ -180,7 +186,7 @@ function insertDomain(database: DatabaseSync, id: number, resource: StagedResour
                 )
                 .run(
                     id,
-                    number(payload.cost),
+                    number(field(payload.cost, 'production')),
                     number(payload.gold_maintenance),
                     text(payload.icon)
                 );
@@ -205,12 +211,22 @@ function insertDomain(database: DatabaseSync, id: number, resource: StagedResour
                 .prepare(
                     'INSERT INTO policies (entity_id, branch, tenet_level, icon) VALUES (?, ?, ?, ?)'
                 )
-                .run(id, text(payload.branch), number(payload.tenet_level), text(payload.icon));
+                .run(
+                    id,
+                    text(field(payload.branch, 'name')),
+                    number(payload.tenet_level),
+                    text(payload.icon)
+                );
             break;
         case 'units':
             database
                 .prepare('INSERT INTO units (entity_id, cost, movement, icon) VALUES (?, ?, ?, ?)')
-                .run(id, number(payload.cost), number(payload.movement), text(payload.icon));
+                .run(
+                    id,
+                    number(field(payload.cost, 'production')),
+                    number(payload.movement),
+                    text(payload.icon)
+                );
             break;
         case 'wonders':
             database
@@ -248,7 +264,7 @@ function insertDomain(database: DatabaseSync, id: number, resource: StagedResour
                 )
                 .run(
                     id,
-                    number(payload.nearby_mountain_bonus),
+                    number(field(payload.nearby_mountain_bonus, 'food')),
                     text(payload.required_civ),
                     text(payload.icon)
                 );
@@ -392,15 +408,11 @@ export function transformStagedResources(
                 }
             }
             const yields = canonical.payload.yields;
-            if (Array.isArray(yields))
-                for (const value of yields) {
-                    if (typeof value !== 'object' || value === null || Array.isArray(value))
-                        continue;
-                    const item = value as ApiDocument;
-                    const yieldType = text(item.yield_type) ?? text(item.type);
-                    const amount = number(item.amount);
-                    if (yieldType !== null && amount !== null)
-                        insertYield.run(id, yieldType, amount);
+            if (typeof yields === 'object' && yields !== null && !Array.isArray(yields))
+                // Zeroes mean "no yield" upstream, so only non-zero amounts are stored.
+                for (const [yieldType, value] of Object.entries(yields as ApiDocument)) {
+                    const amount = number(value);
+                    if (amount !== null && amount !== 0) insertYield.run(id, yieldType, amount);
                 }
         }
         const entityCodes = new Set(entityIds.keys());

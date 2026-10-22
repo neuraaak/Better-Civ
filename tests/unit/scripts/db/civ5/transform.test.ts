@@ -33,12 +33,12 @@ describe('transformStagedResources', () => {
         const database = createFinalDatabase(join(directory, 'final.sqlite'));
         const staged = [
             ...resources('civilizations', { icon: 'civ.png', city_names: [], spy_names: [] }),
-            ...resources('units', { cost: 120, movement: 2 }),
+            ...resources('units', { cost: { production: 120, faith: 0 }, movement: 2 }),
             ...resources('tech', { cost: 50, era: 'Ancient', quote: 'Know thyself' }),
-            ...resources('policies', { branch: 'Liberty', tenet_level: 1 }),
+            ...resources('policies', { branch: { name: 'Liberty' }, tenet_level: 1 }),
             ...resources('wonders', {
                 production_cost: 185,
-                yields: [{ yield_type: 'Culture', amount: 2 }],
+                yields: { culture: 2, gold: 0 },
             }),
             ...resources('beliefs', { belief_category: 'Pantheon Beliefs', summary: 'A benefit' }),
         ];
@@ -57,6 +57,12 @@ describe('transformStagedResources', () => {
             cost: 120,
             movement: 2,
         });
+        expect(database.prepare('SELECT branch FROM policies').get()).toEqual({
+            branch: 'Liberty',
+        });
+        expect(database.prepare('SELECT yield_type, amount FROM entity_yields').all()).toEqual([
+            { yield_type: 'culture', amount: 2 },
+        ]);
         expect(database.prepare('SELECT production_cost FROM wonders').get()).toEqual({
             production_cost: 185,
         });
@@ -110,10 +116,16 @@ describe('transformStagedResources', () => {
 
         transformStagedResources(
             [
-                ...resources('buildings', { cost: 80, gold_maintenance: 2 }),
+                ...resources('buildings', {
+                    cost: { production: 80, faith: 0 },
+                    gold_maintenance: 2,
+                }),
                 ...resources('citystates', { category: 'Maritime' }),
                 ...resources('features', { combat_modifier: 25, movement_cost: 2 }),
-                ...resources('improvements', { nearby_mountain_bonus: 1, required_civ: 'Inca' }),
+                ...resources('improvements', {
+                    nearby_mountain_bonus: { food: 1 },
+                    required_civ: 'Inca',
+                }),
                 ...resources('resolutions', { resolution_id: 9, project_prizes: [] }),
                 ...resources('resources', { terrains_found_on: [], improved_by: [] }),
                 ...resources('terrains', { combat_modifier: -10, movement_cost: 1 }),
