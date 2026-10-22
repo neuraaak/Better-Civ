@@ -39,6 +39,20 @@ const IMAGE_COLUMNS: readonly (readonly [string, string])[] = [
 const IMAGE_URL =
     /^https:\/\/eyefyre\.github\.io\/civvapi\/images\/([a-z0-9_]+)\/([a-z0-9_.'-]+\.png)$/;
 
+// CivVAPI publishes three assets under a misspelled name; the database holds
+// the correct spelling, so the request is retargeted and the file kept as named.
+const UPSTREAM_TYPOS: Readonly<Record<string, string>> = {
+    'resource_icons/cotton.png': 'resource_icons/cottom.png',
+    'resource_icons/jewelry.png': 'resource_icons/jewelery.png',
+    'wonder_backgrounds/alhambra.png': 'wonder_backgrounds/alahambra.png',
+};
+
+export function sourceUrlFor(url: string): string {
+    const path = imagePathFor(url);
+    const actual = UPSTREAM_TYPOS[path];
+    return actual === undefined ? url : url.replace(path, actual);
+}
+
 export function imagePathFor(url: string): string {
     const match = IMAGE_URL.exec(url);
     if (!match) throw new Error(`Unexpected CivVAPI image URL: ${url}`);
@@ -98,7 +112,7 @@ export async function downloadCiv5Images(options: DownloadOptions): Promise<Imag
         while (next < pending.length) {
             const url = pending[next++];
             const written = await writeImage(
-                url,
+                sourceUrlFor(url),
                 join(options.outputDirectory, imagePathFor(url)),
                 options.fetchBinary,
                 controller

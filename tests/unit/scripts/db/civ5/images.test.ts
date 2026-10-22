@@ -16,6 +16,7 @@ import {
     collectImageUrls,
     downloadCiv5Images,
     imagePathFor,
+    sourceUrlFor,
 } from '../../../../../.scripts/db/civ5/images';
 
 const temporaryDirectories: string[] = [];
@@ -58,6 +59,23 @@ describe('imagePathFor', () => {
         expect(() => imagePathFor(`${ROOT}/../../etc/passwd.png`)).toThrow(/Unexpected/);
         expect(() => imagePathFor('https://example.com/images/unit_icons/warrior.png')).toThrow(
             /Unexpected/
+        );
+    });
+});
+
+describe('sourceUrlFor', () => {
+    it('requests the misspelled name CivVAPI actually publishes', () => {
+        expect(sourceUrlFor(`${ROOT}/resource_icons/cotton.png`)).toBe(
+            `${ROOT}/resource_icons/cottom.png`
+        );
+        expect(sourceUrlFor(`${ROOT}/wonder_backgrounds/alhambra.png`)).toBe(
+            `${ROOT}/wonder_backgrounds/alahambra.png`
+        );
+    });
+
+    it('leaves every correctly spelled asset untouched', () => {
+        expect(sourceUrlFor(`${ROOT}/unit_icons/warrior.png`)).toBe(
+            `${ROOT}/unit_icons/warrior.png`
         );
     });
 });
