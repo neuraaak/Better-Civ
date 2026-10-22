@@ -185,7 +185,7 @@ describe('ContentComponent', () => {
             const wrapper = mountContent();
             await openFilters(wrapper);
 
-            await tile(wrapper, 4).trigger('click'); // Militaire
+            await tile(wrapper, 4).find('.category-tile-main').trigger('click'); // Militaire
             expect(visibleIds(wrapper)).toEqual([2, 3]);
             expect(tile(wrapper, 4).classes()).toContain('included');
 
@@ -242,7 +242,7 @@ describe('ContentComponent', () => {
         it('resets the categories and tiers from the panel', async () => {
             const wrapper = mountContent();
             await openFilters(wrapper);
-            await tile(wrapper, 4).trigger('click');
+            await tile(wrapper, 4).find('.category-tile-main').trigger('click');
 
             await wrapper.find('.filter-reset').trigger('click');
 
@@ -253,7 +253,7 @@ describe('ContentComponent', () => {
         it('lists the active filters as removable pills', async () => {
             const wrapper = mountContent();
             await openFilters(wrapper);
-            await tile(wrapper, 4).trigger('click');
+            await tile(wrapper, 4).find('.category-tile-main').trigger('click');
             await tile(wrapper, 3).find('.exclude-button').trigger('click');
             await wrapper.findAll('[data-testid="tier-tile"]')[2].trigger('click');
 
@@ -277,7 +277,7 @@ describe('ContentComponent', () => {
             await pills()[0].find('.pill-remove').trigger('click');
             expect(visibleIds(wrapper)).toHaveLength(3);
 
-            await tile(wrapper, 4).trigger('click');
+            await tile(wrapper, 4).find('.category-tile-main').trigger('click');
             await wrapper.find('.clear-all').trigger('click');
             expect(wrapper.find('.active-filters').exists()).toBe(false);
         });

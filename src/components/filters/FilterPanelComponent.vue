@@ -1,9 +1,8 @@
 <template>
-    <div
+    <section
         :id="id"
         class="filter-panel"
         :class="{ open }"
-        role="group"
         :aria-label="ui.filters"
         :aria-hidden="!open"
         :inert="!open"
@@ -21,13 +20,20 @@
                     class="category-tile"
                     :class="{ included: tile.included, excluded: tile.excluded }"
                     :style="{ '--tag-color': tile.color }"
-                    @click="$emit('toggle-include', tile.tagId)"
                 >
-                    <span class="category-tile-icon"><PhIcon :name="tile.icon" /></span>
-                    <span class="category-tile-text">
-                        <span class="category-tile-label">{{ tile.label }}</span>
-                        <span class="filter-count">{{ tile.count }}</span>
-                    </span>
+                    <!-- Pointer shortcut for "+": keyboard users reach the same action on it -->
+                    <button
+                        type="button"
+                        class="category-tile-main"
+                        tabindex="-1"
+                        @click="$emit('toggle-include', tile.tagId)"
+                    >
+                        <span class="category-tile-icon"><PhIcon :name="tile.icon" /></span>
+                        <span class="category-tile-text">
+                            <span class="category-tile-label">{{ tile.label }}</span>
+                            <span class="filter-count">{{ tile.count }}</span>
+                        </span>
+                    </button>
                     <span class="category-tile-actions">
                         <button
                             type="button"
@@ -35,7 +41,7 @@
                             :title="ui.include"
                             :aria-label="`${ui.include} · ${tile.label}`"
                             :aria-pressed="tile.included"
-                            @click.stop="$emit('toggle-include', tile.tagId)"
+                            @click="$emit('toggle-include', tile.tagId)"
                         >
                             <PhIcon name="plus" />
                         </button>
@@ -45,7 +51,7 @@
                             :title="ui.exclude"
                             :aria-label="`${ui.exclude} · ${tile.label}`"
                             :aria-pressed="tile.excluded"
-                            @click.stop="$emit('toggle-exclude', tile.tagId)"
+                            @click="$emit('toggle-exclude', tile.tagId)"
                         >
                             <PhIcon name="minus" />
                         </button>
@@ -90,7 +96,7 @@
                 {{ ui.showResults.replace('{count}', resultLabel) }}
             </button>
         </footer>
-    </div>
+    </section>
 </template>
 
 <script setup lang="ts">
@@ -243,9 +249,20 @@
         display: flex;
         align-items: center;
         gap: 10px;
-        padding: 10px 8px 10px 10px;
+        padding: 10px 8px 10px 0;
         border-radius: var(--radius-md);
-        cursor: pointer;
+    }
+    /* Spreads over the tile's vertical padding so the whole tile stays clickable */
+    .category-tile-main {
+        display: flex;
+        flex: 1;
+        align-items: center;
+        align-self: stretch;
+        gap: 10px;
+        min-width: 0;
+        margin-block: -10px;
+        padding: 10px 0 10px 10px;
+        text-align: left;
     }
     .category-tile:hover {
         background: var(--color-neutral-800);

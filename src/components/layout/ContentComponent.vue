@@ -8,7 +8,15 @@
             <h1>{{ ui.heroTitle }}</h1>
         </section>
 
-        <div v-if="filtersOpen" class="filters-backdrop" @click="closeFilters"></div>
+        <!-- Catches the click beside the open filter panel; Escape closes it from the keyboard -->
+        <button
+            v-if="filtersOpen"
+            type="button"
+            class="filters-backdrop"
+            tabindex="-1"
+            :aria-label="ui.close"
+            @click="closeFilters"
+        ></button>
         <section class="controls" :aria-label="ui.filters">
             <div class="controls-row">
                 <label class="search-control">
@@ -345,6 +353,7 @@
         position: fixed;
         inset: 0;
         z-index: 5;
+        cursor: default;
     }
     .controls {
         position: sticky;
