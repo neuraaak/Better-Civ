@@ -43,6 +43,7 @@
     --font-heading: 'Inter Variable', 'Inter', system-ui, sans-serif;
     --font-body: 'Inter Variable', 'Inter', system-ui, sans-serif;
     --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+    --font-display: 'Cinzel', serif;
 
     --radius-sm: 4px;
     --radius-md: 8px;
@@ -54,6 +55,12 @@
 
     /* Greek-key ornament used under the header, in tier headings and in the panel */
     --meander: url('data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2220%22 height=%2220%22%3E%3Cpath d=%22M0 18H16V2H4V14H12V6H8V10M16 18H20%22 fill=%22none%22 stroke=%22%23595d6c%22 stroke-width=%222%22/%3E%3C/svg%3E');
+
+    /* Hexagon weave used behind the page heroes and on the portrait cards */
+    --hex-pattern: url('data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2228%22 height=%2249%22%3E%3Cpath d=%22M14 33L0 25V8L14 0L28 8V25L14 33V49M0 49V41L14 33M28 49V41L14 33%22 fill=%22none%22 stroke=%22%23e9e9ed%22 stroke-width=%22.6%22/%3E%3C/svg%3E');
+
+    /* Same ornament as a mask, so a frieze can be tinted by the tier colour */
+    --meander-mask: url('data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2224%22 height=%2224%22%3E%3Cpath d=%22M0 22H20V2H4V18H16V6H8V14H12M20 22H24%22 fill=%22none%22 stroke=%22%23000%22 stroke-width=%222.4%22/%3E%3C/svg%3E');
 
     color-scheme: dark;
     font-family: var(--font-body);
@@ -135,6 +142,14 @@ input::placeholder {
         #000 calc(100% - 48px),
         transparent
     );
+}
+
+/* Greek-key band tinted by the tier colour — portrait cards and panel header */
+.frieze {
+    height: 10px;
+    background: var(--frieze-color, var(--color-neutral-700));
+    -webkit-mask: var(--meander-mask) 0 0 / 10px 10px repeat-x;
+    mask: var(--meander-mask) 0 0 / 10px 10px repeat-x;
 }
 
 @keyframes dc-spin {

@@ -9,7 +9,7 @@ import initSqlJs, { type Database } from 'sql.js';
 // @ts-expect-error -- see above
 import wasmUrl from 'sql.js/dist/sql-wasm.wasm?url';
 import type { Lang } from '../i18n/languages';
-import type { CivApiDto } from './civApi';
+import type { CivApiDto, YieldDto } from './civApi';
 
 // CONSTANTS
 // ##############
@@ -31,6 +31,19 @@ const LOCAL_ICONS: Readonly<Record<string, string>> = {
     'specialists/merchant_of_venice': 'unit_icons/merchant_of_venice.webp',
 };
 
+// CivVAPI never links an improvement to the civilization it belongs to
+// (`required_civ` is null on every row), so the pairs are listed here, by
+// entity code rather than by name, which no translation changes.
+const CIVILIZATION_IMPROVEMENTS: Readonly<Record<string, string>> = {
+    'civilizations/brazil': 'improvements/brazilwood_camp',
+    'civilizations/france': 'improvements/chateau',
+    'civilizations/morocco': 'improvements/kasbah',
+    'civilizations/polynesia': 'improvements/moai',
+    'civilizations/portugal': 'improvements/feitoria',
+    'civilizations/the_inca': 'improvements/terrace_farm',
+    'civilizations/the_netherlands': 'improvements/polder',
+};
+
 // TYPES
 // ##############
 export interface DatabaseManifest {
@@ -42,6 +55,14 @@ export interface DatabaseManifest {
 interface UniqueItem {
     name: string;
     icon: string;
+    description?: string;
+    strategy?: string;
+    tech?: string;
+    cost?: number;
+    movement?: number;
+    upkeep?: number;
+    yields?: YieldDto[];
+    terrains?: string[];
 }
 
 // FUNCTIONS
@@ -151,7 +172,8 @@ function rows(
 }
 
 const CIVILIZATIONS_SQL = `
-    SELECT e.id AS entity_id, e.source_id AS id, t.name AS name, c.icon AS icon,
+    SELECT e.id AS entity_id, e.source_id AS id, e.code AS code, t.name AS name, c.icon AS icon,
+           t.dawn_of_man AS dawn_of_man,
            l.name AS leader_name, l.icon AS leader_icon, l.subtitle AS subtitle,
            l.trait_name AS trait_name, l.trait_effect AS trait_effect,
            l.historical_heading AS historical_heading, l.historical_text AS historical_text
@@ -161,37 +183,133 @@ const CIVILIZATIONS_SQL = `
     LEFT JOIN civilization_leaders l ON l.civilization_id = c.entity_id AND l.language = $lang
     ORDER BY e.source_id`;
 
+// A unit, a building and an improvement all unlock through `tech_unlocks`; an
+// entity that several technologies unlock keeps the first one.
+const TECH_SQL = `(SELECT tt.name FROM tech_unlocks tu
+        JOIN translations tt ON tt.entity_id = tu.tech_id AND tt.language = $lang
+        WHERE tu.entity_id = %s LIMIT 1) AS tech`;
+
 const UNIQUE_UNITS_SQL = `
     SELECT u.civilization_id AS civilization_id, t.name AS name, e.code AS code,
-           (SELECT icon FROM units WHERE entity_id = u.unit_id) AS icon
+           (SELECT icon FROM units WHERE entity_id = u.unit_id) AS icon,
+           (SELECT cost FROM units WHERE entity_id = u.unit_id) AS cost,
+           (SELECT movement FROM units WHERE entity_id = u.unit_id) AS movement,
+           t.game_info AS description, t.strategy AS strategy,
+           ${TECH_SQL.replace('%s', 'u.unit_id')}
     FROM civilization_unique_units u
     JOIN entities e ON e.id = u.unit_id
     JOIN translations t ON t.entity_id = u.unit_id AND t.language = $lang`;
 
 const UNIQUE_BUILDINGS_SQL = `
-    SELECT u.civilization_id AS civilization_id, t.name AS name, b.icon AS icon
+    SELECT u.civilization_id AS civilization_id, t.name AS name, e.code AS code,
+           b.icon AS icon, b.cost AS cost, b.gold_maintenance AS upkeep,
+           t.game_info AS description, t.strategy AS strategy,
+           ${TECH_SQL.replace('%s', 'u.building_id')}
     FROM civilization_unique_buildings u
     JOIN buildings b ON b.entity_id = u.building_id
+    JOIN entities e ON e.id = u.building_id
     JOIN translations t ON t.entity_id = u.building_id AND t.language = $lang`;
+
+const IMPROVEMENTS_SQL = `
+    SELECT e.code AS code, t.name AS name, i.icon AS icon,
+           t.game_info AS description, t.strategy AS strategy,
+           ${TECH_SQL.replace('%s', 'i.entity_id')}
+    FROM improvements i
+    JOIN entities e ON e.id = i.entity_id
+    JOIN translations t ON t.entity_id = i.entity_id AND t.language = $lang`;
+
+const YIELDS_SQL = `
+    SELECT e.code AS code, y.yield_type AS type, y.amount AS amount
+    FROM entity_yields y
+    JOIN entities e ON e.id = y.entity_id
+    ORDER BY y.yield_type`;
+
+const IMPROVEMENT_TERRAINS_SQL = `
+    SELECT e.code AS code, t.name AS name
+    FROM improvement_buildable_terrains b
+    JOIN entities e ON e.id = b.improvement_id
+    JOIN translations t ON t.entity_id = b.terrain_id AND t.language = $lang`;
+
+/** `null` and non-numeric columns become `undefined`: an absent row, not a zero. */
+function optionalNumber(value: unknown): number | undefined {
+    return typeof value === 'number' ? value : undefined;
+}
+
+function optionalText(value: unknown): string | undefined {
+    return typeof value === 'string' && value ? value : undefined;
+}
+
+function itemOf(
+    row: Record<string, unknown>,
+    yields: Map<string, YieldDto[]>,
+    terrains?: Map<string, string[]>
+): UniqueItem {
+    const code = row.code as string | undefined;
+    return {
+        // A name is TEXT in the schema; anything else is a corrupt row, not a label.
+        name: typeof row.name === 'string' ? row.name : '',
+        // Upstream leaves the `specialists/` unique units without an icon.
+        icon: assetUrl(row.icon as string | null) || localIconUrl(code),
+        description: optionalText(row.description),
+        strategy: optionalText(row.strategy),
+        tech: optionalText(row.tech),
+        cost: optionalNumber(row.cost),
+        movement: optionalNumber(row.movement),
+        upkeep: optionalNumber(row.upkeep),
+        yields: code ? yields.get(code) : undefined,
+        terrains: code ? terrains?.get(code) : undefined,
+    };
+}
 
 function groupByCivilization(
     database: Database,
     sql: string,
-    lang: Lang
+    lang: Lang,
+    yields: Map<string, YieldDto[]>
 ): Map<number, UniqueItem[]> {
     const grouped = new Map<number, UniqueItem[]>();
     for (const row of rows(database, sql, { $lang: lang })) {
         const key = Number(row.civilization_id);
         const items = grouped.get(key) ?? [];
-        const icon =
-            assetUrl(row.icon as string | null) ||
-            // Only the unique-unit query selects a code; buildings never need a fallback.
-            localIconUrl(row.code as string | undefined);
-        // A name is TEXT in the schema; anything else is a corrupt row, not a label.
-        items.push({ name: typeof row.name === 'string' ? row.name : '', icon });
+        items.push(itemOf(row, yields));
         grouped.set(key, items);
     }
     return grouped;
+}
+
+/** Yields of every entity that has some, keyed by entity code. */
+function yieldsByCode(database: Database): Map<string, YieldDto[]> {
+    const grouped = new Map<string, YieldDto[]>();
+    for (const row of rows(database, YIELDS_SQL, {})) {
+        const code = String(row.code);
+        const list = grouped.get(code) ?? [];
+        list.push({ type: String(row.type), amount: Number(row.amount) });
+        grouped.set(code, list);
+    }
+    return grouped;
+}
+
+/** The unique improvement of each civilization, keyed by civilization code. */
+function improvementsByCivilization(
+    database: Database,
+    lang: Lang,
+    yields: Map<string, YieldDto[]>
+): Map<string, UniqueItem> {
+    const terrains = new Map<string, string[]>();
+    for (const row of rows(database, IMPROVEMENT_TERRAINS_SQL, { $lang: lang })) {
+        const code = String(row.code);
+        terrains.set(code, [...(terrains.get(code) ?? []), String(row.name)]);
+    }
+    const byCode = new Map<string, UniqueItem>();
+    for (const row of rows(database, IMPROVEMENTS_SQL, { $lang: lang })) {
+        byCode.set(String(row.code), itemOf(row, yields, terrains));
+    }
+    const byCivilization = new Map<string, UniqueItem>();
+    for (const [civilization, improvement] of Object.entries(CIVILIZATION_IMPROVEMENTS)) {
+        const item = byCode.get(improvement);
+        if (item) byCivilization.set(civilization, item);
+    }
+    return byCivilization;
 }
 
 /**
@@ -200,18 +318,25 @@ function groupByCivilization(
  */
 export async function fetchCivilizations(lang: Lang, signal?: AbortSignal): Promise<CivApiDto[]> {
     const database = await loadDatabase(signal);
-    const units = groupByCivilization(database, UNIQUE_UNITS_SQL, lang);
-    const buildings = groupByCivilization(database, UNIQUE_BUILDINGS_SQL, lang);
+    const yields = yieldsByCode(database);
+    const units = groupByCivilization(database, UNIQUE_UNITS_SQL, lang, yields);
+    const buildings = groupByCivilization(database, UNIQUE_BUILDINGS_SQL, lang, yields);
+    const improvements = improvementsByCivilization(database, lang, yields);
 
     return rows(database, CIVILIZATIONS_SQL, { $lang: lang })
         .filter(row => Number.isInteger(row.id) && typeof row.name === 'string')
         .map(row => {
             const entityId = Number(row.entity_id);
             const leaderText = row.historical_text as string | null;
+            // CivVAPI gives a civilization no `historical_info` of its own; its
+            // only prose is the game's Dawn of Man intro, which the panel's
+            // history section shows.
+            const dawnOfMan = row.dawn_of_man as string | null;
             return {
                 id: Number(row.id),
                 name: String(row.name),
                 icon: assetUrl(row.icon as string | null),
+                historical_info: dawnOfMan ? [{ text: dawnOfMan }] : [],
                 leader: {
                     name: (row.leader_name as string | null) ?? undefined,
                     icon: assetUrl(row.leader_icon as string | null),
@@ -231,6 +356,9 @@ export async function fetchCivilizations(lang: Lang, signal?: AbortSignal): Prom
                 },
                 unique_units: units.get(entityId) ?? [],
                 unique_buildings: buildings.get(entityId) ?? [],
+                unique_improvements: [improvements.get(String(row.code))].filter(
+                    (item): item is UniqueItem => item !== undefined
+                ),
             };
         });
 }

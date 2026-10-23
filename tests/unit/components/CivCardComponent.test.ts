@@ -30,15 +30,46 @@ describe('CivCardComponent', () => {
         expect(wrapper.findAllComponents({ name: 'CivTagComponent' })).toHaveLength(2);
     });
 
+    it('names the rank and the leader under the centred badge', () => {
+        const wrapper = mount(CivCardComponent, {
+            props: { ...mockCivilization, leader_name: 'Napoléon|Napoléons' },
+        });
+
+        expect(wrapper.find('.card-rank').text()).toBe('Royaume');
+        expect(wrapper.find('.card-leader').text()).toBe('Napoléon');
+        expect(wrapper.find('.card-medallion').exists()).toBe(true);
+        expect(wrapper.find('.card-frieze').exists()).toBe(true);
+        expect(wrapper.findAll('.card-flute')).toHaveLength(2);
+        expect(wrapper.findAll('.card-rules i')).toHaveLength(3);
+    });
+
+    it('leaves the leader line out of a civilization without one', () => {
+        const wrapper = mount(CivCardComponent, { props: mockCivilization });
+
+        expect(wrapper.find('.card-leader').exists()).toBe(false);
+        expect(wrapper.find('.card-rank').exists()).toBe(true);
+    });
+
+    it('carries the civilization emblem in the medallion', () => {
+        const wrapper = mount(CivCardComponent, {
+            props: { ...mockCivilization, icon: '/img/france.png' },
+        });
+        const medallion = wrapper.find('.card-medallion');
+
+        expect(medallion.attributes('style')).toContain('--medallion-size: 62px');
+        expect(medallion.find('.medallion-face img').attributes('src')).toBe('/img/france.png');
+        expect(medallion.find('.medallion-fallback').exists()).toBe(false);
+    });
+
     it('uses the tier palette for the card frame and its top accent', () => {
         const wrapper = mount(CivCardComponent, {
             props: { ...mockCivilization, tier_id: 4 as TierId },
         });
 
         const style = wrapper.find('.portrait-card').attributes('style');
-        expect(style).toContain('--tier-line: oklch(0.62 0.08 50)');
+        expect(style).toContain('--tier-line: oklch(0.62 0.07 50)');
         expect(style).toContain(
-            '--tier-frame: color-mix(in srgb, oklch(0.62 0.08 50) 22%, transparent)'
+            '--tier-frame: color-mix(in srgb, oklch(0.62 0.07 50) 24%, transparent)'
         );
     });
 

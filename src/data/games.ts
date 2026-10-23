@@ -23,6 +23,8 @@ export interface Game {
     name: string;
     /** Release year, shown on the home card. */
     year: string;
+    /** Expansion the ranking assumes, shown under the tier list title. */
+    expansion?: string;
     /** Route of the game's tier list. */
     path: string;
     available: boolean;
@@ -37,6 +39,7 @@ export const GAMES: readonly Game[] = [
         numeral: 'V',
         name: 'Civilization V',
         year: '2010',
+        expansion: 'Brave New World',
         path: '/civilization-5',
         available: true,
     },

@@ -79,6 +79,9 @@ The command writes `bin/assets/db/civilization-5.sqlite` and its integrity
 metadata to `bin/assets/db/civilization-5.manifest.json`. Both files are
 generated artifacts and are ignored by Git.
 
+For the upcoming Civilization VI data integration, the planned source is
+[mrobaczyk/civ6](https://github.com/mrobaczyk/civ6).
+
 ## Deployment
 
 Vercel deploys through its Git integration: every pushed branch gets a preview deployment, and `main` goes to production. The build settings and HTTP headers live in `vercel.json`.

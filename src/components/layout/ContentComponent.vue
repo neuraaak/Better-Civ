@@ -1,11 +1,41 @@
 <template>
     <main class="content">
+        <!-- Backdrop of the Civilization V page: hexagon weave, temple and numeral -->
+        <div class="decor-hex" aria-hidden="true"></div>
+        <svg
+            class="decor-temple"
+            viewBox="0 0 200 160"
+            fill="none"
+            stroke="var(--color-neutral-500)"
+            stroke-width=".6"
+            aria-hidden="true"
+        >
+            <path d="M16 52L100 16L184 52Z"></path>
+            <path d="M40 46L100 24L160 46"></path>
+            <circle cx="100" cy="38" r="5"></circle>
+            <path d="M16 52H184V62H16Z"></path>
+            <path d="M16 66H184"></path>
+            <path d="M28 70H48M30 70V138M46 70V138M34 74V136M38 74V136M42 74V136"></path>
+            <path d="M64 70H84M66 70V138M82 70V138M70 74V136M74 74V136M78 74V136"></path>
+            <path d="M116 70H136M118 70V138M134 70V138M122 74V136M126 74V136M130 74V136"></path>
+            <path d="M152 70H172M154 70V138M170 70V138M158 74V136M162 74V136M166 74V136"></path>
+            <path d="M12 140H188M6 147H194M0 154H200"></path>
+        </svg>
+        <div class="decor-numeral" aria-hidden="true">{{ game.numeral }}</div>
+
         <section class="hero">
             <p class="eyebrow">
                 <PhIcon name="bank" />{{ ui.ranking }} · {{ toRoman(civilisations.length) }}
                 {{ ui.civilizations }}
             </p>
             <h1>{{ ui.heroTitle }}</h1>
+            <div class="hero-meta">
+                <span class="hero-game">{{ game.name }} · {{ game.year }}</span>
+                <span class="hero-steps" aria-hidden="true">
+                    <i v-for="(_, index) in GAMES" :key="index" :class="{ on: index === 0 }"></i>
+                </span>
+                <span class="hero-era">{{ heroEra }}</span>
+            </div>
         </section>
 
         <!-- Catches the click beside the open filter panel; Escape closes it from the keyboard -->
@@ -141,6 +171,8 @@
                         :name="civ.name"
                         :tags_id="civ.tags_id"
                         :tier_id="civ.tier_id"
+                        :icon="civ.icon"
+                        :leader_name="civ.leader?.name"
                         :selected="detailOpen && selectedCivId === civ.id"
                         :variant="cardStyle"
                     />
@@ -167,6 +199,7 @@
         ref="detailPanel"
         class="detail-panel"
         :class="{ open: detailOpen }"
+        :style="{ '--panel-frame': tierBadge(selectedCiv?.tier_id, store.lang).frame }"
         :aria-hidden="!detailOpen"
         :inert="!detailOpen"
         :aria-label="ui.details"
@@ -194,6 +227,7 @@
     import { useHideOnScroll } from '../../composables/useHideOnScroll';
     import type { LoadStatus } from '../../composables/useCivilizations';
     import { DISPLAY_OPTIONS, type CardStyle, type GroupMode } from '../../data/displayOptions';
+    import { GAMES } from '../../data/games';
     import { TIER_IDS, type TierId } from '../../data/taxonomy';
     import { useMessages } from '../../i18n/useMessages';
     import { useAppStore } from '../../stores/app';
@@ -264,6 +298,11 @@
         const count = filtered.value.length;
         return `${count} ${count === 1 ? ui.value.result : ui.value.results}`;
     });
+    // The page only serves Civilization V; its era copy lives with the home cards
+    const game = GAMES[0];
+    const heroEra = computed(() =>
+        [t.value.homeGames[0]?.era, game.expansion].filter(Boolean).join(' · ')
+    );
     const badges = computed(
         () => new Map(TIER_IDS.map(tierId => [tierId, tierBadge(tierId, store.lang)]))
     );
@@ -339,7 +378,52 @@
 
 <style scoped>
     .content {
+        position: relative;
         color: var(--color-text);
+    }
+
+    /* — page backdrop — */
+    .decor-hex,
+    .decor-temple,
+    .decor-numeral {
+        position: absolute;
+        z-index: -1;
+        pointer-events: none;
+        user-select: none;
+    }
+    .decor-hex {
+        top: 0;
+        right: -40px;
+        width: min(1100px, 90vw);
+        height: 900px;
+        background-image: var(--hex-pattern);
+        background-size: 28px 49px;
+        opacity: 0.07;
+        -webkit-mask-image: radial-gradient(ellipse 60% 55% at 75% 25%, #000, transparent 75%);
+        mask-image: radial-gradient(ellipse 60% 55% at 75% 25%, #000, transparent 75%);
+    }
+    .decor-temple {
+        top: 120px;
+        right: 4%;
+        width: min(560px, 46vw);
+        opacity: 0.22;
+        -webkit-mask-image: linear-gradient(to bottom, #000 30%, transparent 95%);
+        mask-image: linear-gradient(to bottom, #000 30%, transparent 95%);
+    }
+    .decor-numeral {
+        top: 70px;
+        right: -60px;
+        color: transparent;
+        font: 600 min(40vw, 560px) / 0.8 var(--font-display);
+        -webkit-text-stroke: 1.5px color-mix(in srgb, var(--color-accent) 24%, transparent);
+        -webkit-mask-image: linear-gradient(to bottom, #000 10%, transparent 80%);
+        mask-image: linear-gradient(to bottom, #000 10%, transparent 80%);
+    }
+    @media (max-width: 800px) {
+        .decor-temple,
+        .decor-numeral {
+            display: none;
+        }
     }
 
     /* — hero — */
@@ -369,6 +453,39 @@
         line-height: 1.12;
         letter-spacing: -0.025em;
         text-wrap: balance;
+    }
+
+    .hero-meta {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding-top: 8px;
+    }
+    .hero-game,
+    .hero-era {
+        font: 500 10px var(--font-mono);
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+    }
+    .hero-game {
+        color: var(--color-neutral-500);
+    }
+    .hero-era {
+        color: var(--color-neutral-600);
+    }
+    .hero-steps {
+        display: flex;
+        gap: 3px;
+    }
+    .hero-steps i {
+        width: 14px;
+        height: 3px;
+        border-radius: 2px;
+        background: var(--color-neutral-800);
+    }
+    .hero-steps i.on {
+        background: var(--color-accent);
+        box-shadow: 0 0 6px var(--color-accent);
     }
 
     /* — sticky filter bar — */
@@ -642,18 +759,19 @@
         right: 12px;
         bottom: 12px;
         z-index: 21;
-        width: 560px;
+        width: 660px;
         max-width: calc(100vw - 24px);
         overflow: hidden;
         border-radius: var(--radius-lg);
         background: linear-gradient(
             to bottom,
             var(--color-surface),
-            color-mix(in srgb, var(--color-surface) 70%, var(--color-bg))
+            color-mix(in srgb, var(--color-surface) 60%, var(--color-bg))
         );
         box-shadow:
             var(--shadow-lg),
-            0 0 60px color-mix(in srgb, var(--color-accent) 14%, transparent);
+            0 0 0 1px var(--panel-frame),
+            0 0 70px color-mix(in srgb, var(--color-accent) 14%, transparent);
         transform: translateX(calc(100% + 24px));
         transition: transform 0.32s cubic-bezier(0.2, 0.8, 0.2, 1);
     }

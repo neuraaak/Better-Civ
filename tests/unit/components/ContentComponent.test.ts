@@ -76,6 +76,18 @@ describe('ContentComponent', () => {
             expect(wrapper.find('.eyebrow').text()).toContain('Classement · III civilisations');
         });
 
+        it('states the game, its era and the expansion the ranking assumes', () => {
+            const wrapper = mountContent();
+
+            expect(wrapper.find('.hero-game').text()).toBe('Civilization V · 2010');
+            expect(wrapper.find('.hero-era').text()).toBe('Antiquité · Brave New World');
+            // One step per game, the ranked one lit
+            const steps = wrapper.findAll('.hero-steps i');
+            expect(steps).toHaveLength(3);
+            expect(steps[0].classes()).toContain('on');
+            expect(steps[1].classes()).not.toContain('on');
+        });
+
         it('renders search, the filters button, the result count and the grouping toggle', () => {
             const wrapper = mountContent();
 
