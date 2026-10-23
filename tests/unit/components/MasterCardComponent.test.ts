@@ -35,7 +35,7 @@ describe('MasterCardComponent', () => {
         const wrapper = mount(MasterCardComponent, { props });
 
         expect(wrapper.find('article.civilization-panel').exists()).toBe(true);
-        expect(wrapper.attributes('style')).toContain('oklch(0.62 0.08 50)');
+        expect(wrapper.attributes('style')).toContain('oklch(0.62 0.07 50)');
         expect(wrapper.find('.panel-hero').exists()).toBe(true);
         expect(wrapper.find('.hero-name').text()).toBe('France');
         expect(wrapper.find('.hero-rank').text()).toContain('Tier D');

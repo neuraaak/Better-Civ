@@ -67,9 +67,9 @@ describe('CivCardComponent', () => {
         });
 
         const style = wrapper.find('.portrait-card').attributes('style');
-        expect(style).toContain('--tier-line: oklch(0.62 0.08 50)');
+        expect(style).toContain('--tier-line: oklch(0.62 0.07 50)');
         expect(style).toContain(
-            '--tier-frame: color-mix(in srgb, oklch(0.62 0.08 50) 22%, transparent)'
+            '--tier-frame: color-mix(in srgb, oklch(0.62 0.07 50) 24%, transparent)'
         );
     });
 
