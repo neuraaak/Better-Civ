@@ -561,10 +561,57 @@
     @media (max-width: 800px) {
         .wip-grid {
             gap: 36px;
-            padding-top: 36px;
+            padding-top: 32px;
         }
+        /* Kept behind the text instead of across it, and dimmer */
         .watermark {
-            font-size: 52vw;
+            top: auto;
+            bottom: -8%;
+            font-size: 46vw;
+            -webkit-text-stroke-width: 1px;
+            -webkit-mask-image: linear-gradient(to top, #000 10%, transparent 85%);
+            mask-image: linear-gradient(to top, #000 10%, transparent 85%);
+        }
+        .wip-column {
+            gap: 28px;
+        }
+        .research {
+            gap: 18px;
+        }
+        /* Two stages per row: four columns leave no room for their labels */
+        .stages {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 18px 8px;
+        }
+        .stage-line {
+            display: none;
+        }
+        .preview-foot {
+            right: 16px;
+            left: 16px;
+        }
+        .ghost {
+            padding: 16px 16px 92px;
+        }
+    }
+    @media (max-width: 480px) {
+        .gauge {
+            width: 44px;
+            height: 44px;
+        }
+        .gauge-face {
+            font-size: 18px;
+        }
+        .research-title {
+            font-size: 16px;
+        }
+        .turns {
+            font-size: 18px;
+        }
+        .stage-dot {
+            width: 32px;
+            height: 32px;
+            font-size: 14px;
         }
     }
     @media (prefers-reduced-motion: reduce) {
