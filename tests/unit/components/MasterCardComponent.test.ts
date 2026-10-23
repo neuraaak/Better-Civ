@@ -39,12 +39,33 @@ describe('MasterCardComponent', () => {
         expect(wrapper.find('.panel-hero').exists()).toBe(true);
         expect(wrapper.find('.hero-name').text()).toBe('France');
         expect(wrapper.find('.hero-rank').text()).toContain('Tier D');
-        expect(wrapper.find('.civilization-description').text()).toBe(
+        // The history reads as a quotation: typographic marks around an italic text
+        expect(wrapper.find('.civilization-description p').text()).toBe(
             'Une civilisation culturelle.'
         );
+        expect(wrapper.findAll('.quote-mark').map(mark => mark.text())).toEqual(['“', '”']);
         expect(wrapper.find('.leader-name').text()).toBe('Catherine de Médicis');
         expect(wrapper.find('.panel-position').text()).toBe(props.position);
         expect(wrapper.find('.bar-frieze.frieze').exists()).toBe(true);
+    });
+
+    it('shows the civilization emblem in the hero medallion, tier badge pinned to it', () => {
+        const wrapper = mount(MasterCardComponent, { props });
+        const medallion = wrapper.find('.hero-medallion');
+
+        expect(medallion.attributes('style')).toContain('--medallion-size: 96px');
+        expect(medallion.find('.medallion-face img').attributes('src')).toBe('/img/france.png');
+        expect(medallion.find('.medallion-badge').exists()).toBe(true);
+        expect(medallion.find('.medallion-fallback').exists()).toBe(false);
+    });
+
+    it('falls back on a flag glyph for a civilization without an emblem', () => {
+        const wrapper = mount(MasterCardComponent, {
+            props: { ...props, civ: { ...civ, icon: undefined } },
+        });
+
+        expect(wrapper.find('.medallion-face img').exists()).toBe(false);
+        expect(wrapper.find('.medallion-fallback').exists()).toBe(true);
     });
 
     it('lays out the sections of the handoff in order', () => {

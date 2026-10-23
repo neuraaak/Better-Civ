@@ -32,7 +32,13 @@
                 <div class="hero-flute left" aria-hidden="true"></div>
                 <div class="hero-flute right" aria-hidden="true"></div>
 
-                <CivTierComponent :tier_id="civ.tier_id" :size="76" />
+                <CivMedallionComponent
+                    :icon="civ.icon"
+                    :tier_id="civ.tier_id"
+                    :size="96"
+                    :badge_size="40"
+                    class="hero-medallion"
+                />
                 <p class="hero-rank">{{ ui.tier }} {{ badge.letter }} · {{ badge.rank }}</p>
                 <h1 class="hero-name">{{ displayName }}</h1>
                 <div class="hero-rules" aria-hidden="true"><i></i><i></i><i></i></div>
@@ -167,7 +173,11 @@
                     <h2 class="section-heading">
                         <PhIcon name="book-open-text" /><span>{{ ui.history }}</span>
                     </h2>
-                    <p class="civilization-description">{{ history }}</p>
+                    <blockquote class="civilization-description">
+                        <span class="quote-mark open" aria-hidden="true">&ldquo;</span>
+                        <p>{{ history }}</p>
+                        <span class="quote-mark close" aria-hidden="true">&rdquo;</span>
+                    </blockquote>
                 </section>
             </div>
         </div>
@@ -202,7 +212,7 @@
     import PhIcon from '../icons/PhIcon.vue';
     import type { PhosphorIconName } from '../icons/phosphorIcons';
     import CivTagComponent from './subcomponents/CivTagComponent.vue';
-    import CivTierComponent from './subcomponents/CivTierComponent.vue';
+    import CivMedallionComponent from './subcomponents/CivMedallionComponent.vue';
     import { tierBadge, YIELD_VISUALS } from './tierDesign';
 
     // TYPES
@@ -509,6 +519,9 @@
     }
     .hero-flute.right {
         right: 14px;
+    }
+    .hero-medallion {
+        margin: 6px 0 8px;
     }
     .hero-rank {
         margin: 0;
@@ -911,13 +924,35 @@
         text-wrap: pretty;
     }
 
+    /* Quoted, since the text is the game's own Dawn of Man intro */
     .civilization-description {
-        max-width: 62ch;
+        position: relative;
+        max-width: 66ch;
+        margin: 0;
+        padding: 6px 26px 10px;
+    }
+    .civilization-description p {
         margin: 0;
         color: var(--color-neutral-300);
         font-size: 15px;
+        font-style: italic;
         line-height: 1.75;
         text-wrap: pretty;
+    }
+    .quote-mark {
+        position: absolute;
+        color: var(--tier-label);
+        font: 600 30px/1 var(--font-display);
+        opacity: 0.4;
+        pointer-events: none;
+    }
+    .quote-mark.open {
+        top: 0;
+        left: 0;
+    }
+    .quote-mark.close {
+        right: 0;
+        bottom: -14px;
     }
 
     /* — pinned footer — */
