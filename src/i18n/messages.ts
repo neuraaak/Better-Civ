@@ -125,6 +125,44 @@ export interface UiMessages {
     backHome: string;
     /** Link back to the page the visitor came from, shown on the 404 page. */
     backPrevious: string;
+    /** Heading of the unique units / buildings / improvements section. */
+    uniqueElements: string;
+    /** Tab listing the unique units. */
+    tabUnits: string;
+    /** Tab listing the unique buildings. */
+    tabBuildings: string;
+    /** Tab listing the unique tile improvements. */
+    tabImprovements: string;
+    /** Subtitle of a unique unit card. */
+    uniqueUnit: string;
+    /** Subtitle of a unique building card. */
+    uniqueBuilding: string;
+    /** Subtitle of a unique tile improvement card. */
+    tileImprovement: string;
+    /** Production cost of a unit. */
+    statProduction: string;
+    /** Movement points of a unit. */
+    statMovement: string;
+    /** Technology that unlocks the item. */
+    statTechnology: string;
+    /** Production cost of a building or an improvement. */
+    statCost: string;
+    /** Gold maintenance of a building. */
+    statUpkeep: string;
+    /** Unit of the gold maintenance. */
+    goldPerTurn: string;
+    /** Label of the yield chips of a building or an improvement. */
+    yieldsLabel: string;
+    /** Label of the terrain chips of an improvement. */
+    terrainsLabel: string;
+    /** Label of the collapsible strategy row of an item. */
+    strategyTips: string;
+    /** Food yield; culture, faith, science and production reuse the names of `tags`. */
+    yieldFood: string;
+    /** Gold yield. */
+    yieldGold: string;
+    /** Happiness yield. */
+    yieldHappiness: string;
 }
 
 export interface HomeGameMessages {
@@ -245,6 +283,25 @@ export const MESSAGES: Record<Lang, Messages> = {
             wipBackToDefault: 'In the meantime, see the {game} tier list',
             backHome: 'Back to the tier list',
             backPrevious: 'Previous page',
+            uniqueElements: 'Unique elements',
+            tabUnits: 'Units',
+            tabBuildings: 'Buildings',
+            tabImprovements: 'Improvements',
+            uniqueUnit: 'Unique unit',
+            uniqueBuilding: 'Unique building',
+            tileImprovement: 'Tile improvement',
+            statProduction: 'Production',
+            statMovement: 'Movement',
+            statTechnology: 'Technology',
+            statCost: 'Cost',
+            statUpkeep: 'Upkeep',
+            goldPerTurn: 'gold / turn',
+            yieldsLabel: 'Yields',
+            terrainsLabel: 'Terrains · resources',
+            strategyTips: 'Strategy and tips',
+            yieldFood: 'Food',
+            yieldGold: 'Gold',
+            yieldHappiness: 'Happiness',
         },
         tags: ['Versatile', 'Culture', 'Faith', 'Science', 'Military', 'Trade', 'Production'],
         wipStages: [
@@ -358,6 +415,25 @@ export const MESSAGES: Record<Lang, Messages> = {
             wipBackToDefault: 'Schau dir in der Zwischenzeit die Tier-Liste {game} an',
             backHome: 'Zurück zur Tier-Liste',
             backPrevious: 'Vorherige Seite',
+            uniqueElements: 'Einzigartige Elemente',
+            tabUnits: 'Einheiten',
+            tabBuildings: 'Gebäude',
+            tabImprovements: 'Verbesserungen',
+            uniqueUnit: 'Einzigartige Einheit',
+            uniqueBuilding: 'Einzigartiges Gebäude',
+            tileImprovement: 'Geländeverbesserung',
+            statProduction: 'Produktion',
+            statMovement: 'Bewegung',
+            statTechnology: 'Technologie',
+            statCost: 'Kosten',
+            statUpkeep: 'Unterhalt',
+            goldPerTurn: 'Gold / Runde',
+            yieldsLabel: 'Erträge',
+            terrainsLabel: 'Gelände · Ressourcen',
+            strategyTips: 'Strategie und Tipps',
+            yieldFood: 'Nahrung',
+            yieldGold: 'Gold',
+            yieldHappiness: 'Zufriedenheit',
         },
         tags: ['Vielseitig', 'Kultur', 'Glaube', 'Wissenschaft', 'Militär', 'Handel', 'Produktion'],
         wipStages: [
@@ -467,6 +543,25 @@ export const MESSAGES: Record<Lang, Messages> = {
             wipBackToDefault: 'Mientras tanto, mira la tier list {game}',
             backHome: 'Volver a la tier list',
             backPrevious: 'Página anterior',
+            uniqueElements: 'Elementos únicos',
+            tabUnits: 'Unidades',
+            tabBuildings: 'Edificios',
+            tabImprovements: 'Mejoras',
+            uniqueUnit: 'Unidad única',
+            uniqueBuilding: 'Edificio único',
+            tileImprovement: 'Mejora de casilla',
+            statProduction: 'Producción',
+            statMovement: 'Movimiento',
+            statTechnology: 'Tecnología',
+            statCost: 'Coste',
+            statUpkeep: 'Mantenimiento',
+            goldPerTurn: 'oro / turno',
+            yieldsLabel: 'Rendimientos',
+            terrainsLabel: 'Terrenos · recursos',
+            strategyTips: 'Estrategia y consejos',
+            yieldFood: 'Comida',
+            yieldGold: 'Oro',
+            yieldHappiness: 'Felicidad',
         },
         tags: ['Versátil', 'Cultura', 'Fe', 'Ciencia', 'Militar', 'Comercio', 'Producción'],
         wipStages: [
@@ -584,6 +679,25 @@ export const MESSAGES: Record<Lang, Messages> = {
             wipBackToDefault: 'En attendant, voir la tier list {game}',
             backHome: 'Retour à la tier list',
             backPrevious: 'Page précédente',
+            uniqueElements: 'Éléments uniques',
+            tabUnits: 'Unités',
+            tabBuildings: 'Bâtiments',
+            tabImprovements: 'Améliorations',
+            uniqueUnit: 'Unité unique',
+            uniqueBuilding: 'Bâtiment unique',
+            tileImprovement: 'Amélioration de case',
+            statProduction: 'Production',
+            statMovement: 'Mouvement',
+            statTechnology: 'Technologie',
+            statCost: 'Coût',
+            statUpkeep: 'Entretien',
+            goldPerTurn: 'or / tour',
+            yieldsLabel: 'Rendements',
+            terrainsLabel: 'Terrains · ressources',
+            strategyTips: 'Stratégie et conseils',
+            yieldFood: 'Nourriture',
+            yieldGold: 'Or',
+            yieldHappiness: 'Bonheur',
         },
         tags: ['Polyvalent', 'Culture', 'Foi', 'Science', 'Militaire', 'Commerce', 'Production'],
         wipStages: [
@@ -701,6 +815,25 @@ export const MESSAGES: Record<Lang, Messages> = {
             wipBackToDefault: 'Nell’attesa, guarda la tier list {game}',
             backHome: 'Torna alla tier list',
             backPrevious: 'Pagina precedente',
+            uniqueElements: 'Elementi unici',
+            tabUnits: 'Unità',
+            tabBuildings: 'Edifici',
+            tabImprovements: 'Miglioramenti',
+            uniqueUnit: 'Unità unica',
+            uniqueBuilding: 'Edificio unico',
+            tileImprovement: 'Miglioramento della casella',
+            statProduction: 'Produzione',
+            statMovement: 'Movimento',
+            statTechnology: 'Tecnologia',
+            statCost: 'Costo',
+            statUpkeep: 'Manutenzione',
+            goldPerTurn: 'oro / turno',
+            yieldsLabel: 'Rendimenti',
+            terrainsLabel: 'Terreni · risorse',
+            strategyTips: 'Strategia e consigli',
+            yieldFood: 'Cibo',
+            yieldGold: 'Oro',
+            yieldHappiness: 'Felicità',
         },
         tags: ['Versatile', 'Cultura', 'Fede', 'Scienza', 'Militare', 'Commercio', 'Produzione'],
         wipStages: [
@@ -807,6 +940,25 @@ export const MESSAGES: Record<Lang, Messages> = {
             wipBackToDefault: 'それまでは {game} のティアリストをどうぞ',
             backHome: 'ティアリストに戻る',
             backPrevious: '前のページ',
+            uniqueElements: '固有の要素',
+            tabUnits: 'ユニット',
+            tabBuildings: '建造物',
+            tabImprovements: '改善',
+            uniqueUnit: '固有ユニット',
+            uniqueBuilding: '固有建造物',
+            tileImprovement: 'タイル改善',
+            statProduction: '生産',
+            statMovement: '移動',
+            statTechnology: 'テクノロジー',
+            statCost: 'コスト',
+            statUpkeep: '維持費',
+            goldPerTurn: 'ゴールド / ターン',
+            yieldsLabel: '産出',
+            terrainsLabel: '地形 · 資源',
+            strategyTips: '戦略とヒント',
+            yieldFood: '食料',
+            yieldGold: 'ゴールド',
+            yieldHappiness: '幸福',
         },
         tags: ['多用途', '文化', '信仰', '科学', '軍事', '貿易', '生産'],
         wipStages: [
@@ -907,6 +1059,25 @@ export const MESSAGES: Record<Lang, Messages> = {
             wipBackToDefault: '그동안 {game} 티어 리스트를 보세요',
             backHome: '티어 리스트로 돌아가기',
             backPrevious: '이전 페이지',
+            uniqueElements: '고유 요소',
+            tabUnits: '유닛',
+            tabBuildings: '건물',
+            tabImprovements: '시설',
+            uniqueUnit: '고유 유닛',
+            uniqueBuilding: '고유 건물',
+            tileImprovement: '타일 시설',
+            statProduction: '생산',
+            statMovement: '이동',
+            statTechnology: '기술',
+            statCost: '비용',
+            statUpkeep: '유지비',
+            goldPerTurn: '골드 / 턴',
+            yieldsLabel: '산출량',
+            terrainsLabel: '지형 · 자원',
+            strategyTips: '전략과 조언',
+            yieldFood: '식량',
+            yieldGold: '골드',
+            yieldHappiness: '행복',
         },
         tags: ['변하기 쉬운', '문화', '신앙', '과학', '군사', '무역', '생산'],
         wipStages: [
@@ -1007,6 +1178,25 @@ export const MESSAGES: Record<Lang, Messages> = {
             wipBackToDefault: 'W międzyczasie zobacz tier listę {game}',
             backHome: 'Powrót do tier listy',
             backPrevious: 'Poprzednia strona',
+            uniqueElements: 'Unikalne elementy',
+            tabUnits: 'Jednostki',
+            tabBuildings: 'Budynki',
+            tabImprovements: 'Ulepszenia',
+            uniqueUnit: 'Unikalna jednostka',
+            uniqueBuilding: 'Unikalny budynek',
+            tileImprovement: 'Ulepszenie pola',
+            statProduction: 'Produkcja',
+            statMovement: 'Ruch',
+            statTechnology: 'Technologia',
+            statCost: 'Koszt',
+            statUpkeep: 'Utrzymanie',
+            goldPerTurn: 'złota / turę',
+            yieldsLabel: 'Plony',
+            terrainsLabel: 'Tereny · surowce',
+            strategyTips: 'Strategia i porady',
+            yieldFood: 'Żywność',
+            yieldGold: 'Złoto',
+            yieldHappiness: 'Zadowolenie',
         },
         tags: ['Wszechstronny', 'Kultura', 'Wiara', 'Nauka', 'Wojskowy', 'Handel', 'Produkcja'],
         wipStages: [
@@ -1120,6 +1310,25 @@ export const MESSAGES: Record<Lang, Messages> = {
             wipBackToDefault: 'А пока посмотрите тир-лист {game}',
             backHome: 'Вернуться к тир-листу',
             backPrevious: 'Предыдущая страница',
+            uniqueElements: 'Уникальные элементы',
+            tabUnits: 'Юниты',
+            tabBuildings: 'Здания',
+            tabImprovements: 'Улучшения',
+            uniqueUnit: 'Уникальный юнит',
+            uniqueBuilding: 'Уникальное здание',
+            tileImprovement: 'Улучшение клетки',
+            statProduction: 'Производство',
+            statMovement: 'Движение',
+            statTechnology: 'Технология',
+            statCost: 'Стоимость',
+            statUpkeep: 'Содержание',
+            goldPerTurn: 'золота / ход',
+            yieldsLabel: 'Доход',
+            terrainsLabel: 'Рельеф · ресурсы',
+            strategyTips: 'Стратегия и советы',
+            yieldFood: 'Еда',
+            yieldGold: 'Золото',
+            yieldHappiness: 'Довольство',
         },
         tags: ['Универсальный', 'Культура', 'Вера', 'Наука', 'Военный', 'Торговля', 'Производство'],
         wipStages: [
@@ -1232,6 +1441,25 @@ export const MESSAGES: Record<Lang, Messages> = {
             wipBackToDefault: '在此期间，先看看 {game} 强度榜',
             backHome: '返回强度榜',
             backPrevious: '上一页',
+            uniqueElements: '专属元素',
+            tabUnits: '单位',
+            tabBuildings: '建筑',
+            tabImprovements: '改良设施',
+            uniqueUnit: '专属单位',
+            uniqueBuilding: '专属建筑',
+            tileImprovement: '地块改良',
+            statProduction: '生产力',
+            statMovement: '移动力',
+            statTechnology: '科技',
+            statCost: '花费',
+            statUpkeep: '维护费',
+            goldPerTurn: '金币 / 回合',
+            yieldsLabel: '产出',
+            terrainsLabel: '地形 · 资源',
+            strategyTips: '策略与提示',
+            yieldFood: '食物',
+            yieldGold: '金币',
+            yieldHappiness: '幸福度',
         },
         tags: ['多才多艺的', '文化', '信仰', '科学', '军事', '贸易', '生产'],
         wipStages: [
