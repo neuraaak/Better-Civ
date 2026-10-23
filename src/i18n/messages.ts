@@ -65,6 +65,80 @@ export interface UiMessages {
     alphabeticalShort: string;
     /** Accessible name of the × of a filter pill; `{name}` is replaced by the filter. */
     removeFilter: string;
+    /** Eyebrow of the home page. */
+    homeEyebrow: string;
+    /** First line of the home title, followed by `homeTitleAccent`. */
+    homeTitle: string;
+    /** Second line of the home title, the one carrying the gradient. */
+    homeTitleAccent: string;
+    /** Paragraph under the home title. */
+    homeLede: string;
+    /** Heading of the game cards. */
+    homeChooseGame: string;
+    /** Badge of a game whose tier list is out. */
+    homeAvailable: string;
+    /** Badge of a game whose tier list is not out yet. */
+    homeSoon: string;
+    /** Call to action of a game whose tier list is out. */
+    homeCtaAvailable: string;
+    /** Call to action of a game whose tier list is not out yet. */
+    homeCtaSoon: string;
+    /** Footer notice of the home page. */
+    homeDisclaimer: string;
+    /** Decorative caption of the Civilization VII card. */
+    homeEraFlow: string;
+    /** Eyebrow of the 404 page. */
+    notFoundEyebrow: string;
+    /** Title of the 404 page. */
+    notFoundTitle: string;
+    /** Body of the 404 page. */
+    notFoundText: string;
+    /** Title of the 403 page. */
+    forbiddenTitle: string;
+    /** Body of the 403 page. */
+    forbiddenText: string;
+    /** Eyebrow of the pages of the games that are not ranked yet. */
+    wipEyebrow: string;
+    /** Title of the pages of the games that are not ranked yet. */
+    wipTitle: string;
+    /** Intro of the Civilization VI page. */
+    wipIntroCiv6: string;
+    /** Intro of the Civilization VII page. */
+    wipIntroCiv7: string;
+    /** Eyebrow of the research card. */
+    wipResearch: string;
+    /** Name of the research; `{game}` is replaced by the game. */
+    wipTierList: string;
+    /** Unit of the remaining turns, shown in Roman numerals. */
+    wipTurnsLeft: string;
+    /** State of a finished research stage. */
+    wipDone: string;
+    /** State of the running research stage. */
+    wipInProgress: string;
+    /** Title of the blurred tier list preview. */
+    wipPreviewLocked: string;
+    /** Subtitle of the preview; `{turns}` is replaced by the remaining turns. */
+    wipPreviewSub: string;
+    /** Link back to the ranked game; `{game}` is replaced by its name. */
+    wipBackToDefault: string;
+    /** Link back to the default tier list, shown on the status pages. */
+    backHome: string;
+    /** Link back to the page the visitor came from, shown on the 404 page. */
+    backPrevious: string;
+}
+
+export interface HomeGameMessages {
+    /** Era the card's styling quotes ("Antiquity"). */
+    era: string;
+    /** One-line pitch of the game. */
+    line: string;
+}
+
+export interface StageMessages {
+    /** Stage name, replaced by its state once the stage is running or done. */
+    key: string;
+    /** One-line description of the stage. */
+    label: string;
 }
 
 export interface TierMessages {
@@ -82,6 +156,10 @@ export interface Messages {
     tags: readonly string[];
     /** Tier copy indexed by tier id (see data/taxonomy.ts). */
     tiers: readonly TierMessages[];
+    /** The four research stages of a game that is not ranked yet, in order. */
+    wipStages: readonly StageMessages[];
+    /** Home card copy, in the order of data/games.ts. */
+    homeGames: readonly HomeGameMessages[];
 }
 
 // CONSTANTS
@@ -133,8 +211,62 @@ export const MESSAGES: Record<Lang, Messages> = {
             result: 'result',
             alphabeticalShort: 'A → Z',
             removeFilter: 'Remove {name}',
+            homeEyebrow: 'Three games · One question',
+            homeTitle: 'Which era',
+            homeTitleAccent: 'will you dominate?',
+            homeLede:
+                'Civilization rankings kept up to date with the meta. Pick your game, find your people, start the match.',
+            homeChooseGame: 'Choose a game',
+            homeAvailable: 'Available',
+            homeSoon: 'Soon',
+            homeCtaAvailable: 'See the tier list',
+            homeCtaSoon: 'In the works',
+            homeDisclaimer: 'Fan site, not affiliated with Firaxis or 2K.',
+            homeEraFlow: 'Atomic era → information',
+            notFoundEyebrow: 'Error 404',
+            notFoundTitle: 'Uncharted land',
+            notFoundText:
+                'This page stayed under the fog of war. The link may be broken, or this tile never existed on the map.',
+            forbiddenTitle: 'Access denied',
+            forbiddenText: 'You are not allowed to see this page.',
+            wipEyebrow: 'Research under way',
+            wipTitle: 'This tier list is still being researched',
+            wipIntroCiv6:
+                'Every civilization is played out, across several maps and difficulty levels, before it gets ranked. The bulk of the work is done - the tiers still have to be settled.',
+            wipIntroCiv7:
+                'Civilization VII swaps civilization at every age, so the ranking will be made age by age. We are still gathering game data before the test games start.',
+            wipResearch: 'Research',
+            wipTierList: '{game} tier list',
+            wipTurnsLeft: 'turns left',
+            wipDone: 'Done',
+            wipInProgress: 'Under way',
+            wipPreviewLocked: 'Preview locked',
+            wipPreviewSub: 'Unlocked on release · {turns} turns',
+            wipBackToDefault: 'In the meantime, see the {game} tier list',
+            backHome: 'Back to the tier list',
+            backPrevious: 'Previous page',
         },
         tags: ['Versatile', 'Culture', 'Faith', 'Science', 'Military', 'Trade', 'Production'],
+        wipStages: [
+            { key: 'Gathering', label: 'Game data' },
+            { key: 'Testing', label: 'Test games' },
+            { key: 'Ranking', label: 'Tier assignment' },
+            { key: 'Release', label: 'Tier list online' },
+        ],
+        homeGames: [
+            {
+                era: 'Antiquity',
+                line: 'One tile, one unit. The competitive classic, Brave New World included.',
+            },
+            {
+                era: 'Middle Ages',
+                line: 'Districts, governors and cities that spill over the map.',
+            },
+            {
+                era: 'Modern era',
+                line: 'Three ages, free leaders and civilizations that follow one another.',
+            },
+        ],
         tiers: [
             { label: 'Tier S', rank: 'Legend', sub: 'Dominant — viable in every situation' },
             { label: 'Tier A', rank: 'Empire', sub: 'Very strong — excellent in their niche' },
@@ -192,8 +324,62 @@ export const MESSAGES: Record<Lang, Messages> = {
             result: 'Ergebnis',
             alphabeticalShort: 'A → Z',
             removeFilter: '{name} entfernen',
+            homeEyebrow: 'Drei Spiele · Eine Frage',
+            homeTitle: 'Welche Ära',
+            homeTitleAccent: 'wirst du beherrschen?',
+            homeLede:
+                'Zivilisations-Rankings, laufend an die Meta angepasst. Wähle dein Spiel, finde dein Volk, starte die Partie.',
+            homeChooseGame: 'Spiel wählen',
+            homeAvailable: 'Verfügbar',
+            homeSoon: 'Bald',
+            homeCtaAvailable: 'Tier-Liste ansehen',
+            homeCtaSoon: 'In Arbeit',
+            homeDisclaimer: 'Fanseite, nicht mit Firaxis oder 2K verbunden.',
+            homeEraFlow: 'Atomzeitalter → Information',
+            notFoundEyebrow: 'Fehler 404',
+            notFoundTitle: 'Unerforschtes Land',
+            notFoundText:
+                'Diese Seite blieb im Nebel des Krieges. Der Link ist vielleicht defekt, oder dieses Feld hat auf der Karte nie existiert.',
+            forbiddenTitle: 'Zugriff verweigert',
+            forbiddenText: 'Du darfst diese Seite nicht sehen.',
+            wipEyebrow: 'Recherche läuft',
+            wipTitle: 'Diese Tier-Liste wird noch erforscht',
+            wipIntroCiv6:
+                'Jede Zivilisation wird auf mehreren Karten und Schwierigkeitsgraden gespielt, bevor sie eingeordnet wird. Der Großteil ist erledigt — die Tiers müssen noch entschieden werden.',
+            wipIntroCiv7:
+                'Civilization VII wechselt die Zivilisation in jedem Zeitalter, die Einordnung erfolgt also zeitalterweise. Wir sammeln noch Partiedaten, bevor die Testspiele beginnen.',
+            wipResearch: 'Recherche',
+            wipTierList: 'Tier-Liste {game}',
+            wipTurnsLeft: 'Runden übrig',
+            wipDone: 'Fertig',
+            wipInProgress: 'Läuft',
+            wipPreviewLocked: 'Vorschau gesperrt',
+            wipPreviewSub: 'Frei zur Veröffentlichung · {turns} Runden',
+            wipBackToDefault: 'Schau dir in der Zwischenzeit die Tier-Liste {game} an',
+            backHome: 'Zurück zur Tier-Liste',
+            backPrevious: 'Vorherige Seite',
         },
         tags: ['Vielseitig', 'Kultur', 'Glaube', 'Wissenschaft', 'Militär', 'Handel', 'Produktion'],
+        wipStages: [
+            { key: 'Erhebung', label: 'Partiedaten' },
+            { key: 'Tests', label: 'Testpartien' },
+            { key: 'Einordnung', label: 'Tier-Zuweisung' },
+            { key: 'Veröffentlichung', label: 'Tier-Liste online' },
+        ],
+        homeGames: [
+            {
+                era: 'Antike',
+                line: 'Ein Feld, eine Einheit. Der kompetitive Klassiker, inklusive Brave New World.',
+            },
+            {
+                era: 'Mittelalter',
+                line: 'Bezirke, Gouverneure und Städte, die über die Karte wachsen.',
+            },
+            {
+                era: 'Moderne',
+                line: 'Drei Zeitalter, freie Anführer und Zivilisationen, die einander folgen.',
+            },
+        ],
         tiers: [
             { label: 'Tier S', rank: 'Legende', sub: 'Dominant — in jeder Situation spielbar' },
             { label: 'Tier A', rank: 'Imperium', sub: 'Sehr stark — in ihrer Nische hervorragend' },
@@ -247,8 +433,62 @@ export const MESSAGES: Record<Lang, Messages> = {
             result: 'resultado',
             alphabeticalShort: 'A → Z',
             removeFilter: 'Quitar {name}',
+            homeEyebrow: 'Tres juegos · Una pregunta',
+            homeTitle: '¿Qué era',
+            homeTitleAccent: 'vas a dominar?',
+            homeLede:
+                'Clasificaciones de civilizaciones al día con la meta. Elige tu juego, encuentra tu pueblo, empieza la partida.',
+            homeChooseGame: 'Elegir un juego',
+            homeAvailable: 'Disponible',
+            homeSoon: 'Pronto',
+            homeCtaAvailable: 'Ver la tier list',
+            homeCtaSoon: 'En preparación',
+            homeDisclaimer: 'Sitio de fans, sin afiliación con Firaxis ni 2K.',
+            homeEraFlow: 'Era atómica → información',
+            notFoundEyebrow: 'Error 404',
+            notFoundTitle: 'Tierra inexplorada',
+            notFoundText:
+                'Esta página se quedó bajo la niebla de guerra. Puede que el enlace esté roto, o que esta casilla nunca existiera en el mapa.',
+            forbiddenTitle: 'Acceso denegado',
+            forbiddenText: 'No tienes permiso para ver esta página.',
+            wipEyebrow: 'Investigación en curso',
+            wipTitle: 'Esta tier list todavía se está investigando',
+            wipIntroCiv6:
+                'Cada civilización se juega en varios mapas y niveles de dificultad antes de clasificarla. El grueso del trabajo está hecho — faltan por decidir los tiers.',
+            wipIntroCiv7:
+                'Civilization VII cambia de civilización en cada era, así que la clasificación se hará era por era. Aún estamos reuniendo datos de partidas antes de las pruebas.',
+            wipResearch: 'Investigación',
+            wipTierList: 'Tier list {game}',
+            wipTurnsLeft: 'turnos restantes',
+            wipDone: 'Hecho',
+            wipInProgress: 'En curso',
+            wipPreviewLocked: 'Vista previa bloqueada',
+            wipPreviewSub: 'Disponible al publicarse · {turns} turnos',
+            wipBackToDefault: 'Mientras tanto, mira la tier list {game}',
+            backHome: 'Volver a la tier list',
+            backPrevious: 'Página anterior',
         },
         tags: ['Versátil', 'Cultura', 'Fe', 'Ciencia', 'Militar', 'Comercio', 'Producción'],
+        wipStages: [
+            { key: 'Recogida', label: 'Datos de partidas' },
+            { key: 'Pruebas', label: 'Partidas de prueba' },
+            { key: 'Clasificación', label: 'Asignación de tiers' },
+            { key: 'Publicación', label: 'Tier list en línea' },
+        ],
+        homeGames: [
+            {
+                era: 'Antigüedad',
+                line: 'Una casilla, una unidad. El clásico competitivo, con Brave New World.',
+            },
+            {
+                era: 'Edad Media',
+                line: 'Distritos, gobernadores y ciudades que se desbordan por el mapa.',
+            },
+            {
+                era: 'Era moderna',
+                line: 'Tres edades, líderes libres y civilizaciones que se suceden.',
+            },
+        ],
         tiers: [
             {
                 label: 'Tier S',
@@ -310,8 +550,62 @@ export const MESSAGES: Record<Lang, Messages> = {
             result: 'résultat',
             alphabeticalShort: 'A → Z',
             removeFilter: 'Retirer {name}',
+            homeEyebrow: 'Trois jeux · Une seule question',
+            homeTitle: 'Quelle ère',
+            homeTitleAccent: 'allez-vous dominer ?',
+            homeLede:
+                'Des classements de civilisations tenus à jour selon la méta. Choisissez votre jeu, trouvez votre peuple, lancez la partie.',
+            homeChooseGame: 'Choisir un jeu',
+            homeAvailable: 'Disponible',
+            homeSoon: 'Bientôt',
+            homeCtaAvailable: 'Voir la tier list',
+            homeCtaSoon: 'En préparation',
+            homeDisclaimer: 'Site de fans, non affilié à Firaxis ou 2K.',
+            homeEraFlow: 'Ère atomique → information',
+            notFoundEyebrow: 'Erreur 404',
+            notFoundTitle: 'Terre inexplorée',
+            notFoundText:
+                "Cette page est restée sous le brouillard de guerre. Le lien est peut-être rompu, ou cette case n'a jamais existé sur la carte.",
+            forbiddenTitle: 'Accès refusé',
+            forbiddenText: "Vous n'avez pas le droit de voir cette page.",
+            wipEyebrow: 'Recherche en cours',
+            wipTitle: 'La tier list est encore en cours de recherche',
+            wipIntroCiv6:
+                "Chaque civilisation est testée en partie, sur plusieurs cartes et niveaux de difficulté, avant d'être classée. Le gros du travail est fait — reste à trancher les tiers.",
+            wipIntroCiv7:
+                "Civilization VII change de civilisation à chaque âge : le classement se fera âge par âge. On rassemble encore les données de parties avant d'attaquer les tests.",
+            wipResearch: 'Recherche',
+            wipTierList: 'Tier list {game}',
+            wipTurnsLeft: 'tours restants',
+            wipDone: 'Terminé',
+            wipInProgress: 'En cours',
+            wipPreviewLocked: 'Aperçu verrouillé',
+            wipPreviewSub: 'Disponible à la publication · {turns} tours',
+            wipBackToDefault: 'En attendant, voir la tier list {game}',
+            backHome: 'Retour à la tier list',
+            backPrevious: 'Page précédente',
         },
         tags: ['Polyvalent', 'Culture', 'Foi', 'Science', 'Militaire', 'Commerce', 'Production'],
+        wipStages: [
+            { key: 'Collecte', label: 'Données de parties' },
+            { key: 'Tests', label: 'Parties de test' },
+            { key: 'Classement', label: 'Attribution des tiers' },
+            { key: 'Publication', label: 'Tier list en ligne' },
+        ],
+        homeGames: [
+            {
+                era: 'Antiquité',
+                line: 'Une case, une unité. Le classique compétitif, Brave New World inclus.',
+            },
+            {
+                era: 'Moyen Âge',
+                line: 'Districts, gouverneurs et cités qui débordent sur la carte.',
+            },
+            {
+                era: 'Ère moderne',
+                line: 'Trois âges, des dirigeants libres et des civilisations qui se succèdent.',
+            },
+        ],
         tiers: [
             {
                 label: 'Tier S',
@@ -373,8 +667,59 @@ export const MESSAGES: Record<Lang, Messages> = {
             result: 'risultato',
             alphabeticalShort: 'A → Z',
             removeFilter: 'Rimuovi {name}',
+            homeEyebrow: 'Tre giochi · Una sola domanda',
+            homeTitle: 'Quale era',
+            homeTitleAccent: 'dominerai?',
+            homeLede:
+                'Classifiche di civiltà aggiornate secondo il meta. Scegli il gioco, trova il tuo popolo, inizia la partita.',
+            homeChooseGame: 'Scegli un gioco',
+            homeAvailable: 'Disponibile',
+            homeSoon: 'Presto',
+            homeCtaAvailable: 'Vedi la tier list',
+            homeCtaSoon: 'In preparazione',
+            homeDisclaimer: 'Sito di fan, non affiliato a Firaxis o 2K.',
+            homeEraFlow: 'Era atomica → informazione',
+            notFoundEyebrow: 'Errore 404',
+            notFoundTitle: 'Terra inesplorata',
+            notFoundText:
+                'Questa pagina è rimasta sotto la nebbia di guerra. Il link potrebbe essere rotto, o questa casella non è mai esistita sulla mappa.',
+            forbiddenTitle: 'Accesso negato',
+            forbiddenText: 'Non hai il permesso di vedere questa pagina.',
+            wipEyebrow: 'Ricerca in corso',
+            wipTitle: 'Questa tier list è ancora in fase di ricerca',
+            wipIntroCiv6:
+                'Ogni civiltà viene giocata su più mappe e livelli di difficoltà prima di essere classificata. Il grosso del lavoro è fatto — restano da decidere i tier.',
+            wipIntroCiv7:
+                'Civilization VII cambia civiltà a ogni era, quindi la classifica sarà fatta era per era. Stiamo ancora raccogliendo dati di partita prima dei test.',
+            wipResearch: 'Ricerca',
+            wipTierList: 'Tier list {game}',
+            wipTurnsLeft: 'turni rimasti',
+            wipDone: 'Completato',
+            wipInProgress: 'In corso',
+            wipPreviewLocked: 'Anteprima bloccata',
+            wipPreviewSub: 'Disponibile alla pubblicazione · {turns} turni',
+            wipBackToDefault: 'Nell’attesa, guarda la tier list {game}',
+            backHome: 'Torna alla tier list',
+            backPrevious: 'Pagina precedente',
         },
         tags: ['Versatile', 'Cultura', 'Fede', 'Scienza', 'Militare', 'Commercio', 'Produzione'],
+        wipStages: [
+            { key: 'Raccolta', label: 'Dati di partita' },
+            { key: 'Test', label: 'Partite di prova' },
+            { key: 'Classifica', label: 'Assegnazione dei tier' },
+            { key: 'Pubblicazione', label: 'Tier list online' },
+        ],
+        homeGames: [
+            {
+                era: 'Antichità',
+                line: 'Una casella, una unità. Il classico competitivo, Brave New World incluso.',
+            },
+            {
+                era: 'Medioevo',
+                line: 'Distretti, governatori e città che si allargano sulla mappa.',
+            },
+            { era: 'Era moderna', line: 'Tre ere, leader liberi e civiltà che si susseguono.' },
+        ],
         tiers: [
             { label: 'Tier S', rank: 'Leggenda', sub: 'Dominanti — valide in ogni situazione' },
             { label: 'Tier A', rank: 'Impero', sub: 'Molto forti — eccellenti nella loro nicchia' },
@@ -428,8 +773,53 @@ export const MESSAGES: Record<Lang, Messages> = {
             result: '件',
             alphabeticalShort: 'A → Z',
             removeFilter: '{name}を解除',
+            homeEyebrow: '3つのゲーム · ただ一つの問い',
+            homeTitle: 'どの時代を',
+            homeTitleAccent: '歯する？',
+            homeLede:
+                'メタに合わせて更新される文明ランク。ゲームを選んで、民を見つけて、対局を始めましょう。',
+            homeChooseGame: 'ゲームを選ぶ',
+            homeAvailable: '公開中',
+            homeSoon: '準備中',
+            homeCtaAvailable: 'ティアリストを見る',
+            homeCtaSoon: '制作中',
+            homeDisclaimer: 'ファンサイトです。Firaxis および 2K との関係はありません。',
+            homeEraFlow: '原子力時代 → 情報',
+            notFoundEyebrow: 'エラー 404',
+            notFoundTitle: '未探索の大地',
+            notFoundText:
+                'このページは戦争の霧の下に残っています。リンクが切れているか、このタイルは地図上に存在しなかったのかもしれません。',
+            forbiddenTitle: 'アクセスが拒否されました',
+            forbiddenText: 'このページを閲覧する権限がありません。',
+            wipEyebrow: 'リサーチ進行中',
+            wipTitle: 'このティアリストはまだリサーチ中です',
+            wipIntroCiv6:
+                '各文明は複数のマップと隣易度で実際にプレイしてから格付けしています。大部分は終わり、あとはティアを決めるだけです。',
+            wipIntroCiv7:
+                'Civilization VII は時代ごとに文明が変わるため、格付けも時代ごとに行います。テストプレイの前に、まだ対戦データを集めています。',
+            wipResearch: 'リサーチ',
+            wipTierList: '{game} ティアリスト',
+            wipTurnsLeft: 'ターン残り',
+            wipDone: '完了',
+            wipInProgress: '進行中',
+            wipPreviewLocked: 'プレビューはロック中',
+            wipPreviewSub: '公開時に解除 · {turns} ターン',
+            wipBackToDefault: 'それまでは {game} のティアリストをどうぞ',
+            backHome: 'ティアリストに戻る',
+            backPrevious: '前のページ',
         },
         tags: ['多用途', '文化', '信仰', '科学', '軍事', '貿易', '生産'],
+        wipStages: [
+            { key: '収集', label: '対戦データ' },
+            { key: 'テスト', label: 'テストプレイ' },
+            { key: '格付け', label: 'ティアの割り当て' },
+            { key: '公開', label: 'ティアリスト公開' },
+        ],
+        homeGames: [
+            { era: '古代', line: '1タイル1ユニット。Brave New World を含む競技的な定番。' },
+            { era: '中世', line: '区画、総督、そしてマップに広がる都市。' },
+            { era: '近代', line: '3つの時代、自由な指導者、そして入れ替わる文明。' },
+        ],
         tiers: [
             { label: 'ティアS', rank: '伝説', sub: '支配的 — あらゆる状況で活躍' },
             { label: 'ティアA', rank: '帝国', sub: '非常に強力 — 得意分野で優秀' },
@@ -483,8 +873,53 @@ export const MESSAGES: Record<Lang, Messages> = {
             result: '개 결과',
             alphabeticalShort: '가나다순',
             removeFilter: '{name} 제거',
+            homeEyebrow: '세 게임 · 하나의 질문',
+            homeTitle: '어떤 시대를',
+            homeTitleAccent: '지배하시것에요?',
+            homeLede:
+                '메타에 맞춰 갱습되는 문업 순위. 게임을 고르고, 문업을 짝고, 대전을 시작하세요.',
+            homeChooseGame: '게임 선택',
+            homeAvailable: '제공 중',
+            homeSoon: '준버 중',
+            homeCtaAvailable: '티어 리스트 보기',
+            homeCtaSoon: '제작 중',
+            homeDisclaimer: '팬 사이트이며 Firaxis 또는 2K와 관련이 없습니다.',
+            homeEraFlow: '원자력 시대 → 정보',
+            notFoundEyebrow: '에러 404',
+            notFoundTitle: '미개추 지역',
+            notFoundText:
+                '이 페이지는 전쟁의 안개 속에 남아 있습니다. 링크가 끊여진 거나, 이 타일은 지도에 없었을 수도 있습니다.',
+            forbiddenTitle: '접근이 거부되었습니다',
+            forbiddenText: '이 페이지를 볼 권한이 없습니다.',
+            wipEyebrow: '조사 진행 중',
+            wipTitle: '이 티어 리스트는 아직 조사 중입니다',
+            wipIntroCiv6:
+                '모든 문을 여러 맵과 난이도에서 직접 플레이한 뒤에 등급을 매깁니다. 대부분의 작업은 끝났고, 티어만 확정하면 됩니다.',
+            wipIntroCiv7:
+                'Civilization VII은 시대마다 문이 바뀝및로 등급도 시대별로 매깁니다. 테스트 플레이에 앞서 아직 대전 데이테를 모으는 중입니다.',
+            wipResearch: '조사',
+            wipTierList: '{game} 티어 리스트',
+            wipTurnsLeft: '턴 남음',
+            wipDone: '완료',
+            wipInProgress: '진행 중',
+            wipPreviewLocked: '미리보기 잠김',
+            wipPreviewSub: '공개 시 해제 · {turns}턴',
+            wipBackToDefault: '그동안 {game} 티어 리스트를 보세요',
+            backHome: '티어 리스트로 돌아가기',
+            backPrevious: '이전 페이지',
         },
         tags: ['변하기 쉬운', '문화', '신앙', '과학', '군사', '무역', '생산'],
+        wipStages: [
+            { key: '수집', label: '대전 데이테' },
+            { key: '테스트', label: '테스트 플레이' },
+            { key: '등급', label: '티어 배정' },
+            { key: '공개', label: '티어 리스트 공개' },
+        ],
+        homeGames: [
+            { era: '고대', line: '한 칸에 한 유니읏. Brave New World를 포함한 경쟁의 정석.' },
+            { era: '중세', line: '구역과 총독, 그리고 지도로 펼지는 도시.' },
+            { era: '근대', line: '세 시대, 자유로운 지도자, 그리고 이어지는 문업.' },
+        ],
         tiers: [
             { label: '티어 S', rank: '전설', sub: '압도적 — 어떤 상황에서도 강력합니다' },
             { label: '티어 A', rank: '제국', sub: '매우 강력함 — 특화 분야에서 뛰어납니다' },
@@ -538,8 +973,62 @@ export const MESSAGES: Record<Lang, Messages> = {
             result: 'wynik',
             alphabeticalShort: 'A → Z',
             removeFilter: 'Usuń: {name}',
+            homeEyebrow: 'Trzy gry · Jedno pytanie',
+            homeTitle: 'Którą erę',
+            homeTitleAccent: 'zdominujesz?',
+            homeLede:
+                'Rankingi cywilizacji aktualizowane wraz z metą. Wybierz grę, znajdź swój lud, rozpocznij rozgrywkę.',
+            homeChooseGame: 'Wybierz grę',
+            homeAvailable: 'Dostępne',
+            homeSoon: 'Wkrótce',
+            homeCtaAvailable: 'Zobacz tier listę',
+            homeCtaSoon: 'W przygotowaniu',
+            homeDisclaimer: 'Strona fanów, niezwiązana z Firaxis ani 2K.',
+            homeEraFlow: 'Era atomowa → informacja',
+            notFoundEyebrow: 'Błąd 404',
+            notFoundTitle: 'Niezbadana ziemia',
+            notFoundText:
+                'Ta strona pozostała we mgle wojny. Link może być zepsuty albo to pole nigdy nie istniało na mapie.',
+            forbiddenTitle: 'Brak dostępu',
+            forbiddenText: 'Nie masz uprawnień, aby zobaczyć tę stronę.',
+            wipEyebrow: 'Badania w toku',
+            wipTitle: 'Ta tier lista jest jeszcze badana',
+            wipIntroCiv6:
+                'Każda cywilizacja jest rozgrywana na kilku mapach i poziomach trudności, zanim trafi do rankingu. Większość pracy jest za nami — zostaje ustalić tiery.',
+            wipIntroCiv7:
+                'Civilization VII zmienia cywilizację w każdej epoce, więc ranking powstanie epoka po epoce. Wciąż zbieramy dane z rozgrywek przed testami.',
+            wipResearch: 'Badania',
+            wipTierList: 'Tier lista {game}',
+            wipTurnsLeft: 'tur pozostało',
+            wipDone: 'Gotowe',
+            wipInProgress: 'W toku',
+            wipPreviewLocked: 'Podgląd zablokowany',
+            wipPreviewSub: 'Dostępne po publikacji · {turns} tur',
+            wipBackToDefault: 'W międzyczasie zobacz tier listę {game}',
+            backHome: 'Powrót do tier listy',
+            backPrevious: 'Poprzednia strona',
         },
         tags: ['Wszechstronny', 'Kultura', 'Wiara', 'Nauka', 'Wojskowy', 'Handel', 'Produkcja'],
+        wipStages: [
+            { key: 'Zbieranie', label: 'Dane z rozgrywek' },
+            { key: 'Testy', label: 'Rozgrywki testowe' },
+            { key: 'Ranking', label: 'Przypisanie tierów' },
+            { key: 'Publikacja', label: 'Tier lista online' },
+        ],
+        homeGames: [
+            {
+                era: 'Starożytność',
+                line: 'Jedno pole, jedna jednostka. Klasyk rozgrywki, z Brave New World.',
+            },
+            {
+                era: 'Średniowiecze',
+                line: 'Dzielnice, gubernatorzy i miasta rozlewające się po mapie.',
+            },
+            {
+                era: 'Era nowoczesna',
+                line: 'Trzy epoki, wolni przywódcy i cywilizacje następujące po sobie.',
+            },
+        ],
         tiers: [
             {
                 label: 'Tier S',
@@ -597,8 +1086,59 @@ export const MESSAGES: Record<Lang, Messages> = {
             result: 'результат',
             alphabeticalShort: 'А → Я',
             removeFilter: 'Убрать: {name}',
+            homeEyebrow: 'Три игры · Один вопрос',
+            homeTitle: 'Какую эпоху',
+            homeTitleAccent: 'вы покорите?',
+            homeLede:
+                'Рейтинги цивилизаций, которые обновляются вслед за метой. Выберите игру, найдите свой народ, начните партию.',
+            homeChooseGame: 'Выбрать игру',
+            homeAvailable: 'Доступно',
+            homeSoon: 'Скоро',
+            homeCtaAvailable: 'Смотреть тир-лист',
+            homeCtaSoon: 'В работе',
+            homeDisclaimer: 'Фанатский сайт, не связан с Firaxis или 2K.',
+            homeEraFlow: 'Атомная эра → информация',
+            notFoundEyebrow: 'Ошибка 404',
+            notFoundTitle: 'Неисследованная земля',
+            notFoundText:
+                'Эта страница осталась под туманом войны. Возможно, ссылка сломана, или этой клетки никогда не было на карте.',
+            forbiddenTitle: 'Доступ запрещён',
+            forbiddenText: 'У вас нет прав на просмотр этой страницы.',
+            wipEyebrow: 'Идёт исследование',
+            wipTitle: 'Этот тир-лист ещё исследуется',
+            wipIntroCiv6:
+                'Каждую цивилизацию отыгрывают на нескольких картах и уровнях сложности, прежде чем занести в рейтинг. Основная работа сделана — осталось определить тиры.',
+            wipIntroCiv7:
+                'В Civilization VII цивилизация меняется с каждой эпохой, поэтому рейтинг будет составлен по эпохам. Пока мы собираем данные партий перед тестами.',
+            wipResearch: 'Исследование',
+            wipTierList: 'Тир-лист {game}',
+            wipTurnsLeft: 'ходов осталось',
+            wipDone: 'Готово',
+            wipInProgress: 'В работе',
+            wipPreviewLocked: 'Предпросмотр закрыт',
+            wipPreviewSub: 'Откроется с публикацией · {turns} ходов',
+            wipBackToDefault: 'А пока посмотрите тир-лист {game}',
+            backHome: 'Вернуться к тир-листу',
+            backPrevious: 'Предыдущая страница',
         },
         tags: ['Универсальный', 'Культура', 'Вера', 'Наука', 'Военный', 'Торговля', 'Производство'],
+        wipStages: [
+            { key: 'Сбор', label: 'Данные партий' },
+            { key: 'Тесты', label: 'Тестовые партии' },
+            { key: 'Рейтинг', label: 'Распределение тиров' },
+            { key: 'Публикация', label: 'Тир-лист опубликован' },
+        ],
+        homeGames: [
+            {
+                era: 'Античность',
+                line: 'Одна клетка — один юнит. Конкурентная классика с Brave New World.',
+            },
+            { era: 'Средние века', line: 'Районы, губернаторы и города, растекающиеся по карте.' },
+            {
+                era: 'Новое время',
+                line: 'Три эпохи, свободные лидеры и цивилизации, сменяющие друг друга.',
+            },
+        ],
         tiers: [
             { label: 'Уровень S', rank: 'Легенда', sub: 'Доминируют — сильны в любой ситуации' },
             {
@@ -660,8 +1200,51 @@ export const MESSAGES: Record<Lang, Messages> = {
             result: '个结果',
             alphabeticalShort: 'A → Z',
             removeFilter: '移除{name}',
+            homeEyebrow: '三款游戏 · 一个问题',
+            homeTitle: '你要统治',
+            homeTitleAccent: '哪一个时代？',
+            homeLede: '随版本环境更新的文明强度榜。选好游戏，找到你的民族，开局。',
+            homeChooseGame: '选择游戏',
+            homeAvailable: '已上线',
+            homeSoon: '敬请期待',
+            homeCtaAvailable: '查看强度榜',
+            homeCtaSoon: '正在制作',
+            homeDisclaimer: '粉丝网站，与 Firaxis 和 2K 无关。',
+            homeEraFlow: '原子时代 → 信息',
+            notFoundEyebrow: '错误 404',
+            notFoundTitle: '未探索的土地',
+            notFoundText: '这一页仍在战争迷难之下。可能是链接已失效，或这个格子从未存在于地图上。',
+            forbiddenTitle: '访问被拒绝',
+            forbiddenText: '你没有权限查看该页面。',
+            wipEyebrow: '研究进行中',
+            wipTitle: '该强度榜仍在研究中',
+            wipIntroCiv6:
+                '每个文明都会在多张地图和多个难度下实战之后才会评级。大部分工作已完成，只剩确定等级。',
+            wipIntroCiv7:
+                'Civilization VII 每个时代都会更换文明，因此评级将按时代进行。我们仍在收集对局数据，之后才开始测试。',
+            wipResearch: '研究',
+            wipTierList: '{game} 强度榜',
+            wipTurnsLeft: '回合剩余',
+            wipDone: '已完成',
+            wipInProgress: '进行中',
+            wipPreviewLocked: '预览已锁定',
+            wipPreviewSub: '发布时解锁 · {turns} 回合',
+            wipBackToDefault: '在此期间，先看看 {game} 强度榜',
+            backHome: '返回强度榜',
+            backPrevious: '上一页',
         },
         tags: ['多才多艺的', '文化', '信仰', '科学', '军事', '贸易', '生产'],
+        wipStages: [
+            { key: '收集', label: '对局数据' },
+            { key: '测试', label: '测试对局' },
+            { key: '评级', label: '分配等级' },
+            { key: '发布', label: '强度榜上线' },
+        ],
+        homeGames: [
+            { era: '远古', line: '一格一单位。含《丽丽新世界》的竞技经典。' },
+            { era: '中世纪', line: '区域、总督，以及在地图上铺开的城市。' },
+            { era: '近代', line: '三个时代、自由搭配的领袖，以及更替的文明。' },
+        ],
         tiers: [
             { label: 'S级', rank: '传奇', sub: '统治级 — 适用于任何局面' },
             { label: 'A级', rank: '帝国', sub: '非常强大 — 在专长领域表现卓越' },

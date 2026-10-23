@@ -10,7 +10,7 @@ const jsonResponse = (body: unknown, status = 200) =>
     Promise.resolve(new Response(JSON.stringify(body), { status }));
 
 // The header and the game view are lazy-loaded: wait for their dynamic imports to resolve
-const mountApp = async (path = '/') => {
+const mountApp = async (path = '/civilization-5') => {
     const router = await createTestRouter(path);
     const wrapper = mount(App, { global: { plugins: [router] } });
     await vi.dynamicImportSettled();
@@ -97,13 +97,15 @@ describe('App.vue', () => {
     });
 
     describe('routes', () => {
-        it('redirects / to the Civilization V tier list', async () => {
-            fetchMock.mockImplementation(() => jsonResponse([{ id: 21, name: 'Espagne' }]));
+        it('serves the home page on /', async () => {
+            fetchMock.mockImplementation(() => jsonResponse([]));
             const wrapper = await mountApp('/');
 
-            expect(wrapper.router.currentRoute.value.path).toBe('/civilization-5');
-            expect(cardNames(wrapper)).toEqual(['Espagne']);
-            expect(document.title).toBe('Better Civ5');
+            expect(wrapper.router.currentRoute.value.name).toBe('home');
+            expect(wrapper.findAll('.cards .card')).toHaveLength(3);
+            expect(document.title).toBe('Better Civ');
+            // The home page needs no civilization data
+            expect(fetchMock).not.toHaveBeenCalled();
         });
 
         it('serves the tier list on /civilization-5', async () => {
@@ -114,14 +116,38 @@ describe('App.vue', () => {
             expect(cardNames(wrapper)).toEqual(['Espagne']);
         });
 
-        it('sends the unreleased games and unknown paths back to Civilization V', async () => {
+        it('shows the 403 page and the 404 page on unknown paths', async () => {
             fetchMock.mockImplementation(() => jsonResponse([]));
 
-            for (const path of ['/civilization-6', '/civilization-7', '/nope/deep']) {
+            const forbidden = await mountApp('/403');
+            expect(forbidden.find('.status .eyebrow').text()).toBe('403');
+            forbidden.unmount();
+
+            const notFound = await mountApp('/nope/deep');
+            expect(notFound.router.currentRoute.value.path).toBe('/nope/deep');
+            expect(notFound.find('.not-found .code').text()).toBe('CDIV');
+            notFound.unmount();
+
+            // The API is never hit outside the Civilization V tier list
+            expect(fetchMock).not.toHaveBeenCalled();
+        });
+
+        it('shows the work in progress page on the unreleased games', async () => {
+            fetchMock.mockImplementation(() => jsonResponse([]));
+
+            for (const [path, numeral] of [
+                ['/civilization-6', 'VI'],
+                ['/civilization-7', 'VII'],
+            ]) {
                 const wrapper = await mountApp(path);
-                expect(wrapper.router.currentRoute.value.path).toBe('/civilization-5');
+                expect(wrapper.router.currentRoute.value.path).toBe(path);
+                expect(wrapper.find('.wip .watermark').text()).toBe(numeral);
+                expect(wrapper.find('.wip h1').text()).toBe(
+                    'La tier list est encore en cours de recherche'
+                );
                 wrapper.unmount();
             }
+            expect(fetchMock).not.toHaveBeenCalled();
         });
     });
 });

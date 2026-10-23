@@ -33,24 +33,24 @@ describe('HeaderComponent', () => {
         expect(wrapper.findAll('svg.brand-mark path')).toHaveLength(3);
     });
 
-    it('marks Civilization V as the current game and locks the other two', () => {
+    it('marks Civilization V as the current game and flags the other two as WIP', () => {
         const wrapper = mount(HeaderComponent, { global: { plugins: [router] } });
         const links = wrapper.findAll('.game-nav .game-link');
 
         expect(wrapper.find('.game-nav').attributes('aria-label')).toBe('Jeux');
         expect(links.map(link => link.text())).toEqual([
             'VCivilization V',
-            'VICivilization VI',
-            'VIICivilization VII',
+            'VICivilization VI WIP',
+            'VIICivilization VII WIP',
         ]);
         expect(links[0].attributes('aria-current')).toBe('page');
         expect(links[0].attributes('href')).toBe('/civilization-5');
         expect(links[0].find('.game-underline').exists()).toBe(true);
-        links.slice(1).forEach(link => {
-            expect(link.attributes('aria-disabled')).toBe('true');
-            expect(link.attributes('href')).toBeUndefined();
+        links.slice(1).forEach((link, index) => {
+            expect(link.classes()).toContain('locked');
+            expect(link.attributes('href')).toBe(`/civilization-${index + 6}`);
             expect(link.attributes('title')).toBe('Bientôt disponible');
-            expect(link.find('.game-lock').exists()).toBe(true);
+            expect(link.find('.game-wip').text()).toBe('WIP');
         });
     });
 
