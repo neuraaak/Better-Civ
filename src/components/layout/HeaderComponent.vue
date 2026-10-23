@@ -63,20 +63,17 @@
                 <template v-for="game in GAMES" :key="game.numeral">
                     <!-- RouterLink sets aria-current="page" on the game being viewed -->
                     <RouterLink
-                        v-if="game.available"
                         class="game-link"
+                        :class="{ locked: !game.available }"
                         :to="game.path"
+                        :title="game.available ? undefined : t.ui.comingSoon"
                         @click="menuOpen = false"
                     >
                         <span class="game-numeral">{{ game.numeral }}</span
                         >{{ game.name }}
+                        <span v-if="!game.available" class="game-wip">WIP</span>
                         <span class="game-underline" aria-hidden="true"></span>
                     </RouterLink>
-                    <a v-else class="game-link" aria-disabled="true" :title="t.ui.comingSoon">
-                        <span class="game-numeral">{{ game.numeral }}</span
-                        >{{ game.name }}
-                        <PhIcon name="lock-simple" class="game-lock" />
-                    </a>
                 </template>
             </nav>
         </div>
@@ -205,15 +202,20 @@
     .game-link[aria-current='page'] .game-numeral {
         color: var(--color-accent-300);
     }
-    .game-link[aria-disabled='true'] {
+    .game-link.locked {
         color: var(--color-neutral-600);
-        cursor: not-allowed;
     }
     .game-numeral {
         font: 500 11px var(--font-mono);
     }
-    .game-lock {
-        font-size: 12px;
+    .game-wip {
+        padding: 3px 5px;
+        border-radius: 4px;
+        background: var(--color-accent-900);
+        box-shadow: inset 0 0 0 1px var(--color-accent-800);
+        color: var(--color-accent-200);
+        font: 500 9px / 1 var(--font-mono);
+        letter-spacing: 0.1em;
     }
     /* Glowing underline that touches the meander rule below the header */
     .game-underline {

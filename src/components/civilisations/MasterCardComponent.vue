@@ -181,7 +181,7 @@
     const leader = computed(() => props.civ.leader);
     const bonus = computed(() => leader.value?.trait);
     const history = computed(() => props.civ.historical_info?.[0]?.text ?? '');
-    const civBackground = computed(() => '/img/card-cover.webp');
+    const civBackground = computed(() => '/img/civ5-card-bg.webp');
     const units = computed(() => (props.civ.unique_units ?? []).map(normalizeItem));
     const buildings = computed(() => (props.civ.unique_buildings ?? []).map(normalizeItem));
 
