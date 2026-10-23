@@ -187,7 +187,8 @@ function groupByCivilization(
             assetUrl(row.icon as string | null) ||
             // Only the unique-unit query selects a code; buildings never need a fallback.
             localIconUrl(row.code as string | undefined);
-        items.push({ name: String(row.name ?? ''), icon });
+        // A name is TEXT in the schema; anything else is a corrupt row, not a label.
+        items.push({ name: typeof row.name === 'string' ? row.name : '', icon });
         grouped.set(key, items);
     }
     return grouped;

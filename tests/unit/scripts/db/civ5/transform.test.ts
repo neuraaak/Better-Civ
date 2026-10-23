@@ -1,4 +1,5 @@
 import { mkdtempSync, rmSync } from 'node:fs';
+import type { DatabaseSync } from 'node:sqlite';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
@@ -26,11 +27,20 @@ function resources(kind: ResourceKind, payload: ApiDocument): StagedResource[] {
     }));
 }
 
+/** Fresh final database in its own temporary directory, cleaned up after the test. */
+function newDatabase(): DatabaseSync {
+    const directory = mkdtempSync(join(tmpdir(), 'better-civ-transform-'));
+    directories.push(directory);
+    return createFinalDatabase(join(directory, 'final.sqlite'));
+}
+
+function expectCount(database: DatabaseSync, table: string, count: number): void {
+    expect(database.prepare(`SELECT COUNT(*) AS count FROM ${table}`).get()).toEqual({ count });
+}
+
 describe('transformStagedResources', () => {
     it('writes typed entities, ten translations and yields without raw tables', () => {
-        const directory = mkdtempSync(join(tmpdir(), 'better-civ-transform-'));
-        directories.push(directory);
-        const database = createFinalDatabase(join(directory, 'final.sqlite'));
+        const database = newDatabase();
         const staged = [
             ...resources('civilizations', { icon: 'civ.png', city_names: [], spy_names: [] }),
             ...resources('units', { cost: { production: 120, faith: 0 }, movement: 2 }),
@@ -47,12 +57,8 @@ describe('transformStagedResources', () => {
             entities: 6,
             translations: 60,
         });
-        expect(database.prepare('SELECT COUNT(*) AS count FROM entities').get()).toEqual({
-            count: 6,
-        });
-        expect(database.prepare('SELECT COUNT(*) AS count FROM translations').get()).toEqual({
-            count: 60,
-        });
+        expectCount(database, 'entities', 6);
+        expectCount(database, 'translations', 60);
         expect(database.prepare('SELECT cost, movement FROM units').get()).toEqual({
             cost: 120,
             movement: 2,
@@ -76,9 +82,7 @@ describe('transformStagedResources', () => {
     });
 
     it('stores leader fields structurally and rejects an unmapped scalar', () => {
-        const directory = mkdtempSync(join(tmpdir(), 'better-civ-transform-'));
-        directories.push(directory);
-        const database = createFinalDatabase(join(directory, 'final.sqlite'));
+        const database = newDatabase();
         const civilizations = resources('civilizations', {
             leader: {
                 name: 'Washington',
@@ -110,9 +114,7 @@ describe('transformStagedResources', () => {
     });
 
     it('writes typed scalar fields for remaining domain families', () => {
-        const directory = mkdtempSync(join(tmpdir(), 'better-civ-transform-'));
-        directories.push(directory);
-        const database = createFinalDatabase(join(directory, 'final.sqlite'));
+        const database = newDatabase();
 
         transformStagedResources(
             [
@@ -151,9 +153,7 @@ describe('transformStagedResources', () => {
     });
 
     it('writes named relations through canonical CivVAPI keys', () => {
-        const directory = mkdtempSync(join(tmpdir(), 'better-civ-transform-'));
-        directories.push(directory);
-        const database = createFinalDatabase(join(directory, 'final.sqlite'));
+        const database = newDatabase();
         transformStagedResources(
             [
                 ...resources('civilizations', {
@@ -173,19 +173,13 @@ describe('transformStagedResources', () => {
             database
         );
 
-        expect(database.prepare('SELECT COUNT(*) AS count FROM tech_unlocks').get()).toEqual({
-            count: 0,
-        });
-        expect(database.prepare('SELECT COUNT(*) AS count FROM unit_promotions').get()).toEqual({
-            count: 1,
-        });
+        expectCount(database, 'tech_unlocks', 0);
+        expectCount(database, 'unit_promotions', 1);
         database.close();
     });
 
     it('writes prerequisite and technology-unlock relations', () => {
-        const directory = mkdtempSync(join(tmpdir(), 'better-civ-transform-'));
-        directories.push(directory);
-        const database = createFinalDatabase(join(directory, 'final.sqlite'));
+        const database = newDatabase();
         transformStagedResources(
             [
                 ...resources('policies', {
@@ -213,19 +207,13 @@ describe('transformStagedResources', () => {
             database
         );
 
-        expect(
-            database.prepare('SELECT COUNT(*) AS count FROM policy_prerequisites').get()
-        ).toEqual({ count: 1 });
-        expect(database.prepare('SELECT COUNT(*) AS count FROM tech_unlocks').get()).toEqual({
-            count: 1,
-        });
+        expectCount(database, 'policy_prerequisites', 1);
+        expectCount(database, 'tech_unlocks', 1);
         database.close();
     });
 
     it('writes promotion and terrain relations', () => {
-        const directory = mkdtempSync(join(tmpdir(), 'better-civ-transform-'));
-        directories.push(directory);
-        const database = createFinalDatabase(join(directory, 'final.sqlite'));
+        const database = newDatabase();
         transformStagedResources(
             [
                 ...resources('promotions', {
@@ -253,19 +241,13 @@ describe('transformStagedResources', () => {
             database
         );
 
-        expect(
-            database.prepare('SELECT COUNT(*) AS count FROM promotion_prerequisites').get()
-        ).toEqual({ count: 1 });
-        expect(database.prepare('SELECT COUNT(*) AS count FROM terrain_features').get()).toEqual({
-            count: 1,
-        });
+        expectCount(database, 'promotion_prerequisites', 1);
+        expectCount(database, 'terrain_features', 1);
         database.close();
     });
 
     it('writes environmental resource and improvement relations', () => {
-        const directory = mkdtempSync(join(tmpdir(), 'better-civ-transform-'));
-        directories.push(directory);
-        const database = createFinalDatabase(join(directory, 'final.sqlite'));
+        const database = newDatabase();
         const resourceUrl = 'https://eyefyre.github.io/civvapi/v1/en/resources/sample.json';
         const terrainUrl = 'https://eyefyre.github.io/civvapi/v1/en/terrains/sample.json';
         transformStagedResources(
@@ -284,25 +266,15 @@ describe('transformStagedResources', () => {
             database
         );
 
-        expect(database.prepare('SELECT COUNT(*) AS count FROM terrain_resources').get()).toEqual({
-            count: 1,
-        });
-        expect(database.prepare('SELECT COUNT(*) AS count FROM feature_resources').get()).toEqual({
-            count: 1,
-        });
-        expect(
-            database.prepare('SELECT COUNT(*) AS count FROM improvement_buildable_terrains').get()
-        ).toEqual({ count: 1 });
-        expect(
-            database.prepare('SELECT COUNT(*) AS count FROM improvement_resources').get()
-        ).toEqual({ count: 1 });
+        expectCount(database, 'terrain_resources', 1);
+        expectCount(database, 'feature_resources', 1);
+        expectCount(database, 'improvement_buildable_terrains', 1);
+        expectCount(database, 'improvement_resources', 1);
         database.close();
     });
 
     it('writes civilization uniques and direct technology requirements', () => {
-        const directory = mkdtempSync(join(tmpdir(), 'better-civ-transform-'));
-        directories.push(directory);
-        const database = createFinalDatabase(join(directory, 'final.sqlite'));
+        const database = newDatabase();
         transformStagedResources(
             [
                 ...resources('civilizations', {
@@ -326,22 +298,14 @@ describe('transformStagedResources', () => {
             database
         );
 
-        expect(
-            database.prepare('SELECT COUNT(*) AS count FROM civilization_unique_units').get()
-        ).toEqual({ count: 1 });
-        expect(
-            database.prepare('SELECT COUNT(*) AS count FROM civilization_unique_buildings').get()
-        ).toEqual({ count: 1 });
-        expect(database.prepare('SELECT COUNT(*) AS count FROM tech_unlocks').get()).toEqual({
-            count: 1,
-        });
+        expectCount(database, 'civilization_unique_units', 1);
+        expectCount(database, 'civilization_unique_buildings', 1);
+        expectCount(database, 'tech_unlocks', 1);
         database.close();
     });
 
     it('keeps an aliased unique unit when CivVAPI classifies it as a specialist', () => {
-        const directory = mkdtempSync(join(tmpdir(), 'better-civ-transform-'));
-        directories.push(directory);
-        const database = createFinalDatabase(join(directory, 'final.sqlite'));
+        const database = newDatabase();
         transformStagedResources(
             [
                 ...resources('civilizations', {
@@ -364,16 +328,12 @@ describe('transformStagedResources', () => {
             database
         );
 
-        expect(
-            database.prepare('SELECT COUNT(*) AS count FROM civilization_unique_units').get()
-        ).toEqual({ count: 1 });
+        expectCount(database, 'civilization_unique_units', 1);
         database.close();
     });
 
     it('writes localized civilization names and resource revealing technologies', () => {
-        const directory = mkdtempSync(join(tmpdir(), 'better-civ-transform-'));
-        directories.push(directory);
-        const database = createFinalDatabase(join(directory, 'final.sqlite'));
+        const database = newDatabase();
         transformStagedResources(
             [
                 ...resources('civilizations', {
@@ -392,15 +352,9 @@ describe('transformStagedResources', () => {
             database
         );
 
-        expect(
-            database.prepare('SELECT COUNT(*) AS count FROM civilization_city_names').get()
-        ).toEqual({ count: 20 });
-        expect(
-            database.prepare('SELECT COUNT(*) AS count FROM civilization_spy_names').get()
-        ).toEqual({ count: 10 });
-        expect(
-            database.prepare('SELECT COUNT(*) AS count FROM resource_revealing_techs').get()
-        ).toEqual({ count: 1 });
+        expectCount(database, 'civilization_city_names', 20);
+        expectCount(database, 'civilization_spy_names', 10);
+        expectCount(database, 'resource_revealing_techs', 1);
         database.close();
     });
 });
