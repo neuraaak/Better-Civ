@@ -180,6 +180,8 @@ logs/
 *.db
 *.sqlite
 *.sqlite3
+bin/assets/db/*.manifest.json
+bin/assets/images/
 *.mdb
 *.accdb
 
@@ -210,3 +212,4 @@ logs/
 
 .senior-review/
 .superpowers/
+.worktrees/
