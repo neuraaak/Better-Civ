@@ -21,6 +21,8 @@ export interface Game {
     /** Roman numeral shown before the name. */
     numeral: string;
     name: string;
+    /** Release year, shown on the home card. */
+    year: string;
     /** Route of the game's tier list. */
     path: string;
     available: boolean;
@@ -31,10 +33,17 @@ export interface Game {
 // CONSTANTS
 // ##############
 export const GAMES: readonly Game[] = [
-    { numeral: 'V', name: 'Civilization V', path: '/civilization-5', available: true },
+    {
+        numeral: 'V',
+        name: 'Civilization V',
+        year: '2010',
+        path: '/civilization-5',
+        available: true,
+    },
     {
         numeral: 'VI',
         name: 'Civilization VI',
+        year: '2016',
         path: '/civilization-6',
         available: false,
         research: { progress: 64, turns: 8, stage: 2, ghost: [3, 6, 7, 5, 3] },
@@ -42,6 +51,7 @@ export const GAMES: readonly Game[] = [
     {
         numeral: 'VII',
         name: 'Civilization VII',
+        year: '2025',
         path: '/civilization-7',
         available: false,
         research: { progress: 18, turns: 24, stage: 0, ghost: [2, 4, 6, 4, 2] },

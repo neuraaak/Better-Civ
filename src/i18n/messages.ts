@@ -65,6 +65,28 @@ export interface UiMessages {
     alphabeticalShort: string;
     /** Accessible name of the × of a filter pill; `{name}` is replaced by the filter. */
     removeFilter: string;
+    /** Eyebrow of the home page. */
+    homeEyebrow: string;
+    /** First line of the home title, followed by `homeTitleAccent`. */
+    homeTitle: string;
+    /** Second line of the home title, the one carrying the gradient. */
+    homeTitleAccent: string;
+    /** Paragraph under the home title. */
+    homeLede: string;
+    /** Heading of the game cards. */
+    homeChooseGame: string;
+    /** Badge of a game whose tier list is out. */
+    homeAvailable: string;
+    /** Badge of a game whose tier list is not out yet. */
+    homeSoon: string;
+    /** Call to action of a game whose tier list is out. */
+    homeCtaAvailable: string;
+    /** Call to action of a game whose tier list is not out yet. */
+    homeCtaSoon: string;
+    /** Footer notice of the home page. */
+    homeDisclaimer: string;
+    /** Decorative caption of the Civilization VII card. */
+    homeEraFlow: string;
     /** Eyebrow of the 404 page. */
     notFoundEyebrow: string;
     /** Title of the 404 page. */
@@ -105,6 +127,13 @@ export interface UiMessages {
     backPrevious: string;
 }
 
+export interface HomeGameMessages {
+    /** Era the card's styling quotes ("Antiquity"). */
+    era: string;
+    /** One-line pitch of the game. */
+    line: string;
+}
+
 export interface StageMessages {
     /** Stage name, replaced by its state once the stage is running or done. */
     key: string;
@@ -129,6 +158,8 @@ export interface Messages {
     tiers: readonly TierMessages[];
     /** The four research stages of a game that is not ranked yet, in order. */
     wipStages: readonly StageMessages[];
+    /** Home card copy, in the order of data/games.ts. */
+    homeGames: readonly HomeGameMessages[];
 }
 
 // CONSTANTS
@@ -180,6 +211,18 @@ export const MESSAGES: Record<Lang, Messages> = {
             result: 'result',
             alphabeticalShort: 'A → Z',
             removeFilter: 'Remove {name}',
+            homeEyebrow: 'Three games · One question',
+            homeTitle: 'Which era',
+            homeTitleAccent: 'will you dominate?',
+            homeLede:
+                'Civilization rankings kept up to date with the meta. Pick your game, find your people, start the match.',
+            homeChooseGame: 'Choose a game',
+            homeAvailable: 'Available',
+            homeSoon: 'Soon',
+            homeCtaAvailable: 'See the tier list',
+            homeCtaSoon: 'In the works',
+            homeDisclaimer: 'Fan site, not affiliated with Firaxis or 2K.',
+            homeEraFlow: 'Atomic era → information',
             notFoundEyebrow: 'Error 404',
             notFoundTitle: 'Uncharted land',
             notFoundText:
@@ -209,6 +252,20 @@ export const MESSAGES: Record<Lang, Messages> = {
             { key: 'Testing', label: 'Test games' },
             { key: 'Ranking', label: 'Tier assignment' },
             { key: 'Release', label: 'Tier list online' },
+        ],
+        homeGames: [
+            {
+                era: 'Antiquity',
+                line: 'One tile, one unit. The competitive classic, Brave New World included.',
+            },
+            {
+                era: 'Middle Ages',
+                line: 'Districts, governors and cities that spill over the map.',
+            },
+            {
+                era: 'Modern era',
+                line: 'Three ages, free leaders and civilizations that follow one another.',
+            },
         ],
         tiers: [
             { label: 'Tier S', rank: 'Legend', sub: 'Dominant — viable in every situation' },
@@ -267,6 +324,18 @@ export const MESSAGES: Record<Lang, Messages> = {
             result: 'Ergebnis',
             alphabeticalShort: 'A → Z',
             removeFilter: '{name} entfernen',
+            homeEyebrow: 'Drei Spiele · Eine Frage',
+            homeTitle: 'Welche Ära',
+            homeTitleAccent: 'wirst du beherrschen?',
+            homeLede:
+                'Zivilisations-Rankings, laufend an die Meta angepasst. Wähle dein Spiel, finde dein Volk, starte die Partie.',
+            homeChooseGame: 'Spiel wählen',
+            homeAvailable: 'Verfügbar',
+            homeSoon: 'Bald',
+            homeCtaAvailable: 'Tier-Liste ansehen',
+            homeCtaSoon: 'In Arbeit',
+            homeDisclaimer: 'Fanseite, nicht mit Firaxis oder 2K verbunden.',
+            homeEraFlow: 'Atomzeitalter → Information',
             notFoundEyebrow: 'Fehler 404',
             notFoundTitle: 'Unerforschtes Land',
             notFoundText:
@@ -296,6 +365,20 @@ export const MESSAGES: Record<Lang, Messages> = {
             { key: 'Tests', label: 'Testpartien' },
             { key: 'Einordnung', label: 'Tier-Zuweisung' },
             { key: 'Veröffentlichung', label: 'Tier-Liste online' },
+        ],
+        homeGames: [
+            {
+                era: 'Antike',
+                line: 'Ein Feld, eine Einheit. Der kompetitive Klassiker, inklusive Brave New World.',
+            },
+            {
+                era: 'Mittelalter',
+                line: 'Bezirke, Gouverneure und Städte, die über die Karte wachsen.',
+            },
+            {
+                era: 'Moderne',
+                line: 'Drei Zeitalter, freie Anführer und Zivilisationen, die einander folgen.',
+            },
         ],
         tiers: [
             { label: 'Tier S', rank: 'Legende', sub: 'Dominant — in jeder Situation spielbar' },
@@ -350,6 +433,18 @@ export const MESSAGES: Record<Lang, Messages> = {
             result: 'resultado',
             alphabeticalShort: 'A → Z',
             removeFilter: 'Quitar {name}',
+            homeEyebrow: 'Tres juegos · Una pregunta',
+            homeTitle: '¿Qué era',
+            homeTitleAccent: 'vas a dominar?',
+            homeLede:
+                'Clasificaciones de civilizaciones al día con la meta. Elige tu juego, encuentra tu pueblo, empieza la partida.',
+            homeChooseGame: 'Elegir un juego',
+            homeAvailable: 'Disponible',
+            homeSoon: 'Pronto',
+            homeCtaAvailable: 'Ver la tier list',
+            homeCtaSoon: 'En preparación',
+            homeDisclaimer: 'Sitio de fans, sin afiliación con Firaxis ni 2K.',
+            homeEraFlow: 'Era atómica → información',
             notFoundEyebrow: 'Error 404',
             notFoundTitle: 'Tierra inexplorada',
             notFoundText:
@@ -379,6 +474,20 @@ export const MESSAGES: Record<Lang, Messages> = {
             { key: 'Pruebas', label: 'Partidas de prueba' },
             { key: 'Clasificación', label: 'Asignación de tiers' },
             { key: 'Publicación', label: 'Tier list en línea' },
+        ],
+        homeGames: [
+            {
+                era: 'Antigüedad',
+                line: 'Una casilla, una unidad. El clásico competitivo, con Brave New World.',
+            },
+            {
+                era: 'Edad Media',
+                line: 'Distritos, gobernadores y ciudades que se desbordan por el mapa.',
+            },
+            {
+                era: 'Era moderna',
+                line: 'Tres edades, líderes libres y civilizaciones que se suceden.',
+            },
         ],
         tiers: [
             {
@@ -441,6 +550,18 @@ export const MESSAGES: Record<Lang, Messages> = {
             result: 'résultat',
             alphabeticalShort: 'A → Z',
             removeFilter: 'Retirer {name}',
+            homeEyebrow: 'Trois jeux · Une seule question',
+            homeTitle: 'Quelle ère',
+            homeTitleAccent: 'allez-vous dominer ?',
+            homeLede:
+                'Des classements de civilisations tenus à jour selon la méta. Choisissez votre jeu, trouvez votre peuple, lancez la partie.',
+            homeChooseGame: 'Choisir un jeu',
+            homeAvailable: 'Disponible',
+            homeSoon: 'Bientôt',
+            homeCtaAvailable: 'Voir la tier list',
+            homeCtaSoon: 'En préparation',
+            homeDisclaimer: 'Site de fans, non affilié à Firaxis ou 2K.',
+            homeEraFlow: 'Ère atomique → information',
             notFoundEyebrow: 'Erreur 404',
             notFoundTitle: 'Terre inexplorée',
             notFoundText:
@@ -470,6 +591,20 @@ export const MESSAGES: Record<Lang, Messages> = {
             { key: 'Tests', label: 'Parties de test' },
             { key: 'Classement', label: 'Attribution des tiers' },
             { key: 'Publication', label: 'Tier list en ligne' },
+        ],
+        homeGames: [
+            {
+                era: 'Antiquité',
+                line: 'Une case, une unité. Le classique compétitif, Brave New World inclus.',
+            },
+            {
+                era: 'Moyen Âge',
+                line: 'Districts, gouverneurs et cités qui débordent sur la carte.',
+            },
+            {
+                era: 'Ère moderne',
+                line: 'Trois âges, des dirigeants libres et des civilisations qui se succèdent.',
+            },
         ],
         tiers: [
             {
@@ -532,6 +667,18 @@ export const MESSAGES: Record<Lang, Messages> = {
             result: 'risultato',
             alphabeticalShort: 'A → Z',
             removeFilter: 'Rimuovi {name}',
+            homeEyebrow: 'Tre giochi · Una sola domanda',
+            homeTitle: 'Quale era',
+            homeTitleAccent: 'dominerai?',
+            homeLede:
+                'Classifiche di civiltà aggiornate secondo il meta. Scegli il gioco, trova il tuo popolo, inizia la partita.',
+            homeChooseGame: 'Scegli un gioco',
+            homeAvailable: 'Disponibile',
+            homeSoon: 'Presto',
+            homeCtaAvailable: 'Vedi la tier list',
+            homeCtaSoon: 'In preparazione',
+            homeDisclaimer: 'Sito di fan, non affiliato a Firaxis o 2K.',
+            homeEraFlow: 'Era atomica → informazione',
             notFoundEyebrow: 'Errore 404',
             notFoundTitle: 'Terra inesplorata',
             notFoundText:
@@ -561,6 +708,17 @@ export const MESSAGES: Record<Lang, Messages> = {
             { key: 'Test', label: 'Partite di prova' },
             { key: 'Classifica', label: 'Assegnazione dei tier' },
             { key: 'Pubblicazione', label: 'Tier list online' },
+        ],
+        homeGames: [
+            {
+                era: 'Antichità',
+                line: 'Una casella, una unità. Il classico competitivo, Brave New World incluso.',
+            },
+            {
+                era: 'Medioevo',
+                line: 'Distretti, governatori e città che si allargano sulla mappa.',
+            },
+            { era: 'Era moderna', line: 'Tre ere, leader liberi e civiltà che si susseguono.' },
         ],
         tiers: [
             { label: 'Tier S', rank: 'Leggenda', sub: 'Dominanti — valide in ogni situazione' },
@@ -615,6 +773,18 @@ export const MESSAGES: Record<Lang, Messages> = {
             result: '件',
             alphabeticalShort: 'A → Z',
             removeFilter: '{name}を解除',
+            homeEyebrow: '3つのゲーム · ただ一つの問い',
+            homeTitle: 'どの時代を',
+            homeTitleAccent: '歯する？',
+            homeLede:
+                'メタに合わせて更新される文明ランク。ゲームを選んで、民を見つけて、対局を始めましょう。',
+            homeChooseGame: 'ゲームを選ぶ',
+            homeAvailable: '公開中',
+            homeSoon: '準備中',
+            homeCtaAvailable: 'ティアリストを見る',
+            homeCtaSoon: '制作中',
+            homeDisclaimer: 'ファンサイトです。Firaxis および 2K との関係はありません。',
+            homeEraFlow: '原子力時代 → 情報',
             notFoundEyebrow: 'エラー 404',
             notFoundTitle: '未探索の大地',
             notFoundText:
@@ -644,6 +814,11 @@ export const MESSAGES: Record<Lang, Messages> = {
             { key: 'テスト', label: 'テストプレイ' },
             { key: '格付け', label: 'ティアの割り当て' },
             { key: '公開', label: 'ティアリスト公開' },
+        ],
+        homeGames: [
+            { era: '古代', line: '1タイル1ユニット。Brave New World を含む競技的な定番。' },
+            { era: '中世', line: '区画、総督、そしてマップに広がる都市。' },
+            { era: '近代', line: '3つの時代、自由な指導者、そして入れ替わる文明。' },
         ],
         tiers: [
             { label: 'ティアS', rank: '伝説', sub: '支配的 — あらゆる状況で活躍' },
@@ -698,6 +873,18 @@ export const MESSAGES: Record<Lang, Messages> = {
             result: '개 결과',
             alphabeticalShort: '가나다순',
             removeFilter: '{name} 제거',
+            homeEyebrow: '세 게임 · 하나의 질문',
+            homeTitle: '어떤 시대를',
+            homeTitleAccent: '지배하시것에요?',
+            homeLede:
+                '메타에 맞춰 갱습되는 문업 순위. 게임을 고르고, 문업을 짝고, 대전을 시작하세요.',
+            homeChooseGame: '게임 선택',
+            homeAvailable: '제공 중',
+            homeSoon: '준버 중',
+            homeCtaAvailable: '티어 리스트 보기',
+            homeCtaSoon: '제작 중',
+            homeDisclaimer: '팬 사이트이며 Firaxis 또는 2K와 관련이 없습니다.',
+            homeEraFlow: '원자력 시대 → 정보',
             notFoundEyebrow: '에러 404',
             notFoundTitle: '미개추 지역',
             notFoundText:
@@ -727,6 +914,11 @@ export const MESSAGES: Record<Lang, Messages> = {
             { key: '테스트', label: '테스트 플레이' },
             { key: '등급', label: '티어 배정' },
             { key: '공개', label: '티어 리스트 공개' },
+        ],
+        homeGames: [
+            { era: '고대', line: '한 칸에 한 유니읏. Brave New World를 포함한 경쟁의 정석.' },
+            { era: '중세', line: '구역과 총독, 그리고 지도로 펼지는 도시.' },
+            { era: '근대', line: '세 시대, 자유로운 지도자, 그리고 이어지는 문업.' },
         ],
         tiers: [
             { label: '티어 S', rank: '전설', sub: '압도적 — 어떤 상황에서도 강력합니다' },
@@ -781,6 +973,18 @@ export const MESSAGES: Record<Lang, Messages> = {
             result: 'wynik',
             alphabeticalShort: 'A → Z',
             removeFilter: 'Usuń: {name}',
+            homeEyebrow: 'Trzy gry · Jedno pytanie',
+            homeTitle: 'Którą erę',
+            homeTitleAccent: 'zdominujesz?',
+            homeLede:
+                'Rankingi cywilizacji aktualizowane wraz z metą. Wybierz grę, znajdź swój lud, rozpocznij rozgrywkę.',
+            homeChooseGame: 'Wybierz grę',
+            homeAvailable: 'Dostępne',
+            homeSoon: 'Wkrótce',
+            homeCtaAvailable: 'Zobacz tier listę',
+            homeCtaSoon: 'W przygotowaniu',
+            homeDisclaimer: 'Strona fanów, niezwiązana z Firaxis ani 2K.',
+            homeEraFlow: 'Era atomowa → informacja',
             notFoundEyebrow: 'Błąd 404',
             notFoundTitle: 'Niezbadana ziemia',
             notFoundText:
@@ -810,6 +1014,20 @@ export const MESSAGES: Record<Lang, Messages> = {
             { key: 'Testy', label: 'Rozgrywki testowe' },
             { key: 'Ranking', label: 'Przypisanie tierów' },
             { key: 'Publikacja', label: 'Tier lista online' },
+        ],
+        homeGames: [
+            {
+                era: 'Starożytność',
+                line: 'Jedno pole, jedna jednostka. Klasyk rozgrywki, z Brave New World.',
+            },
+            {
+                era: 'Średniowiecze',
+                line: 'Dzielnice, gubernatorzy i miasta rozlewające się po mapie.',
+            },
+            {
+                era: 'Era nowoczesna',
+                line: 'Trzy epoki, wolni przywódcy i cywilizacje następujące po sobie.',
+            },
         ],
         tiers: [
             {
@@ -868,6 +1086,18 @@ export const MESSAGES: Record<Lang, Messages> = {
             result: 'результат',
             alphabeticalShort: 'А → Я',
             removeFilter: 'Убрать: {name}',
+            homeEyebrow: 'Три игры · Один вопрос',
+            homeTitle: 'Какую эпоху',
+            homeTitleAccent: 'вы покорите?',
+            homeLede:
+                'Рейтинги цивилизаций, которые обновляются вслед за метой. Выберите игру, найдите свой народ, начните партию.',
+            homeChooseGame: 'Выбрать игру',
+            homeAvailable: 'Доступно',
+            homeSoon: 'Скоро',
+            homeCtaAvailable: 'Смотреть тир-лист',
+            homeCtaSoon: 'В работе',
+            homeDisclaimer: 'Фанатский сайт, не связан с Firaxis или 2K.',
+            homeEraFlow: 'Атомная эра → информация',
             notFoundEyebrow: 'Ошибка 404',
             notFoundTitle: 'Неисследованная земля',
             notFoundText:
@@ -897,6 +1127,17 @@ export const MESSAGES: Record<Lang, Messages> = {
             { key: 'Тесты', label: 'Тестовые партии' },
             { key: 'Рейтинг', label: 'Распределение тиров' },
             { key: 'Публикация', label: 'Тир-лист опубликован' },
+        ],
+        homeGames: [
+            {
+                era: 'Античность',
+                line: 'Одна клетка — один юнит. Конкурентная классика с Brave New World.',
+            },
+            { era: 'Средние века', line: 'Районы, губернаторы и города, растекающиеся по карте.' },
+            {
+                era: 'Новое время',
+                line: 'Три эпохи, свободные лидеры и цивилизации, сменяющие друг друга.',
+            },
         ],
         tiers: [
             { label: 'Уровень S', rank: 'Легенда', sub: 'Доминируют — сильны в любой ситуации' },
@@ -959,6 +1200,17 @@ export const MESSAGES: Record<Lang, Messages> = {
             result: '个结果',
             alphabeticalShort: 'A → Z',
             removeFilter: '移除{name}',
+            homeEyebrow: '三款游戏 · 一个问题',
+            homeTitle: '你要统治',
+            homeTitleAccent: '哪一个时代？',
+            homeLede: '随版本环境更新的文明强度榜。选好游戏，找到你的民族，开局。',
+            homeChooseGame: '选择游戏',
+            homeAvailable: '已上线',
+            homeSoon: '敬请期待',
+            homeCtaAvailable: '查看强度榜',
+            homeCtaSoon: '正在制作',
+            homeDisclaimer: '粉丝网站，与 Firaxis 和 2K 无关。',
+            homeEraFlow: '原子时代 → 信息',
             notFoundEyebrow: '错误 404',
             notFoundTitle: '未探索的土地',
             notFoundText: '这一页仍在战争迷难之下。可能是链接已失效，或这个格子从未存在于地图上。',
@@ -987,6 +1239,11 @@ export const MESSAGES: Record<Lang, Messages> = {
             { key: '测试', label: '测试对局' },
             { key: '评级', label: '分配等级' },
             { key: '发布', label: '强度榜上线' },
+        ],
+        homeGames: [
+            { era: '远古', line: '一格一单位。含《丽丽新世界》的竞技经典。' },
+            { era: '中世纪', line: '区域、总督，以及在地图上铺开的城市。' },
+            { era: '近代', line: '三个时代、自由搭配的领袖，以及更替的文明。' },
         ],
         tiers: [
             { label: 'S级', rank: '传奇', sub: '统治级 — 适用于任何局面' },

@@ -4,7 +4,6 @@
     "installCommand": "pnpm install --frozen-lockfile",
     "buildCommand": "pnpm build",
     "outputDirectory": "dist",
-    "redirects": [{ "source": "/", "destination": "/civilization-5", "permanent": false }],
     "rewrites": [
         { "source": "/civilization-5", "destination": "/index.html" },
         { "source": "/civilization-6", "destination": "/index.html" },

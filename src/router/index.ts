@@ -1,6 +1,7 @@
 /**
- * One route per game: Civilization V has its tier list, VI and VII their work in
- * progress page. The 403 and the unknown paths own their own page.
+ * "/" lands on the home page, then one route per game: Civilization V has its
+ * tier list, VI and VII their work in progress page. The 403 and the unknown
+ * paths own their own page.
  */
 import {
     createRouter,
@@ -8,14 +9,18 @@ import {
     type RouteRecordRaw,
     type RouterHistory,
 } from 'vue-router';
-import { DEFAULT_GAME_PATH } from '../data/games';
 
 // CONSTANTS
 // ##############
 const workInProgressView = () => import('../views/WorkInProgressView.vue');
 
 export const routes: RouteRecordRaw[] = [
-    { path: '/', redirect: DEFAULT_GAME_PATH },
+    {
+        path: '/',
+        name: 'home',
+        component: () => import('../views/HomeView.vue'),
+        meta: { title: 'Better Civ' },
+    },
     {
         path: '/civilization-5',
         name: 'civilization-5',

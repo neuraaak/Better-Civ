@@ -10,7 +10,7 @@ const jsonResponse = (body: unknown, status = 200) =>
     Promise.resolve(new Response(JSON.stringify(body), { status }));
 
 // The header and the game view are lazy-loaded: wait for their dynamic imports to resolve
-const mountApp = async (path = '/') => {
+const mountApp = async (path = '/civilization-5') => {
     const router = await createTestRouter(path);
     const wrapper = mount(App, { global: { plugins: [router] } });
     await vi.dynamicImportSettled();
@@ -97,13 +97,15 @@ describe('App.vue', () => {
     });
 
     describe('routes', () => {
-        it('redirects / to the Civilization V tier list', async () => {
-            fetchMock.mockImplementation(() => jsonResponse([{ id: 21, name: 'Espagne' }]));
+        it('serves the home page on /', async () => {
+            fetchMock.mockImplementation(() => jsonResponse([]));
             const wrapper = await mountApp('/');
 
-            expect(wrapper.router.currentRoute.value.path).toBe('/civilization-5');
-            expect(cardNames(wrapper)).toEqual(['Espagne']);
-            expect(document.title).toBe('Better Civ5');
+            expect(wrapper.router.currentRoute.value.name).toBe('home');
+            expect(wrapper.findAll('.cards .card')).toHaveLength(3);
+            expect(document.title).toBe('Better Civ');
+            // The home page needs no civilization data
+            expect(fetchMock).not.toHaveBeenCalled();
         });
 
         it('serves the tier list on /civilization-5', async () => {
