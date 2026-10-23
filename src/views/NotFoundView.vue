@@ -314,7 +314,33 @@
     @media (max-width: 800px) {
         .not-found {
             gap: 28px;
-            padding-top: 36px;
+            padding-top: 32px;
+        }
+        .nf-column {
+            gap: 14px;
+        }
+        .code {
+            font-size: clamp(72px, 22vw, 184px);
+        }
+        /* Full width made the map a thin band; this keeps it square-ish and centred */
+        .map {
+            max-width: 420px;
+            margin: 0 auto;
+        }
+        /* 44px is the comfortable thumb target the design's 40px misses */
+        .action {
+            height: 44px;
+            flex: 1 1 auto;
+            justify-content: center;
+        }
+    }
+    @media (max-width: 480px) {
+        .lede {
+            font-size: 15px;
+        }
+        .actions {
+            flex-direction: column;
+            align-items: stretch;
         }
     }
     @media (prefers-reduced-motion: reduce) {
