@@ -5,7 +5,12 @@
     "buildCommand": "pnpm build",
     "outputDirectory": "dist",
     "redirects": [{ "source": "/", "destination": "/civilization-5", "permanent": false }],
-    "rewrites": [{ "source": "/civilization-5", "destination": "/index.html" }],
+    "rewrites": [
+        { "source": "/civilization-5", "destination": "/index.html" },
+        { "source": "/civilization-6", "destination": "/index.html" },
+        { "source": "/civilization-7", "destination": "/index.html" },
+        { "source": "/403", "destination": "/index.html" }
+    ],
     "headers": [
         {
             "source": "/assets/(.*)",

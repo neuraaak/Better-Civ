@@ -114,14 +114,38 @@ describe('App.vue', () => {
             expect(cardNames(wrapper)).toEqual(['Espagne']);
         });
 
-        it('sends the unreleased games and unknown paths back to Civilization V', async () => {
+        it('shows the status page on the 403 and on unknown paths', async () => {
             fetchMock.mockImplementation(() => jsonResponse([]));
 
-            for (const path of ['/civilization-6', '/civilization-7', '/nope/deep']) {
+            for (const [path, code] of [
+                ['/403', '403'],
+                ['/nope/deep', '404'],
+            ]) {
                 const wrapper = await mountApp(path);
-                expect(wrapper.router.currentRoute.value.path).toBe('/civilization-5');
+                expect(wrapper.router.currentRoute.value.path).toBe(path);
+                expect(wrapper.find('.status .eyebrow').text()).toBe(code);
                 wrapper.unmount();
             }
+            // The API is never hit outside the Civilization V tier list
+            expect(fetchMock).not.toHaveBeenCalled();
+        });
+
+        it('shows the work in progress page on the unreleased games', async () => {
+            fetchMock.mockImplementation(() => jsonResponse([]));
+
+            for (const [path, numeral] of [
+                ['/civilization-6', 'VI'],
+                ['/civilization-7', 'VII'],
+            ]) {
+                const wrapper = await mountApp(path);
+                expect(wrapper.router.currentRoute.value.path).toBe(path);
+                expect(wrapper.find('.wip .watermark').text()).toBe(numeral);
+                expect(wrapper.find('.wip h1').text()).toBe(
+                    'La tier list est encore en cours de recherche'
+                );
+                wrapper.unmount();
+            }
+            expect(fetchMock).not.toHaveBeenCalled();
         });
     });
 });

@@ -65,6 +65,47 @@ export interface UiMessages {
     alphabeticalShort: string;
     /** Accessible name of the × of a filter pill; `{name}` is replaced by the filter. */
     removeFilter: string;
+    /** Title of the 404 page. */
+    notFoundTitle: string;
+    /** Body of the 404 page. */
+    notFoundText: string;
+    /** Title of the 403 page. */
+    forbiddenTitle: string;
+    /** Body of the 403 page. */
+    forbiddenText: string;
+    /** Eyebrow of the pages of the games that are not ranked yet. */
+    wipEyebrow: string;
+    /** Title of the pages of the games that are not ranked yet. */
+    wipTitle: string;
+    /** Intro of the Civilization VI page. */
+    wipIntroCiv6: string;
+    /** Intro of the Civilization VII page. */
+    wipIntroCiv7: string;
+    /** Eyebrow of the research card. */
+    wipResearch: string;
+    /** Name of the research; `{game}` is replaced by the game. */
+    wipTierList: string;
+    /** Unit of the remaining turns, shown in Roman numerals. */
+    wipTurnsLeft: string;
+    /** State of a finished research stage. */
+    wipDone: string;
+    /** State of the running research stage. */
+    wipInProgress: string;
+    /** Title of the blurred tier list preview. */
+    wipPreviewLocked: string;
+    /** Subtitle of the preview; `{turns}` is replaced by the remaining turns. */
+    wipPreviewSub: string;
+    /** Link back to the ranked game; `{game}` is replaced by its name. */
+    wipBackToDefault: string;
+    /** Link back to the default tier list, shown on the status pages. */
+    backHome: string;
+}
+
+export interface StageMessages {
+    /** Stage name, replaced by its state once the stage is running or done. */
+    key: string;
+    /** One-line description of the stage. */
+    label: string;
 }
 
 export interface TierMessages {
@@ -82,6 +123,8 @@ export interface Messages {
     tags: readonly string[];
     /** Tier copy indexed by tier id (see data/taxonomy.ts). */
     tiers: readonly TierMessages[];
+    /** The four research stages of a game that is not ranked yet, in order. */
+    wipStages: readonly StageMessages[];
 }
 
 // CONSTANTS
@@ -133,8 +176,33 @@ export const MESSAGES: Record<Lang, Messages> = {
             result: 'result',
             alphabeticalShort: 'A → Z',
             removeFilter: 'Remove {name}',
+            notFoundTitle: 'Page not found',
+            notFoundText: 'This page does not exist or has moved.',
+            forbiddenTitle: 'Access denied',
+            forbiddenText: 'You are not allowed to see this page.',
+            wipEyebrow: 'Research under way',
+            wipTitle: 'This tier list is still being researched',
+            wipIntroCiv6:
+                'Every civilization is played out, across several maps and difficulty levels, before it gets ranked. The bulk of the work is done - the tiers still have to be settled.',
+            wipIntroCiv7:
+                'Civilization VII swaps civilization at every age, so the ranking will be made age by age. We are still gathering game data before the test games start.',
+            wipResearch: 'Research',
+            wipTierList: '{game} tier list',
+            wipTurnsLeft: 'turns left',
+            wipDone: 'Done',
+            wipInProgress: 'Under way',
+            wipPreviewLocked: 'Preview locked',
+            wipPreviewSub: 'Unlocked on release · {turns} turns',
+            wipBackToDefault: 'In the meantime, see the {game} tier list',
+            backHome: 'Back to the tier list',
         },
         tags: ['Versatile', 'Culture', 'Faith', 'Science', 'Military', 'Trade', 'Production'],
+        wipStages: [
+            { key: 'Gathering', label: 'Game data' },
+            { key: 'Testing', label: 'Test games' },
+            { key: 'Ranking', label: 'Tier assignment' },
+            { key: 'Release', label: 'Tier list online' },
+        ],
         tiers: [
             { label: 'Tier S', rank: 'Legend', sub: 'Dominant — viable in every situation' },
             { label: 'Tier A', rank: 'Empire', sub: 'Very strong — excellent in their niche' },
@@ -192,8 +260,33 @@ export const MESSAGES: Record<Lang, Messages> = {
             result: 'Ergebnis',
             alphabeticalShort: 'A → Z',
             removeFilter: '{name} entfernen',
+            notFoundTitle: 'Seite nicht gefunden',
+            notFoundText: 'Diese Seite existiert nicht oder wurde verschoben.',
+            forbiddenTitle: 'Zugriff verweigert',
+            forbiddenText: 'Du darfst diese Seite nicht sehen.',
+            wipEyebrow: 'Recherche läuft',
+            wipTitle: 'Diese Tier-Liste wird noch erforscht',
+            wipIntroCiv6:
+                'Jede Zivilisation wird auf mehreren Karten und Schwierigkeitsgraden gespielt, bevor sie eingeordnet wird. Der Großteil ist erledigt — die Tiers müssen noch entschieden werden.',
+            wipIntroCiv7:
+                'Civilization VII wechselt die Zivilisation in jedem Zeitalter, die Einordnung erfolgt also zeitalterweise. Wir sammeln noch Partiedaten, bevor die Testspiele beginnen.',
+            wipResearch: 'Recherche',
+            wipTierList: 'Tier-Liste {game}',
+            wipTurnsLeft: 'Runden übrig',
+            wipDone: 'Fertig',
+            wipInProgress: 'Läuft',
+            wipPreviewLocked: 'Vorschau gesperrt',
+            wipPreviewSub: 'Frei zur Veröffentlichung · {turns} Runden',
+            wipBackToDefault: 'Schau dir in der Zwischenzeit die Tier-Liste {game} an',
+            backHome: 'Zurück zur Tier-Liste',
         },
         tags: ['Vielseitig', 'Kultur', 'Glaube', 'Wissenschaft', 'Militär', 'Handel', 'Produktion'],
+        wipStages: [
+            { key: 'Erhebung', label: 'Partiedaten' },
+            { key: 'Tests', label: 'Testpartien' },
+            { key: 'Einordnung', label: 'Tier-Zuweisung' },
+            { key: 'Veröffentlichung', label: 'Tier-Liste online' },
+        ],
         tiers: [
             { label: 'Tier S', rank: 'Legende', sub: 'Dominant — in jeder Situation spielbar' },
             { label: 'Tier A', rank: 'Imperium', sub: 'Sehr stark — in ihrer Nische hervorragend' },
@@ -247,8 +340,33 @@ export const MESSAGES: Record<Lang, Messages> = {
             result: 'resultado',
             alphabeticalShort: 'A → Z',
             removeFilter: 'Quitar {name}',
+            notFoundTitle: 'Página no encontrada',
+            notFoundText: 'Esta página no existe o se ha movido.',
+            forbiddenTitle: 'Acceso denegado',
+            forbiddenText: 'No tienes permiso para ver esta página.',
+            wipEyebrow: 'Investigación en curso',
+            wipTitle: 'Esta tier list todavía se está investigando',
+            wipIntroCiv6:
+                'Cada civilización se juega en varios mapas y niveles de dificultad antes de clasificarla. El grueso del trabajo está hecho — faltan por decidir los tiers.',
+            wipIntroCiv7:
+                'Civilization VII cambia de civilización en cada era, así que la clasificación se hará era por era. Aún estamos reuniendo datos de partidas antes de las pruebas.',
+            wipResearch: 'Investigación',
+            wipTierList: 'Tier list {game}',
+            wipTurnsLeft: 'turnos restantes',
+            wipDone: 'Hecho',
+            wipInProgress: 'En curso',
+            wipPreviewLocked: 'Vista previa bloqueada',
+            wipPreviewSub: 'Disponible al publicarse · {turns} turnos',
+            wipBackToDefault: 'Mientras tanto, mira la tier list {game}',
+            backHome: 'Volver a la tier list',
         },
         tags: ['Versátil', 'Cultura', 'Fe', 'Ciencia', 'Militar', 'Comercio', 'Producción'],
+        wipStages: [
+            { key: 'Recogida', label: 'Datos de partidas' },
+            { key: 'Pruebas', label: 'Partidas de prueba' },
+            { key: 'Clasificación', label: 'Asignación de tiers' },
+            { key: 'Publicación', label: 'Tier list en línea' },
+        ],
         tiers: [
             {
                 label: 'Tier S',
@@ -310,8 +428,33 @@ export const MESSAGES: Record<Lang, Messages> = {
             result: 'résultat',
             alphabeticalShort: 'A → Z',
             removeFilter: 'Retirer {name}',
+            notFoundTitle: 'Page introuvable',
+            notFoundText: "Cette page n'existe pas ou a été déplacée.",
+            forbiddenTitle: 'Accès refusé',
+            forbiddenText: "Vous n'avez pas le droit de voir cette page.",
+            wipEyebrow: 'Recherche en cours',
+            wipTitle: 'La tier list est encore en cours de recherche',
+            wipIntroCiv6:
+                "Chaque civilisation est testée en partie, sur plusieurs cartes et niveaux de difficulté, avant d'être classée. Le gros du travail est fait — reste à trancher les tiers.",
+            wipIntroCiv7:
+                "Civilization VII change de civilisation à chaque âge : le classement se fera âge par âge. On rassemble encore les données de parties avant d'attaquer les tests.",
+            wipResearch: 'Recherche',
+            wipTierList: 'Tier list {game}',
+            wipTurnsLeft: 'tours restants',
+            wipDone: 'Terminé',
+            wipInProgress: 'En cours',
+            wipPreviewLocked: 'Aperçu verrouillé',
+            wipPreviewSub: 'Disponible à la publication · {turns} tours',
+            wipBackToDefault: 'En attendant, voir la tier list {game}',
+            backHome: 'Retour à la tier list',
         },
         tags: ['Polyvalent', 'Culture', 'Foi', 'Science', 'Militaire', 'Commerce', 'Production'],
+        wipStages: [
+            { key: 'Collecte', label: 'Données de parties' },
+            { key: 'Tests', label: 'Parties de test' },
+            { key: 'Classement', label: 'Attribution des tiers' },
+            { key: 'Publication', label: 'Tier list en ligne' },
+        ],
         tiers: [
             {
                 label: 'Tier S',
@@ -373,8 +516,33 @@ export const MESSAGES: Record<Lang, Messages> = {
             result: 'risultato',
             alphabeticalShort: 'A → Z',
             removeFilter: 'Rimuovi {name}',
+            notFoundTitle: 'Pagina non trovata',
+            notFoundText: 'Questa pagina non esiste o è stata spostata.',
+            forbiddenTitle: 'Accesso negato',
+            forbiddenText: 'Non hai il permesso di vedere questa pagina.',
+            wipEyebrow: 'Ricerca in corso',
+            wipTitle: 'Questa tier list è ancora in fase di ricerca',
+            wipIntroCiv6:
+                'Ogni civiltà viene giocata su più mappe e livelli di difficoltà prima di essere classificata. Il grosso del lavoro è fatto — restano da decidere i tier.',
+            wipIntroCiv7:
+                'Civilization VII cambia civiltà a ogni era, quindi la classifica sarà fatta era per era. Stiamo ancora raccogliendo dati di partita prima dei test.',
+            wipResearch: 'Ricerca',
+            wipTierList: 'Tier list {game}',
+            wipTurnsLeft: 'turni rimasti',
+            wipDone: 'Completato',
+            wipInProgress: 'In corso',
+            wipPreviewLocked: 'Anteprima bloccata',
+            wipPreviewSub: 'Disponibile alla pubblicazione · {turns} turni',
+            wipBackToDefault: 'Nell’attesa, guarda la tier list {game}',
+            backHome: 'Torna alla tier list',
         },
         tags: ['Versatile', 'Cultura', 'Fede', 'Scienza', 'Militare', 'Commercio', 'Produzione'],
+        wipStages: [
+            { key: 'Raccolta', label: 'Dati di partita' },
+            { key: 'Test', label: 'Partite di prova' },
+            { key: 'Classifica', label: 'Assegnazione dei tier' },
+            { key: 'Pubblicazione', label: 'Tier list online' },
+        ],
         tiers: [
             { label: 'Tier S', rank: 'Leggenda', sub: 'Dominanti — valide in ogni situazione' },
             { label: 'Tier A', rank: 'Impero', sub: 'Molto forti — eccellenti nella loro nicchia' },
@@ -428,8 +596,33 @@ export const MESSAGES: Record<Lang, Messages> = {
             result: '件',
             alphabeticalShort: 'A → Z',
             removeFilter: '{name}を解除',
+            notFoundTitle: 'ページが見つかりません',
+            notFoundText: 'このページは存在しないか、移動されました。',
+            forbiddenTitle: 'アクセスが拒否されました',
+            forbiddenText: 'このページを閲覧する権限がありません。',
+            wipEyebrow: 'リサーチ進行中',
+            wipTitle: 'このティアリストはまだリサーチ中です',
+            wipIntroCiv6:
+                '各文明は複数のマップと隣易度で実際にプレイしてから格付けしています。大部分は終わり、あとはティアを決めるだけです。',
+            wipIntroCiv7:
+                'Civilization VII は時代ごとに文明が変わるため、格付けも時代ごとに行います。テストプレイの前に、まだ対戦データを集めています。',
+            wipResearch: 'リサーチ',
+            wipTierList: '{game} ティアリスト',
+            wipTurnsLeft: 'ターン残り',
+            wipDone: '完了',
+            wipInProgress: '進行中',
+            wipPreviewLocked: 'プレビューはロック中',
+            wipPreviewSub: '公開時に解除 · {turns} ターン',
+            wipBackToDefault: 'それまでは {game} のティアリストをどうぞ',
+            backHome: 'ティアリストに戻る',
         },
         tags: ['多用途', '文化', '信仰', '科学', '軍事', '貿易', '生産'],
+        wipStages: [
+            { key: '収集', label: '対戦データ' },
+            { key: 'テスト', label: 'テストプレイ' },
+            { key: '格付け', label: 'ティアの割り当て' },
+            { key: '公開', label: 'ティアリスト公開' },
+        ],
         tiers: [
             { label: 'ティアS', rank: '伝説', sub: '支配的 — あらゆる状況で活躍' },
             { label: 'ティアA', rank: '帝国', sub: '非常に強力 — 得意分野で優秀' },
@@ -483,8 +676,33 @@ export const MESSAGES: Record<Lang, Messages> = {
             result: '개 결과',
             alphabeticalShort: '가나다순',
             removeFilter: '{name} 제거',
+            notFoundTitle: '페이지를 찾을 수 없습니다',
+            notFoundText: '이 페이지는 존재하지 않거나 이동되었습니다.',
+            forbiddenTitle: '접근이 거부되었습니다',
+            forbiddenText: '이 페이지를 볼 권한이 없습니다.',
+            wipEyebrow: '조사 진행 중',
+            wipTitle: '이 티어 리스트는 아직 조사 중입니다',
+            wipIntroCiv6:
+                '모든 문을 여러 맵과 난이도에서 직접 플레이한 뒤에 등급을 매깁니다. 대부분의 작업은 끝났고, 티어만 확정하면 됩니다.',
+            wipIntroCiv7:
+                'Civilization VII은 시대마다 문이 바뀝및로 등급도 시대별로 매깁니다. 테스트 플레이에 앞서 아직 대전 데이테를 모으는 중입니다.',
+            wipResearch: '조사',
+            wipTierList: '{game} 티어 리스트',
+            wipTurnsLeft: '턴 남음',
+            wipDone: '완료',
+            wipInProgress: '진행 중',
+            wipPreviewLocked: '미리보기 잠김',
+            wipPreviewSub: '공개 시 해제 · {turns}턴',
+            wipBackToDefault: '그동안 {game} 티어 리스트를 보세요',
+            backHome: '티어 리스트로 돌아가기',
         },
         tags: ['변하기 쉬운', '문화', '신앙', '과학', '군사', '무역', '생산'],
+        wipStages: [
+            { key: '수집', label: '대전 데이테' },
+            { key: '테스트', label: '테스트 플레이' },
+            { key: '등급', label: '티어 배정' },
+            { key: '공개', label: '티어 리스트 공개' },
+        ],
         tiers: [
             { label: '티어 S', rank: '전설', sub: '압도적 — 어떤 상황에서도 강력합니다' },
             { label: '티어 A', rank: '제국', sub: '매우 강력함 — 특화 분야에서 뛰어납니다' },
@@ -538,8 +756,33 @@ export const MESSAGES: Record<Lang, Messages> = {
             result: 'wynik',
             alphabeticalShort: 'A → Z',
             removeFilter: 'Usuń: {name}',
+            notFoundTitle: 'Strony nie znaleziono',
+            notFoundText: 'Ta strona nie istnieje lub została przeniesiona.',
+            forbiddenTitle: 'Brak dostępu',
+            forbiddenText: 'Nie masz uprawnień, aby zobaczyć tę stronę.',
+            wipEyebrow: 'Badania w toku',
+            wipTitle: 'Ta tier lista jest jeszcze badana',
+            wipIntroCiv6:
+                'Każda cywilizacja jest rozgrywana na kilku mapach i poziomach trudności, zanim trafi do rankingu. Większość pracy jest za nami — zostaje ustalić tiery.',
+            wipIntroCiv7:
+                'Civilization VII zmienia cywilizację w każdej epoce, więc ranking powstanie epoka po epoce. Wciąż zbieramy dane z rozgrywek przed testami.',
+            wipResearch: 'Badania',
+            wipTierList: 'Tier lista {game}',
+            wipTurnsLeft: 'tur pozostało',
+            wipDone: 'Gotowe',
+            wipInProgress: 'W toku',
+            wipPreviewLocked: 'Podgląd zablokowany',
+            wipPreviewSub: 'Dostępne po publikacji · {turns} tur',
+            wipBackToDefault: 'W międzyczasie zobacz tier listę {game}',
+            backHome: 'Powrót do tier listy',
         },
         tags: ['Wszechstronny', 'Kultura', 'Wiara', 'Nauka', 'Wojskowy', 'Handel', 'Produkcja'],
+        wipStages: [
+            { key: 'Zbieranie', label: 'Dane z rozgrywek' },
+            { key: 'Testy', label: 'Rozgrywki testowe' },
+            { key: 'Ranking', label: 'Przypisanie tierów' },
+            { key: 'Publikacja', label: 'Tier lista online' },
+        ],
         tiers: [
             {
                 label: 'Tier S',
@@ -597,8 +840,33 @@ export const MESSAGES: Record<Lang, Messages> = {
             result: 'результат',
             alphabeticalShort: 'А → Я',
             removeFilter: 'Убрать: {name}',
+            notFoundTitle: 'Страница не найдена',
+            notFoundText: 'Эта страница не существует или была перемещена.',
+            forbiddenTitle: 'Доступ запрещён',
+            forbiddenText: 'У вас нет прав на просмотр этой страницы.',
+            wipEyebrow: 'Идёт исследование',
+            wipTitle: 'Этот тир-лист ещё исследуется',
+            wipIntroCiv6:
+                'Каждую цивилизацию отыгрывают на нескольких картах и уровнях сложности, прежде чем занести в рейтинг. Основная работа сделана — осталось определить тиры.',
+            wipIntroCiv7:
+                'В Civilization VII цивилизация меняется с каждой эпохой, поэтому рейтинг будет составлен по эпохам. Пока мы собираем данные партий перед тестами.',
+            wipResearch: 'Исследование',
+            wipTierList: 'Тир-лист {game}',
+            wipTurnsLeft: 'ходов осталось',
+            wipDone: 'Готово',
+            wipInProgress: 'В работе',
+            wipPreviewLocked: 'Предпросмотр закрыт',
+            wipPreviewSub: 'Откроется с публикацией · {turns} ходов',
+            wipBackToDefault: 'А пока посмотрите тир-лист {game}',
+            backHome: 'Вернуться к тир-листу',
         },
         tags: ['Универсальный', 'Культура', 'Вера', 'Наука', 'Военный', 'Торговля', 'Производство'],
+        wipStages: [
+            { key: 'Сбор', label: 'Данные партий' },
+            { key: 'Тесты', label: 'Тестовые партии' },
+            { key: 'Рейтинг', label: 'Распределение тиров' },
+            { key: 'Публикация', label: 'Тир-лист опубликован' },
+        ],
         tiers: [
             { label: 'Уровень S', rank: 'Легенда', sub: 'Доминируют — сильны в любой ситуации' },
             {
@@ -660,8 +928,33 @@ export const MESSAGES: Record<Lang, Messages> = {
             result: '个结果',
             alphabeticalShort: 'A → Z',
             removeFilter: '移除{name}',
+            notFoundTitle: '页面未找到',
+            notFoundText: '该页面不存在或已移动。',
+            forbiddenTitle: '访问被拒绝',
+            forbiddenText: '你没有权限查看该页面。',
+            wipEyebrow: '研究进行中',
+            wipTitle: '该强度榜仍在研究中',
+            wipIntroCiv6:
+                '每个文明都会在多张地图和多个难度下实战之后才会评级。大部分工作已完成，只剩确定等级。',
+            wipIntroCiv7:
+                'Civilization VII 每个时代都会更换文明，因此评级将按时代进行。我们仍在收集对局数据，之后才开始测试。',
+            wipResearch: '研究',
+            wipTierList: '{game} 强度榜',
+            wipTurnsLeft: '回合剩余',
+            wipDone: '已完成',
+            wipInProgress: '进行中',
+            wipPreviewLocked: '预览已锁定',
+            wipPreviewSub: '发布时解锁 · {turns} 回合',
+            wipBackToDefault: '在此期间，先看看 {game} 强度榜',
+            backHome: '返回强度榜',
         },
         tags: ['多才多艺的', '文化', '信仰', '科学', '军事', '贸易', '生产'],
+        wipStages: [
+            { key: '收集', label: '对局数据' },
+            { key: '测试', label: '测试对局' },
+            { key: '评级', label: '分配等级' },
+            { key: '发布', label: '强度榜上线' },
+        ],
         tiers: [
             { label: 'S级', rank: '传奇', sub: '统治级 — 适用于任何局面' },
             { label: 'A级', rank: '帝国', sub: '非常强大 — 在专长领域表现卓越' },
