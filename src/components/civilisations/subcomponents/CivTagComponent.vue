@@ -54,8 +54,9 @@
         gap: 7px;
         height: 26px;
         padding: 0 10px;
-        background: var(--color-neutral-900);
         color: var(--color-neutral-200);
+        background: color-mix(in srgb, var(--color-neutral-900) 80%, transparent);
+        box-shadow: inset 0 0 0 1px var(--color-neutral-800);
         font-size: 12px;
     }
     .category-icon {

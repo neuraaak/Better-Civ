@@ -35,36 +35,87 @@ describe('MasterCardComponent', () => {
         const wrapper = mount(MasterCardComponent, { props });
 
         expect(wrapper.find('article.civilization-panel').exists()).toBe(true);
-        expect(wrapper.find('.panel-accent').attributes('style')).toContain('oklch(0.62 0.08 50)');
+        expect(wrapper.attributes('style')).toContain('oklch(0.62 0.08 50)');
         expect(wrapper.find('.panel-hero').exists()).toBe(true);
-        expect(wrapper.find('.panel-name').text()).toBe('France');
-        expect(wrapper.find('.tier-meta').text()).toContain('TIER D');
+        expect(wrapper.find('.hero-name').text()).toBe('France');
+        expect(wrapper.find('.hero-rank').text()).toContain('Tier D');
         expect(wrapper.find('.civilization-description').text()).toBe(
             'Une civilisation culturelle.'
         );
         expect(wrapper.find('.leader-name').text()).toBe('Catherine de Médicis');
-        expect(wrapper.findAll('.unique-item')).toHaveLength(2);
         expect(wrapper.find('.panel-position').text()).toBe(props.position);
+        expect(wrapper.find('.bar-frieze.frieze').exists()).toBe(true);
     });
 
     it('lays out the sections of the handoff in order', () => {
         const wrapper = mount(MasterCardComponent, { props });
 
-        const labels = wrapper.findAll('.section-label').map(label => label.text());
-        expect(labels).toEqual([
-            'Bonus de civilisation',
-            'Dirigeant',
-            'Unités uniques',
-            'Bâtiments uniques',
-            'Histoire',
-        ]);
+        expect(wrapper.find('.section-label').text()).toBe('Bonus de civilisation');
+        const headings = wrapper.findAll('.section-heading').map(heading => heading.text());
+        expect(headings).toEqual(['Dirigeant', 'Éléments uniques', 'Histoire']);
         expect(wrapper.find('.bonus-block strong').text()).toBe('Grand Tour');
         expect(wrapper.find('.bonus-block p').text()).toBe(
             'Obtient un niveau de visibilité diplomatique.'
         );
         expect(wrapper.find('.leader-subtitle').text()).toBe('Reine de France');
         expect(wrapper.find('.leader-text p').text()).toBe('Fille de Laurent II de Médicis.');
-        expect(wrapper.find('.panel-rule.meander').exists()).toBe(true);
+    });
+
+    it('opens the unique elements on the first tab that has items', async () => {
+        const wrapper = mount(MasterCardComponent, { props });
+
+        const tabs = wrapper.findAll('.item-tab');
+        expect(tabs.map(tab => tab.text())).toEqual(['Unités 1', 'Bâtiments 1', 'Améliorations 0']);
+        expect(tabs[0].classes()).toContain('active');
+        // The improvements tab is empty, so it cannot be picked
+        expect(tabs[2].classes()).toContain('empty');
+        expect(tabs[2].attributes('disabled')).toBeDefined();
+
+        expect(wrapper.findAll('.unique-item')).toHaveLength(1);
+        expect(wrapper.find('.item-title strong').text()).toBe('Garde impériale');
+
+        await tabs[1].trigger('click');
+        expect(wrapper.find('.item-title strong').text()).toBe('Château');
+    });
+
+    it('shows the stats, yields and collapsible strategy the database carries', async () => {
+        const wrapper = mount(MasterCardComponent, {
+            props: {
+                ...props,
+                civ: {
+                    ...civ,
+                    unique_units: [
+                        {
+                            name: 'Mousquetaire',
+                            cost: 120,
+                            movement: 2,
+                            tech: 'Poudre à canon',
+                            description: 'Fantassin à distance.',
+                            strategy: 'Tenez les collines.',
+                            yields: [{ type: 'culture', amount: 2 }],
+                        },
+                    ],
+                },
+            },
+        });
+
+        const stats = wrapper.findAll('.item-stat').map(stat => stat.text());
+        expect(stats).toEqual(['Production120', 'Mouvement2', 'TechnologiePoudre à canon']);
+        expect(wrapper.find('.item-chip').text()).toBe('+2 Culture');
+        expect(wrapper.find('.item-description').text()).toBe('Fantassin à distance.');
+
+        expect(wrapper.find('.item-strategy').exists()).toBe(false);
+        await wrapper.find('.item-strategy-toggle').trigger('click');
+        expect(wrapper.find('.item-strategy').text()).toBe('Tenez les collines.');
+    });
+
+    it('leaves out the strategy row of an item the database has no advice for', () => {
+        const wrapper = mount(MasterCardComponent, {
+            props: { ...props, civ: { ...civ, unique_units: [{ name: 'Garde' }] } },
+        });
+
+        expect(wrapper.find('.item-strategy-toggle').exists()).toBe(false);
+        expect(wrapper.find('.item-stats').exists()).toBe(false);
     });
 
     it('keeps the footer to the previous and next civilizations only', () => {
@@ -82,7 +133,7 @@ describe('MasterCardComponent', () => {
             props: { ...props, civ: { ...civ, unique_units: [{ name: 'Minuteman|Minutemen' }] } },
         });
 
-        expect(wrapper.findAll('.unique-item')[0].text()).toBe('Minuteman');
+        expect(wrapper.find('.item-title strong').text()).toBe('Minuteman');
     });
 
     it('hides the sections a civilization has no data for', () => {
@@ -91,8 +142,10 @@ describe('MasterCardComponent', () => {
         });
 
         expect(wrapper.findAll('.section-label')).toHaveLength(0);
+        expect(wrapper.findAll('.section-heading')).toHaveLength(0);
+        expect(wrapper.find('.item-tabs').exists()).toBe(false);
         expect(wrapper.find('.panel-tags').exists()).toBe(false);
-        expect(wrapper.find('.panel-name').text()).toBe('Mod civ');
+        expect(wrapper.find('.hero-name').text()).toBe('Mod civ');
     });
 
     it('emits close and navigation events from panel controls', async () => {

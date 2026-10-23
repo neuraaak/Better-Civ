@@ -153,6 +153,21 @@ export const CATEGORY_ICONS: readonly PhosphorIconName[] = [
     'hammer', // Production
 ];
 
+/**
+ * Yield chips of the detail panel, keyed by the `entity_yields.yield_type`
+ * vocabulary of the database. Culture, faith, science and production share the
+ * colour of the matching civilization category.
+ */
+export const YIELD_VISUALS: Readonly<Record<string, { icon: PhosphorIconName; color: string }>> = {
+    food: { icon: 'grains', color: 'oklch(0.80 0.12 120)' },
+    production: { icon: 'hammer', color: categoryColor(6) },
+    gold: { icon: 'coins', color: 'oklch(0.84 0.12 88)' },
+    science: { icon: 'flask', color: categoryColor(3) },
+    culture: { icon: 'mask-happy', color: categoryColor(1) },
+    faith: { icon: 'hands-praying', color: 'oklch(0.86 0.06 85)' },
+    happiness: { icon: 'smiley', color: 'oklch(0.84 0.09 75)' },
+};
+
 // FUNCTIONS
 // ##############
 /** Badge for a tier id, falling back to tier D for unknown ids. */
