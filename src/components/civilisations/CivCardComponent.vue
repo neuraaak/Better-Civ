@@ -78,7 +78,7 @@
     const store = useAppStore();
     const t = useMessages();
     const displayName = computed(() => cleanName(props.name));
-    const imagePath = computed(() => '/img/card-cover.webp');
+    const imagePath = computed(() => '/img/civ5-card-bg.webp');
     const tierPalette = computed(() => {
         const badge = tierBadge(props.tier_id);
         return { '--tier-line': badge.line, '--tier-frame': badge.frame };

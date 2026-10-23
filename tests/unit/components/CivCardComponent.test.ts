@@ -23,7 +23,7 @@ describe('CivCardComponent', () => {
         const card = wrapper.find('article.portrait-card');
         expect(card.attributes('role')).toBe('button');
         expect(card.attributes('tabindex')).toBe('0');
-        expect(wrapper.find('.card-visual').attributes('src')).toBe('/img/card-cover.webp');
+        expect(wrapper.find('.card-visual').attributes('src')).toBe('/img/civ5-card-bg.webp');
         expect(wrapper.find('h2').text()).toBe('France');
         expect(card.attributes('aria-label')).toBe('Ouvrir les détails de France');
         expect(wrapper.findComponent({ name: 'CivTierComponent' }).exists()).toBe(true);
@@ -85,7 +85,7 @@ describe('CivCardComponent', () => {
         expect(card.exists()).toBe(true);
         expect(wrapper.find('.portrait-card').exists()).toBe(false);
         expect(card.find('.classic-media .card-visual').attributes('src')).toBe(
-            '/img/card-cover.webp'
+            '/img/civ5-card-bg.webp'
         );
         expect(card.find('.classic-title h2').text()).toBe('France');
         expect(
