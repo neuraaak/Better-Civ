@@ -30,6 +30,25 @@ describe('CivCardComponent', () => {
         expect(wrapper.findAllComponents({ name: 'CivTagComponent' })).toHaveLength(2);
     });
 
+    it('names the rank and the leader under the centred badge', () => {
+        const wrapper = mount(CivCardComponent, {
+            props: { ...mockCivilization, leader_name: 'Napoléon|Napoléons' },
+        });
+
+        expect(wrapper.find('.card-rank').text()).toBe('Royaume');
+        expect(wrapper.find('.card-leader').text()).toBe('Napoléon');
+        expect(wrapper.find('.card-frieze').exists()).toBe(true);
+        expect(wrapper.findAll('.card-flute')).toHaveLength(2);
+        expect(wrapper.findAll('.card-rules i')).toHaveLength(3);
+    });
+
+    it('leaves the leader line out of a civilization without one', () => {
+        const wrapper = mount(CivCardComponent, { props: mockCivilization });
+
+        expect(wrapper.find('.card-leader').exists()).toBe(false);
+        expect(wrapper.find('.card-rank').exists()).toBe(true);
+    });
+
     it('uses the tier palette for the card frame and its top accent', () => {
         const wrapper = mount(CivCardComponent, {
             props: { ...mockCivilization, tier_id: 4 as TierId },
