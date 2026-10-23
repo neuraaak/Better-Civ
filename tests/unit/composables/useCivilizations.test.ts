@@ -1,18 +1,18 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { flushPromises } from '@vue/test-utils';
 import { effectScope, ref, type EffectScope } from 'vue';
+import { fetchCivilizations } from '@/api/civDb';
 import { clearCivilizationsCache, useCivilizations } from '@/composables/useCivilizations';
 import type { Lang } from '@/i18n/languages';
 
+vi.mock('@/api/civDb', () => ({ fetchCivilizations: vi.fn() }));
+
 describe('useCivilizations', () => {
-    const fetchMock = vi.fn();
+    const fetchMock = vi.mocked(fetchCivilizations);
     let scope: EffectScope;
 
-    /** Resolves with one civilization named after the language of the URL. */
-    const answerWithLanguage = (url: string) => {
-        const lang = url.split('/v1/')[1].split('/')[0];
-        return Promise.resolve(new Response(JSON.stringify([{ id: 20, name: `Inca-${lang}` }])));
-    };
+    /** Resolves with one civilization named after the requested language. */
+    const answerWithLanguage = (lang: Lang) => Promise.resolve([{ id: 20, name: `Inca-${lang}` }]);
 
     const setup = (initial: Lang = 'fr') => {
         const lang = ref<Lang>(initial);
@@ -24,13 +24,11 @@ describe('useCivilizations', () => {
     beforeEach(() => {
         clearCivilizationsCache();
         fetchMock.mockReset();
-        vi.stubGlobal('fetch', fetchMock);
         vi.spyOn(console, 'error').mockImplementation(() => {});
     });
 
     afterEach(() => {
         scope?.stop();
-        vi.unstubAllGlobals();
         vi.restoreAllMocks();
     });
 
@@ -48,7 +46,7 @@ describe('useCivilizations', () => {
     });
 
     it('reports an error for a failed request and recovers on retry', async () => {
-        fetchMock.mockResolvedValueOnce(new Response('', { status: 500 }));
+        fetchMock.mockRejectedValueOnce(new Error('offline'));
         const { civilizations, status, retry } = setup();
         await flushPromises();
 
@@ -67,20 +65,12 @@ describe('useCivilizations', () => {
         const { lang, civilizations, status } = setup();
         await flushPromises();
 
-        fetchMock.mockResolvedValueOnce(new Response('', { status: 500 }));
+        fetchMock.mockRejectedValueOnce(new Error('offline'));
         lang.value = 'de';
         await flushPromises();
 
         expect(status.value).toBe('error');
         expect(civilizations.value).toEqual([]);
-    });
-
-    it('reports an error for an invalid payload', async () => {
-        fetchMock.mockResolvedValue(new Response(JSON.stringify({ not: 'a list' })));
-        const { status } = setup();
-        await flushPromises();
-
-        expect(status.value).toBe('error');
     });
 
     it('serves a language already loaded from the cache', async () => {
@@ -99,17 +89,17 @@ describe('useCivilizations', () => {
 
     it('aborts a pending request so a slow response cannot overwrite a newer language', async () => {
         const signals: AbortSignal[] = [];
-        let resolveFrench: (response: Response) => void = () => {};
-        fetchMock.mockImplementation((url: string, init: RequestInit) => {
-            signals.push(init.signal!);
-            if (url.includes('/fr/')) return new Promise(resolve => (resolveFrench = resolve));
-            return answerWithLanguage(url);
+        let resolveFrench: (civilizations: { id: number; name: string }[]) => void = () => {};
+        fetchMock.mockImplementation((lang, signal) => {
+            signals.push(signal!);
+            if (lang === 'fr') return new Promise(resolve => (resolveFrench = resolve));
+            return answerWithLanguage(lang);
         });
         const { lang, civilizations, status } = setup();
 
         lang.value = 'en';
         await flushPromises();
-        resolveFrench(new Response(JSON.stringify([{ id: 20, name: 'Inca-fr' }])));
+        resolveFrench([{ id: 20, name: 'Inca-fr' }]);
         await flushPromises();
 
         expect(signals[0].aborted).toBe(true);
@@ -123,6 +113,6 @@ describe('useCivilizations', () => {
 
         scope.stop();
 
-        expect((fetchMock.mock.calls[0][1] as RequestInit).signal!.aborted).toBe(true);
+        expect(fetchMock.mock.calls[0][1]!.aborted).toBe(true);
     });
 });
