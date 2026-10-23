@@ -10,6 +10,7 @@ import {
     validateStagingCoverage,
 } from '../../../../../.scripts/db/civ5/lib/staging';
 import { CIV5_LANGUAGES } from '../../../../../.scripts/db/civ5/constants';
+import type { NormalizedResource } from '../../../../../.scripts/db/civ5/types';
 
 const directories: string[] = [];
 
@@ -47,7 +48,7 @@ describe('staging resources', () => {
         database.close();
     });
 
-    it.each([
+    it.each<[string, (resources: NormalizedResource[]) => NormalizedResource[]]>([
         [
             'a missing localization',
             resources => resources.filter(resource => resource.language !== 'fr'),

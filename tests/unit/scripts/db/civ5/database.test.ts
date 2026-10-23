@@ -45,6 +45,7 @@ describe('writeDatabase', () => {
                 language: 'fr',
                 resourceKey: 'civilizations/america',
                 sourceUrl: 'https://eyefyre.github.io/civvapi/v1/fr/civilizations/america.json',
+                sourceId: 1,
                 name: "L'Amérique",
                 payload,
             },
