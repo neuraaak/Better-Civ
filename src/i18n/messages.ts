@@ -65,6 +65,8 @@ export interface UiMessages {
     alphabeticalShort: string;
     /** Accessible name of the × of a filter pill; `{name}` is replaced by the filter. */
     removeFilter: string;
+    /** Eyebrow of the 404 page. */
+    notFoundEyebrow: string;
     /** Title of the 404 page. */
     notFoundTitle: string;
     /** Body of the 404 page. */
@@ -99,6 +101,8 @@ export interface UiMessages {
     wipBackToDefault: string;
     /** Link back to the default tier list, shown on the status pages. */
     backHome: string;
+    /** Link back to the page the visitor came from, shown on the 404 page. */
+    backPrevious: string;
 }
 
 export interface StageMessages {
@@ -176,8 +180,10 @@ export const MESSAGES: Record<Lang, Messages> = {
             result: 'result',
             alphabeticalShort: 'A → Z',
             removeFilter: 'Remove {name}',
-            notFoundTitle: 'Page not found',
-            notFoundText: 'This page does not exist or has moved.',
+            notFoundEyebrow: 'Error 404',
+            notFoundTitle: 'Uncharted land',
+            notFoundText:
+                'This page stayed under the fog of war. The link may be broken, or this tile never existed on the map.',
             forbiddenTitle: 'Access denied',
             forbiddenText: 'You are not allowed to see this page.',
             wipEyebrow: 'Research under way',
@@ -195,6 +201,7 @@ export const MESSAGES: Record<Lang, Messages> = {
             wipPreviewSub: 'Unlocked on release · {turns} turns',
             wipBackToDefault: 'In the meantime, see the {game} tier list',
             backHome: 'Back to the tier list',
+            backPrevious: 'Previous page',
         },
         tags: ['Versatile', 'Culture', 'Faith', 'Science', 'Military', 'Trade', 'Production'],
         wipStages: [
@@ -260,8 +267,10 @@ export const MESSAGES: Record<Lang, Messages> = {
             result: 'Ergebnis',
             alphabeticalShort: 'A → Z',
             removeFilter: '{name} entfernen',
-            notFoundTitle: 'Seite nicht gefunden',
-            notFoundText: 'Diese Seite existiert nicht oder wurde verschoben.',
+            notFoundEyebrow: 'Fehler 404',
+            notFoundTitle: 'Unerforschtes Land',
+            notFoundText:
+                'Diese Seite blieb im Nebel des Krieges. Der Link ist vielleicht defekt, oder dieses Feld hat auf der Karte nie existiert.',
             forbiddenTitle: 'Zugriff verweigert',
             forbiddenText: 'Du darfst diese Seite nicht sehen.',
             wipEyebrow: 'Recherche läuft',
@@ -279,6 +288,7 @@ export const MESSAGES: Record<Lang, Messages> = {
             wipPreviewSub: 'Frei zur Veröffentlichung · {turns} Runden',
             wipBackToDefault: 'Schau dir in der Zwischenzeit die Tier-Liste {game} an',
             backHome: 'Zurück zur Tier-Liste',
+            backPrevious: 'Vorherige Seite',
         },
         tags: ['Vielseitig', 'Kultur', 'Glaube', 'Wissenschaft', 'Militär', 'Handel', 'Produktion'],
         wipStages: [
@@ -340,8 +350,10 @@ export const MESSAGES: Record<Lang, Messages> = {
             result: 'resultado',
             alphabeticalShort: 'A → Z',
             removeFilter: 'Quitar {name}',
-            notFoundTitle: 'Página no encontrada',
-            notFoundText: 'Esta página no existe o se ha movido.',
+            notFoundEyebrow: 'Error 404',
+            notFoundTitle: 'Tierra inexplorada',
+            notFoundText:
+                'Esta página se quedó bajo la niebla de guerra. Puede que el enlace esté roto, o que esta casilla nunca existiera en el mapa.',
             forbiddenTitle: 'Acceso denegado',
             forbiddenText: 'No tienes permiso para ver esta página.',
             wipEyebrow: 'Investigación en curso',
@@ -359,6 +371,7 @@ export const MESSAGES: Record<Lang, Messages> = {
             wipPreviewSub: 'Disponible al publicarse · {turns} turnos',
             wipBackToDefault: 'Mientras tanto, mira la tier list {game}',
             backHome: 'Volver a la tier list',
+            backPrevious: 'Página anterior',
         },
         tags: ['Versátil', 'Cultura', 'Fe', 'Ciencia', 'Militar', 'Comercio', 'Producción'],
         wipStages: [
@@ -428,8 +441,10 @@ export const MESSAGES: Record<Lang, Messages> = {
             result: 'résultat',
             alphabeticalShort: 'A → Z',
             removeFilter: 'Retirer {name}',
-            notFoundTitle: 'Page introuvable',
-            notFoundText: "Cette page n'existe pas ou a été déplacée.",
+            notFoundEyebrow: 'Erreur 404',
+            notFoundTitle: 'Terre inexplorée',
+            notFoundText:
+                "Cette page est restée sous le brouillard de guerre. Le lien est peut-être rompu, ou cette case n'a jamais existé sur la carte.",
             forbiddenTitle: 'Accès refusé',
             forbiddenText: "Vous n'avez pas le droit de voir cette page.",
             wipEyebrow: 'Recherche en cours',
@@ -447,6 +462,7 @@ export const MESSAGES: Record<Lang, Messages> = {
             wipPreviewSub: 'Disponible à la publication · {turns} tours',
             wipBackToDefault: 'En attendant, voir la tier list {game}',
             backHome: 'Retour à la tier list',
+            backPrevious: 'Page précédente',
         },
         tags: ['Polyvalent', 'Culture', 'Foi', 'Science', 'Militaire', 'Commerce', 'Production'],
         wipStages: [
@@ -516,8 +532,10 @@ export const MESSAGES: Record<Lang, Messages> = {
             result: 'risultato',
             alphabeticalShort: 'A → Z',
             removeFilter: 'Rimuovi {name}',
-            notFoundTitle: 'Pagina non trovata',
-            notFoundText: 'Questa pagina non esiste o è stata spostata.',
+            notFoundEyebrow: 'Errore 404',
+            notFoundTitle: 'Terra inesplorata',
+            notFoundText:
+                'Questa pagina è rimasta sotto la nebbia di guerra. Il link potrebbe essere rotto, o questa casella non è mai esistita sulla mappa.',
             forbiddenTitle: 'Accesso negato',
             forbiddenText: 'Non hai il permesso di vedere questa pagina.',
             wipEyebrow: 'Ricerca in corso',
@@ -535,6 +553,7 @@ export const MESSAGES: Record<Lang, Messages> = {
             wipPreviewSub: 'Disponibile alla pubblicazione · {turns} turni',
             wipBackToDefault: 'Nell’attesa, guarda la tier list {game}',
             backHome: 'Torna alla tier list',
+            backPrevious: 'Pagina precedente',
         },
         tags: ['Versatile', 'Cultura', 'Fede', 'Scienza', 'Militare', 'Commercio', 'Produzione'],
         wipStages: [
@@ -596,8 +615,10 @@ export const MESSAGES: Record<Lang, Messages> = {
             result: '件',
             alphabeticalShort: 'A → Z',
             removeFilter: '{name}を解除',
-            notFoundTitle: 'ページが見つかりません',
-            notFoundText: 'このページは存在しないか、移動されました。',
+            notFoundEyebrow: 'エラー 404',
+            notFoundTitle: '未探索の大地',
+            notFoundText:
+                'このページは戦争の霧の下に残っています。リンクが切れているか、このタイルは地図上に存在しなかったのかもしれません。',
             forbiddenTitle: 'アクセスが拒否されました',
             forbiddenText: 'このページを閲覧する権限がありません。',
             wipEyebrow: 'リサーチ進行中',
@@ -615,6 +636,7 @@ export const MESSAGES: Record<Lang, Messages> = {
             wipPreviewSub: '公開時に解除 · {turns} ターン',
             wipBackToDefault: 'それまでは {game} のティアリストをどうぞ',
             backHome: 'ティアリストに戻る',
+            backPrevious: '前のページ',
         },
         tags: ['多用途', '文化', '信仰', '科学', '軍事', '貿易', '生産'],
         wipStages: [
@@ -676,8 +698,10 @@ export const MESSAGES: Record<Lang, Messages> = {
             result: '개 결과',
             alphabeticalShort: '가나다순',
             removeFilter: '{name} 제거',
-            notFoundTitle: '페이지를 찾을 수 없습니다',
-            notFoundText: '이 페이지는 존재하지 않거나 이동되었습니다.',
+            notFoundEyebrow: '에러 404',
+            notFoundTitle: '미개추 지역',
+            notFoundText:
+                '이 페이지는 전쟁의 안개 속에 남아 있습니다. 링크가 끊여진 거나, 이 타일은 지도에 없었을 수도 있습니다.',
             forbiddenTitle: '접근이 거부되었습니다',
             forbiddenText: '이 페이지를 볼 권한이 없습니다.',
             wipEyebrow: '조사 진행 중',
@@ -695,6 +719,7 @@ export const MESSAGES: Record<Lang, Messages> = {
             wipPreviewSub: '공개 시 해제 · {turns}턴',
             wipBackToDefault: '그동안 {game} 티어 리스트를 보세요',
             backHome: '티어 리스트로 돌아가기',
+            backPrevious: '이전 페이지',
         },
         tags: ['변하기 쉬운', '문화', '신앙', '과학', '군사', '무역', '생산'],
         wipStages: [
@@ -756,8 +781,10 @@ export const MESSAGES: Record<Lang, Messages> = {
             result: 'wynik',
             alphabeticalShort: 'A → Z',
             removeFilter: 'Usuń: {name}',
-            notFoundTitle: 'Strony nie znaleziono',
-            notFoundText: 'Ta strona nie istnieje lub została przeniesiona.',
+            notFoundEyebrow: 'Błąd 404',
+            notFoundTitle: 'Niezbadana ziemia',
+            notFoundText:
+                'Ta strona pozostała we mgle wojny. Link może być zepsuty albo to pole nigdy nie istniało na mapie.',
             forbiddenTitle: 'Brak dostępu',
             forbiddenText: 'Nie masz uprawnień, aby zobaczyć tę stronę.',
             wipEyebrow: 'Badania w toku',
@@ -775,6 +802,7 @@ export const MESSAGES: Record<Lang, Messages> = {
             wipPreviewSub: 'Dostępne po publikacji · {turns} tur',
             wipBackToDefault: 'W międzyczasie zobacz tier listę {game}',
             backHome: 'Powrót do tier listy',
+            backPrevious: 'Poprzednia strona',
         },
         tags: ['Wszechstronny', 'Kultura', 'Wiara', 'Nauka', 'Wojskowy', 'Handel', 'Produkcja'],
         wipStages: [
@@ -840,8 +868,10 @@ export const MESSAGES: Record<Lang, Messages> = {
             result: 'результат',
             alphabeticalShort: 'А → Я',
             removeFilter: 'Убрать: {name}',
-            notFoundTitle: 'Страница не найдена',
-            notFoundText: 'Эта страница не существует или была перемещена.',
+            notFoundEyebrow: 'Ошибка 404',
+            notFoundTitle: 'Неисследованная земля',
+            notFoundText:
+                'Эта страница осталась под туманом войны. Возможно, ссылка сломана, или этой клетки никогда не было на карте.',
             forbiddenTitle: 'Доступ запрещён',
             forbiddenText: 'У вас нет прав на просмотр этой страницы.',
             wipEyebrow: 'Идёт исследование',
@@ -859,6 +889,7 @@ export const MESSAGES: Record<Lang, Messages> = {
             wipPreviewSub: 'Откроется с публикацией · {turns} ходов',
             wipBackToDefault: 'А пока посмотрите тир-лист {game}',
             backHome: 'Вернуться к тир-листу',
+            backPrevious: 'Предыдущая страница',
         },
         tags: ['Универсальный', 'Культура', 'Вера', 'Наука', 'Военный', 'Торговля', 'Производство'],
         wipStages: [
@@ -928,8 +959,9 @@ export const MESSAGES: Record<Lang, Messages> = {
             result: '个结果',
             alphabeticalShort: 'A → Z',
             removeFilter: '移除{name}',
-            notFoundTitle: '页面未找到',
-            notFoundText: '该页面不存在或已移动。',
+            notFoundEyebrow: '错误 404',
+            notFoundTitle: '未探索的土地',
+            notFoundText: '这一页仍在战争迷难之下。可能是链接已失效，或这个格子从未存在于地图上。',
             forbiddenTitle: '访问被拒绝',
             forbiddenText: '你没有权限查看该页面。',
             wipEyebrow: '研究进行中',
@@ -947,6 +979,7 @@ export const MESSAGES: Record<Lang, Messages> = {
             wipPreviewSub: '发布时解锁 · {turns} 回合',
             wipBackToDefault: '在此期间，先看看 {game} 强度榜',
             backHome: '返回强度榜',
+            backPrevious: '上一页',
         },
         tags: ['多才多艺的', '文化', '信仰', '科学', '军事', '贸易', '生产'],
         wipStages: [

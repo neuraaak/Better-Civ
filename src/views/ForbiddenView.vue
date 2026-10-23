@@ -1,50 +1,25 @@
 <template>
     <main class="status">
-        <p class="eyebrow"><PhIcon :name="state.icon" />{{ state.code }}</p>
-        <h1>{{ state.title }}</h1>
-        <p class="status-text">{{ state.text }}</p>
+        <p class="eyebrow"><PhIcon name="lock-simple" />403</p>
+        <h1>{{ t.ui.forbiddenTitle }}</h1>
+        <p class="status-text">{{ t.ui.forbiddenText }}</p>
         <RouterLink class="status-link" :to="DEFAULT_GAME_PATH">{{ t.ui.backHome }}</RouterLink>
     </main>
 </template>
 
 <script setup lang="ts">
     /**
-     * Single page behind the status routes (404, 403). The route's `meta.status`
-     * picks the copy, see router/index.ts.
+     * 403 page. The site has no login, so only a hand-typed /403 reaches it.
      */
     // IMPORT
     // ##############
-    import { computed } from 'vue';
-    import { useRoute } from 'vue-router';
     import PhIcon from '../components/icons/PhIcon.vue';
     import { DEFAULT_GAME_PATH } from '../data/games';
     import { useMessages } from '../i18n/useMessages';
-    import type { PhosphorIconName } from '../components/icons/phosphorIcons';
 
     // VARIABLES
     // ##############
-    const route = useRoute();
     const t = useMessages();
-
-    const state = computed(() => {
-        const ui = t.value.ui;
-        switch (route.meta.status) {
-            case 'forbidden':
-                return {
-                    code: '403',
-                    icon: 'lock-simple' as PhosphorIconName,
-                    title: ui.forbiddenTitle,
-                    text: ui.forbiddenText,
-                };
-            default:
-                return {
-                    code: '404',
-                    icon: 'globe-simple' as PhosphorIconName,
-                    title: ui.notFoundTitle,
-                    text: ui.notFoundText,
-                };
-        }
-    });
 </script>
 
 <style scoped>

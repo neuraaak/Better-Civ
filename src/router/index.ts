@@ -1,7 +1,6 @@
 /**
  * One route per game: Civilization V has its tier list, VI and VII their work in
- * progress page. The 403 and every unknown path share the status page, told
- * apart by `meta.status`.
+ * progress page. The 403 and the unknown paths own their own page.
  */
 import {
     createRouter,
@@ -13,7 +12,6 @@ import { DEFAULT_GAME_PATH } from '../data/games';
 
 // CONSTANTS
 // ##############
-const statusView = () => import('../views/StatusView.vue');
 const workInProgressView = () => import('../views/WorkInProgressView.vue');
 
 export const routes: RouteRecordRaw[] = [
@@ -39,14 +37,14 @@ export const routes: RouteRecordRaw[] = [
     {
         path: '/403',
         name: 'forbidden',
-        component: statusView,
-        meta: { title: 'Better Civ', status: 'forbidden' },
+        component: () => import('../views/ForbiddenView.vue'),
+        meta: { title: 'Better Civ' },
     },
     {
         path: '/:pathMatch(.*)*',
         name: 'not-found',
-        component: statusView,
-        meta: { title: 'Better Civ', status: 'notFound' },
+        component: () => import('../views/NotFoundView.vue'),
+        meta: { title: 'Better Civ' },
     },
 ];
 

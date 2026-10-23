@@ -114,18 +114,18 @@ describe('App.vue', () => {
             expect(cardNames(wrapper)).toEqual(['Espagne']);
         });
 
-        it('shows the status page on the 403 and on unknown paths', async () => {
+        it('shows the 403 page and the 404 page on unknown paths', async () => {
             fetchMock.mockImplementation(() => jsonResponse([]));
 
-            for (const [path, code] of [
-                ['/403', '403'],
-                ['/nope/deep', '404'],
-            ]) {
-                const wrapper = await mountApp(path);
-                expect(wrapper.router.currentRoute.value.path).toBe(path);
-                expect(wrapper.find('.status .eyebrow').text()).toBe(code);
-                wrapper.unmount();
-            }
+            const forbidden = await mountApp('/403');
+            expect(forbidden.find('.status .eyebrow').text()).toBe('403');
+            forbidden.unmount();
+
+            const notFound = await mountApp('/nope/deep');
+            expect(notFound.router.currentRoute.value.path).toBe('/nope/deep');
+            expect(notFound.find('.not-found .code').text()).toBe('CDIV');
+            notFound.unmount();
+
             // The API is never hit outside the Civilization V tier list
             expect(fetchMock).not.toHaveBeenCalled();
         });
