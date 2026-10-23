@@ -1,5 +1,5 @@
 import { onScopeDispose, ref, shallowRef, toValue, watch, type MaybeRefOrGetter } from 'vue';
-import { fetchCivilizations } from '../api/civApi';
+import { fetchCivilizations } from '../api/civDb';
 import { withRatings } from '../data/civRatings';
 import type { Lang } from '../i18n/languages';
 import type { Civilization } from '../types';

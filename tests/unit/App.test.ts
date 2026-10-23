@@ -2,12 +2,12 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { flushPromises, mount } from '@vue/test-utils';
 import { createPinia, setActivePinia } from 'pinia';
 import App from '@/App.vue';
+import { fetchCivilizations } from '@/api/civDb';
 import { clearCivilizationsCache } from '@/composables/useCivilizations';
 import { useAppStore } from '@/stores/app';
 import { createTestRouter } from '../utils/router';
 
-const jsonResponse = (body: unknown, status = 200) =>
-    Promise.resolve(new Response(JSON.stringify(body), { status }));
+vi.mock('@/api/civDb', () => ({ fetchCivilizations: vi.fn() }));
 
 // The header and the game view are lazy-loaded: wait for their dynamic imports to resolve
 const mountApp = async (path = '/civilization-5') => {
@@ -22,47 +22,43 @@ const cardNames = (wrapper: Awaited<ReturnType<typeof mountApp>>) =>
     wrapper.findAll('.portrait-card h2').map(title => title.text());
 
 describe('App.vue', () => {
-    const fetchMock = vi.fn();
+    const fetchMock = vi.mocked(fetchCivilizations);
 
     beforeEach(() => {
         setActivePinia(createPinia());
         clearCivilizationsCache();
         fetchMock.mockReset();
-        vi.stubGlobal('fetch', fetchMock);
         vi.spyOn(console, 'error').mockImplementation(() => {});
     });
 
     afterEach(() => {
-        vi.unstubAllGlobals();
         vi.restoreAllMocks();
     });
 
     it('renders the header and the rated civilizations of the current language', async () => {
-        fetchMock.mockImplementation(() =>
-            jsonResponse([
-                { id: 20, name: 'Inca|Incas' },
-                { id: 21, name: 'Espagne' },
-            ])
-        );
+        fetchMock.mockResolvedValue([
+            { id: 20, name: 'Inca|Incas' },
+            { id: 21, name: 'Espagne' },
+        ]);
 
         const wrapper = await mountApp();
 
         expect(fetchMock).toHaveBeenCalledTimes(1);
-        expect(fetchMock.mock.calls[0][0]).toContain('/v1/fr/civilizations/');
+        expect(fetchMock.mock.calls[0][0]).toBe('fr');
         expect(wrapper.find('.brand-title').text()).toBe('Better-Civ');
         // Inca is tier S, Spain tier B
         expect(cardNames(wrapper)).toEqual(['Inca', 'Espagne']);
     });
 
-    it('shows an error with a working retry when the API fails', async () => {
-        fetchMock.mockImplementationOnce(() => jsonResponse({}, 500));
+    it('shows an error with a working retry when the database fails', async () => {
+        fetchMock.mockRejectedValueOnce(new Error('offline'));
         const wrapper = await mountApp();
 
         expect(wrapper.find('[role="alert"]').text()).toContain(
             'Impossible de charger les civilisations.'
         );
 
-        fetchMock.mockImplementationOnce(() => jsonResponse([{ id: 24, name: 'Corée' }]));
+        fetchMock.mockResolvedValueOnce([{ id: 24, name: 'Corée' }]);
         await wrapper.find('[role="alert"] button').trigger('click');
         await flushPromises();
 
@@ -71,22 +67,22 @@ describe('App.vue', () => {
     });
 
     it('reloads the list when the language changes', async () => {
-        fetchMock.mockImplementation((url: string) =>
-            jsonResponse([{ id: 7, name: url.includes('/en/') ? 'France (EN)' : 'France' }])
+        fetchMock.mockImplementation(lang =>
+            Promise.resolve([{ id: 7, name: lang === 'en' ? 'France (EN)' : 'France' }])
         );
         const wrapper = await mountApp();
 
         useAppStore().setLanguage('en');
         await flushPromises();
 
-        expect(fetchMock.mock.calls[1][0]).toContain('/v1/en/civilizations/');
+        expect(fetchMock.mock.calls[1][0]).toBe('en');
         expect(cardNames(wrapper)).toEqual(['France (EN)']);
         expect(wrapper.find('.hero h1').text()).toBe('Which civilization should you play?');
         expect(document.documentElement.lang).toBe('en');
     });
 
     it('exposes the BCP 47 tag of the selected language on <html>', async () => {
-        fetchMock.mockImplementation(() => jsonResponse([]));
+        fetchMock.mockResolvedValue([]);
         await mountApp();
         expect(document.documentElement.lang).toBe('fr');
 
@@ -98,7 +94,7 @@ describe('App.vue', () => {
 
     describe('routes', () => {
         it('serves the home page on /', async () => {
-            fetchMock.mockImplementation(() => jsonResponse([]));
+            fetchMock.mockResolvedValue([]);
             const wrapper = await mountApp('/');
 
             expect(wrapper.router.currentRoute.value.name).toBe('home');
@@ -109,7 +105,7 @@ describe('App.vue', () => {
         });
 
         it('serves the tier list on /civilization-5', async () => {
-            fetchMock.mockImplementation(() => jsonResponse([{ id: 21, name: 'Espagne' }]));
+            fetchMock.mockResolvedValue([{ id: 21, name: 'Espagne' }]);
             const wrapper = await mountApp('/civilization-5');
 
             expect(wrapper.router.currentRoute.value.name).toBe('civilization-5');
@@ -117,7 +113,7 @@ describe('App.vue', () => {
         });
 
         it('shows the 403 page and the 404 page on unknown paths', async () => {
-            fetchMock.mockImplementation(() => jsonResponse([]));
+            fetchMock.mockResolvedValue([]);
 
             const forbidden = await mountApp('/403');
             expect(forbidden.find('.status .eyebrow').text()).toBe('403');
@@ -128,12 +124,12 @@ describe('App.vue', () => {
             expect(notFound.find('.not-found .code').text()).toBe('CDIV');
             notFound.unmount();
 
-            // The API is never hit outside the Civilization V tier list
+            // The database is never read outside the Civilization V tier list
             expect(fetchMock).not.toHaveBeenCalled();
         });
 
         it('shows the work in progress page on the unreleased games', async () => {
-            fetchMock.mockImplementation(() => jsonResponse([]));
+            fetchMock.mockResolvedValue([]);
 
             for (const [path, numeral] of [
                 ['/civilization-6', 'VI'],
