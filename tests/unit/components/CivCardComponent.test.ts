@@ -37,6 +37,7 @@ describe('CivCardComponent', () => {
 
         expect(wrapper.find('.card-rank').text()).toBe('Royaume');
         expect(wrapper.find('.card-leader').text()).toBe('Napoléon');
+        expect(wrapper.find('.card-medallion').exists()).toBe(true);
         expect(wrapper.find('.card-frieze').exists()).toBe(true);
         expect(wrapper.findAll('.card-flute')).toHaveLength(2);
         expect(wrapper.findAll('.card-rules i')).toHaveLength(3);
@@ -47,6 +48,17 @@ describe('CivCardComponent', () => {
 
         expect(wrapper.find('.card-leader').exists()).toBe(false);
         expect(wrapper.find('.card-rank').exists()).toBe(true);
+    });
+
+    it('carries the civilization emblem in the medallion', () => {
+        const wrapper = mount(CivCardComponent, {
+            props: { ...mockCivilization, icon: '/img/france.png' },
+        });
+        const medallion = wrapper.find('.card-medallion');
+
+        expect(medallion.attributes('style')).toContain('--medallion-size: 62px');
+        expect(medallion.find('.medallion-face img').attributes('src')).toBe('/img/france.png');
+        expect(medallion.find('.medallion-fallback').exists()).toBe(false);
     });
 
     it('uses the tier palette for the card frame and its top accent', () => {

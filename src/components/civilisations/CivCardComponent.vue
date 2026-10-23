@@ -22,10 +22,12 @@
             <div class="card-flute left"></div>
             <div class="card-flute right"></div>
 
-            <CivTierComponent
+            <CivMedallionComponent
+                :icon="icon"
                 :tier_id="tier_id"
-                :size="compact ? 40 : 52"
-                class="card-tier-badge"
+                :size="compact ? 44 : 62"
+                :badge_size="compact ? 22 : 30"
+                class="card-medallion"
             />
             <p class="card-rank">{{ badge.rank }}</p>
 
@@ -70,6 +72,7 @@
     import { useMessages } from '../../i18n/useMessages';
     import { useAppStore } from '../../stores/app';
     import { cleanName } from '../../utils/civName';
+    import CivMedallionComponent from './subcomponents/CivMedallionComponent.vue';
     import CivTagComponent from './subcomponents/CivTagComponent.vue';
     import CivTierComponent from './subcomponents/CivTierComponent.vue';
     import { tierBadge } from './tierDesign';
@@ -80,6 +83,8 @@
             name: string;
             tags_id?: TagId[];
             tier_id?: TierId;
+            /** Civilization emblem, shown in the medallion. */
+            icon?: string;
             /** Leader name, shown under the civilization on the portrait card. */
             leader_name?: string;
             selected?: boolean;
@@ -89,6 +94,7 @@
         {
             tags_id: () => [],
             tier_id: undefined,
+            icon: '',
             leader_name: undefined,
             selected: false,
             variant: 'portrait',
@@ -268,16 +274,16 @@
     .card-flute.right {
         right: 13px;
     }
-    .card-tier-badge {
+    .card-medallion {
         position: absolute;
-        top: 34px;
+        top: 36px;
         left: 50%;
         transform: translateX(-50%);
         transition: transform 0.4s cubic-bezier(0.2, 0.7, 0.2, 1);
     }
     .card-rank {
         position: absolute;
-        top: 94px;
+        top: 118px;
         right: 0;
         left: 0;
         margin: 0;
@@ -348,7 +354,7 @@
         .portrait-card:hover .card-flute {
             opacity: 0.9;
         }
-        .portrait-card:hover .card-tier-badge {
+        .portrait-card:hover .card-medallion {
             transform: translateX(-50%) scale(1.08);
         }
     }
@@ -431,7 +437,7 @@
             mask-image: none;
         }
         /* In the flow, but still painted above the absolute visual layers */
-        .portrait-card .card-tier-badge {
+        .portrait-card .card-medallion {
             position: relative;
             top: auto;
             left: auto;

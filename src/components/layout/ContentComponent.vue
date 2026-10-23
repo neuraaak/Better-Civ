@@ -171,6 +171,7 @@
                         :name="civ.name"
                         :tags_id="civ.tags_id"
                         :tier_id="civ.tier_id"
+                        :icon="civ.icon"
                         :leader_name="civ.leader?.name"
                         :selected="detailOpen && selectedCivId === civ.id"
                         :variant="cardStyle"
