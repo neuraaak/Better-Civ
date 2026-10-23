@@ -305,16 +305,25 @@
     }
 
     /* — game cards — */
+    /* Three cards, so an auto-fit grid leaves one stretched alone on its row:
+       three columns, then one, with nothing in between. */
     .cards {
         position: relative;
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr));
+        grid-template-columns: repeat(3, minmax(0, 1fr));
         gap: 16px;
+    }
+    @media (max-width: 980px) {
+        .cards {
+            grid-template-columns: minmax(0, 1fr);
+            max-width: 560px;
+        }
     }
     .card {
         position: relative;
         display: flex;
         min-height: 440px;
+        container-type: inline-size;
         flex-direction: column;
         padding: 22px;
         overflow: hidden;
@@ -355,8 +364,8 @@
         position: absolute;
         top: 38%;
         left: 50%;
-        width: 420px;
-        height: 420px;
+        width: min(420px, 110cqw);
+        aspect-ratio: 1;
         border-radius: 50%;
         background: radial-gradient(
             circle,
@@ -576,7 +585,8 @@
         align-items: center;
         justify-content: center;
         margin: 0;
-        padding: 28px 0;
+        /* Horizontal padding from the handoff: the gothic VI overshoots its box */
+        padding: 28px 0.14em 28px 0.04em;
         background-image: var(--num-fill);
         -webkit-background-clip: text;
         background-clip: text;
@@ -584,6 +594,7 @@
         color: transparent;
         font: var(--num-weight) var(--num-size) / 1 var(--num-font);
         letter-spacing: var(--num-track);
+        white-space: nowrap;
         filter: var(--num-glow);
         transition:
             transform 0.5s cubic-bezier(0.2, 0.7, 0.2, 1),
@@ -647,7 +658,7 @@
         --card-glow-opacity: 0.15;
         --num-font: 'Cinzel', serif;
         --num-weight: 600;
-        --num-size: clamp(130px, 12vw, 184px);
+        --num-size: clamp(120px, 38cqw, 184px);
         --num-track: 0;
         --num-fill: linear-gradient(
             180deg,
@@ -671,7 +682,7 @@
         --card-glow-opacity: 0.3;
         --num-font: 'UnifrakturMaguntia', serif;
         --num-weight: 400;
-        --num-size: clamp(140px, 13vw, 196px);
+        --num-size: clamp(128px, 40cqw, 196px);
         --num-track: 0;
         --num-fill: linear-gradient(
             170deg,
@@ -703,7 +714,7 @@
         --card-glow-opacity: 0.55;
         --num-font: var(--font-heading);
         --num-weight: 500;
-        --num-size: clamp(130px, 12vw, 184px);
+        --num-size: clamp(120px, 38cqw, 184px);
         --num-track: -0.07em;
         --num-fill: linear-gradient(
             170deg,
@@ -735,16 +746,32 @@
         text-transform: uppercase;
     }
 
+    @media (max-width: 1200px) {
+        .orbits {
+            width: 720px;
+            height: 720px;
+            opacity: 0.4;
+        }
+    }
     @media (max-width: 800px) {
         .hero {
+            gap: 18px;
             padding: 48px 0 40px;
         }
         .orbits {
-            top: -320px;
-            right: -420px;
+            top: -300px;
+            right: -340px;
+            width: 620px;
+            height: 620px;
+        }
+        .section-rule {
+            padding-bottom: 14px;
         }
         .card {
             min-height: 380px;
+        }
+        .home-footer {
+            padding-top: 36px;
         }
     }
     @media (prefers-reduced-motion: reduce) {
