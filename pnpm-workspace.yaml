@@ -1,2 +1,8 @@
+engineStrict: true
+pmOnFail: error
+saveExact: true
+strictPeerDependencies: false
+autoInstallPeers: true
+
 allowBuilds:
   esbuild: true
