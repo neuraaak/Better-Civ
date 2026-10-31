@@ -76,7 +76,7 @@
         "@testing-library/dom": "^10.4.2",
         "@testing-library/jest-dom": "^7.0.1",
         "@testing-library/vue": "^8.1.0",
-        "@types/node": "^24.1.0",
+        "@types/node": "^26.6.5",
         "@types/sql.js": "^1.4.11",
         "@typescript-eslint/eslint-plugin": "^8.38.0",
         "@typescript-eslint/parser": "^8.38.0",
